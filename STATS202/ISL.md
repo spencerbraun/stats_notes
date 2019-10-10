@@ -32,13 +32,14 @@ Non-Linear Relationships - Polynomial Regression: Can add a higher order polynom
 * Outliers - have an unusual value of $y_i$ given $x_i$. High leverage points - have unusual value for $x_i$ and can have a sizable impact on the regression line. This is hard to identify in multiple regression settings just by eyeballing. We can calculate a leverage statistic: $h_i = \frac{1}{n} + \frac{(x_i - \bar{x})^2}{\sum_{i’=1}^n(x’_i - \bar{x})^2}$ . Always between 1/n  and 1 with average leverage over all points (p+1)/n.
   * If we think the outlier is an error, then we can remove it. But it could indicate misspecification of the model
   * If we have high leverage points for multiple predictors -> can make pairwise comparisons to see high leverage points between predictors. The leverage stat formalizes this idea for any dimension
-* Collinearity - two or more predictors are closely related to one another. Reduces the accuracy of the estimates of the coefficients causing SE for coefficients to grow and the power of the hypothesis test is reduced. Useful to look at a correlation matrix of the variables, though if multicollinearity exists in the interaction of multiple variables this will not be caught. Compute the Variance Inflation Factor (VIF), ratio of variance of a beta when fitting the full model over the variance of beta if fit on its own. $VIF(\Beta_j) = \frac{1}{1 - R^2_{X_J | X_{-j}}}$ where $R^2_{X_J | X_{-j}}$ is the R^2 from a regression of $X_j$ onto all of the other predictors (Note $X_{-j}$ indicates all x excluding the jth predictor). If this term is close to 1, then you have collinearity and VIF blow up to be large. 
+* Collinearity - two or more predictors are closely related to one another. Reduces the accuracy of the estimates of the coefficients causing SE for coefficients to grow and the power of the hypothesis test is reduced. Useful to look at a correlation matrix of the variables, though if multicollinearity exists in the interaction of multiple variables this will not be caught. Compute the Variance Inflation Factor (VIF), ratio of variance of a beta when fitting the full model over the variance of beta if fit on its own. $VIF(\Beta_j) = \frac{1}{1 - R^2_{X_J | X_{-j}}}$ where $R^2_{X_J | X_{-j}}$ is the $R^2$ from a regression of $X_j$ onto all of the other predictors (Note $X_{-j}$ indicates all x excluding the jth predictor). If this term is close to 1, then you have collinearity and VIF blow up to be large. 
   * Collinearity causes coefficient estimates to become less certain. End up with exactly the same fit for mutliple betas - now difficult to optimize the model for each beta. Elongates contour lines of fit, meaning betas of highly varying degree are producing the same goodness of fit / CI for estimate. 
 
 ##### K-nearest neighbors regression (KNN regression)
 
 * Given value K for prediction point $x_0$, identifies K training obervations closest to $x_o$, represented by $N_0$. It then estimates $f(x_0)$ using the average of all the training responses in $N_0$, ie. $\hat{f}(x_0) = \frac{1}{K}\sum_{x_i \in N_0} y_i$. 
-* Value of K boils down to bias-variance tradeoff - small values of K more flexible with low bias and high variance. The parametric approach will outperform the nonparametric approach if the parametric form that has been selected is close to the true form of f.
+* Value of K boils down to bias-variance tradeoff - small values of K more flexible with low bias and high variance. The parametric approach will outperform the nonparametric approach if the parametric form that has been selected is close to the true form of f. 
+* We would not use KNN regression with a linear relationship; no matter how you choose K, you will always have higher test MSE than linear regression, since the linear model has almost no bias and also resists variance better. Linear regression can still outperform for non-linear relationships; may simply depend on the choice of K. For extreme non-linearities, then linear regression tends to underperform for wide range of K. 
 * With small number of predictors, MSE for KNN remains somewhat constant over different f linearities while linear regression has much higher MSE for non-linear relationships. KNN can still underperform significantly with more predictors, however. Spreading 100 observations over p = 20 dimensions results in a phenomenon in which a given observation has no nearby neighbors—this is the so-called curse of dimensionality. 
 
 ##### Class Notes
@@ -53,4 +54,24 @@ Non-Linear Relationships - Polynomial Regression: Can add a higher order polynom
 * R note: `lm(y ~ .)` regresses the y against all x terms in the dataset. 
 * For higher dimensional residual analysis - plot the residuals against the $\hat{y}$ instead of x, look for a pattern. Pattern suggests a leftover structure to the y values that remains to be explained.
 * Studentized residuals - $\hat{\epsilon_i} = y_i -\hat{y_i}$ is an estimate of the true epsilon. It has SE $\sigma\sqrt{1 - h_{ii}}$. Therefore we can divide the estimate by the SE. Should follow a t-distribution with n-p-2 DoF (Note OLS has residuals with mean 0, so we are only concerned with the estimate SE).
-* 
+
+### Chapter 4 - Classification
+
+* Bayes Classifier - P(Y|X) is known, then given input $x_0$ we predict the response $\hat{y_0} = argmax_y P(Y=y | X=x)$. Minimizes expected 0-1 loss $E\Big[\frac{1}{m}\sum_1^m 1(\hat{y_i} \neq y_i)\Big]$, ie a binary loss function of wrong or right. This is the best theoretical result.
+
+##### Logistic Regression
+
+* Mapping regression output to range of [0, 1]. To get a sigmoid from [0, 1], we use the **logistic function** $f(x) = \frac{e^x}{1 + e^x}$. For small x, close to 0 and close to 1 as $e^x$ grows.
+* We can then generate log odds: $log\Big[\frac{P(Y=1|X)}{P(Y=0|X)}\Big] = \Beta_0 + \Beta_1X_1 + ... + \Beta_pX_p$. We cannot use least squares because we do not know the conditional probability - LHS not observed. Instead we use MLE.
+* Confounding - one of the x variables explains another variable somewhat. Not collinearity, but a relationship exists between X parameters, eg. students are likely to have high card balances, people with high balances are more likely to default, given a high balance students are less likely to default. Running the regression with just student will give you a positive coefficient, and running with balance too will give a negative coefficient for student. In a simple logistic regression, the student is standing in for balance.
+* Similar issues with collinearity - creates instability in estimating the coefficients and affects the convergence of the MLE fitting.
+
+### Chapter 10 - Unsupervised Learning
+
+##### Principal Components Analysis (PCA)
+
+* When faced with a large set of correlated variables, principal components allow us to summarize this set with a smaller number of representative variables that collectively explain most of the variability in the original set.
+* PCA seeks a small number of dimensions that are as interesting as possible, where the concept of interesting is measured by the amount that the observations vary along each dimension.
+* The first PC of features $X_1,...,X_p$ is the normalized linear combination of the features $Z_1 = \phi_{11}X_1 + ... + \phi_{p1}X_P$ that has the largest variance. By normalized, we mean $\sum_{j=1}^p \phi^2_{j1} = 1$. The $\phi$ elements are the loadings of the first principal component, together the principal component loading vector.
+* We look for the linear combination of sample feature values $z_{ij}$ , ie $\frac{1}{n}\sum_{i=1}^nz_{i1}^2$ subject to the constraint $\sum_{j=1}^p \phi^2_{j1} = 1$. The z-values are the scores of the first principal component. We assume that each of the X’s has mean zero. 
+* The loading vector $\phi_1$ with elements $\phi_{11}, \phi{21},...,\phi{p1}$ defines a direction in feature space along which the data vary the most. If we project the n data points $x_1,...,x_n$ onto this direction, the projected values are the principal component scores $z_{11},...,z_{n1}$ themselves.
