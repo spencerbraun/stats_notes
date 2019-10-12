@@ -13,7 +13,7 @@ author: Spencer Braun
 * intersection - probability that both A and B occur
 * Complement - $A^c$ event that A does not occur, all events in the sample space that are not A
 * Disjoint - A and C are disjoint if $A \cap C = \empty$ 
-* Probability Axioms: 1) $P(\Omega) = 1$, 2) If $A \subset \Omega$ then $P(A) \geq 0$ 3) If A, B disjoint then $P(A \cup B) - P(A) + P(B)$
+* Probability Axioms: 1) $P(\Omega) = 1$, 2) If $A \subset \Omega$ then $P(A) \geq 0$ 3) If A, B disjoint then $P(A \cup B) = P(A) + P(B)$
 * Addition Law: $P(A \cup B) = P(A) +P(B) - P(A \cap B)$
 * Permutation: ordered arrangement of objects
 * Binomial coefficients: $(a+b)^n = \sum_{k=0}^n a^kb^{n-k}$
@@ -73,6 +73,7 @@ author: Spencer Braun
 * If $X∼N(\mu, \sigma^2) \text{and} Y = aX + b,\text{ then }Y∼N(a\mu + b, a^2\sigma^2 ).$
 * **Change of variables for function of RV** $f_Y(y) = f_X(g^{-1}(y))\Big|\frac{d}{dy}g^{-1}(y)\Big|$
 * Universality of uniform: Z = F(X) for $Z \sim U(0,1)$. $X = F^{-1}(U)$ then $F(x) = P(U \leq F(x))$
+* If we sum n independent Gam(α) random variables we get a Gam(nα) random variable.
 
 ### Chapter 3: Joint Distributions
 
@@ -94,7 +95,7 @@ author: Spencer Braun
 ### Chapter 4: Expected Values
 
 * $E(X)=\int_{-\infty}^{\infty} x f(x) d x$ provided the expectation of |x| exists
-* Functions of RVs: $E(g(X)=\int_{-\infty}^{\infty} g(x) f(x) d x$ - do not need the pdf of g(x) for expectation
+* Functions of RVs: $E(g(X))=\int_{-\infty}^{\infty} g(x) f(x) d x$ - do not need the pdf of g(x) for expectation
 * For independent X and Y, E(XY) = E(X)E(Y).
 * Linearity of expectation - constants and coefficients can be pulled out of expectation
 * Variance

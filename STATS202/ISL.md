@@ -61,10 +61,35 @@ Non-Linear Relationships - Polynomial Regression: Can add a higher order polynom
 
 ##### Logistic Regression
 
+* Model is fit using MLE: we try to find $\Betaˆ0$ and $\Betaˆ1$ such that plugging these estimates into the model for $p(X)$ yields a number close to one for all individuals who defaulted, and a number close to zero for all individuals who did not. Uses likelihood function: $\ell\left(\beta_{0}, \beta_{1}\right)=\prod_{i: y_{i}=1} p\left(x_{i}\right) \prod_{i^{\prime}: y_{i^{\prime}}=0}\left(1-p\left(x_{i^{\prime}}\right)\right)$
+* $\log \left(\frac{p(X)}{1-p(X)}\right)=\beta_{0}+\beta_{1} X$ for $P(X) = \Beta_0 + \Beta_1X_1$
 * Mapping regression output to range of [0, 1]. To get a sigmoid from [0, 1], we use the **logistic function** $f(x) = \frac{e^x}{1 + e^x}$. For small x, close to 0 and close to 1 as $e^x$ grows.
 * We can then generate log odds: $log\Big[\frac{P(Y=1|X)}{P(Y=0|X)}\Big] = \Beta_0 + \Beta_1X_1 + ... + \Beta_pX_p$. We cannot use least squares because we do not know the conditional probability - LHS not observed. Instead we use MLE.
 * Confounding - one of the x variables explains another variable somewhat. Not collinearity, but a relationship exists between X parameters, eg. students are likely to have high card balances, people with high balances are more likely to default, given a high balance students are less likely to default. Running the regression with just student will give you a positive coefficient, and running with balance too will give a negative coefficient for student. In a simple logistic regression, the student is standing in for balance.
 * Similar issues with collinearity - creates instability in estimating the coefficients and affects the convergence of the MLE fitting.
+
+##### Linear Discriminant Analysis
+
+* Defns:  Prior = $\pi_k$, Likelihood/density of X $f_k(x) = Pr(X=x | Y=k)$
+* Bayesian estimate: $\operatorname{Pr}(Y=k | X=x)= p_k(x) =\frac{\pi_{k} f_{k}(x)}{\sum_{l=1}^{K} \pi_{l} f_{l}(x)}$
+* $P(Y=k)= \pi_k$ is determined by the training data - this gives us a prior.
+* We are often using Gaussian for $p_k(x)$ - think of heights (X) for men and women (Y), then conditioned on gender we have two normal curves.
+* LDA approximates the Bayes classifier by plugging in estimates for the prior and parameters. Mean is sample mean, variance is sample variance for each class k in the training data. However, for sample variance, we pool the variance to make a common covariance matrix ie. $\hat{\sigma}^2 = \frac{1}{n-K}\sum_{k=1}^K \sum_{i; y_i=k} (x_i - \hat{\mu}_k)^2$. Note we are taking the sum of squared deviations within each k but them sum and normalize them across the different groups.
+* Basically plugging in estimates into the log likelihood function, leaving prior as a parameter of posterior. It is linear because the discriminant functions $\hat{\delta}_k(x)$ are linear functions of x
+* To reiterate, the LDA classifier results from assuming that the observations within each class come from a normal distribution with a class-specific mean vector and a common variance $\sigma^2$, and plugging estimates for these parameters into the Bayes classifier.
+* Multivariate case: will assume that $X = (X_1, X_2,...,X_p)$ is drawn from a multivariate Gaussian (or multivariate normal) distribution, with a class-specific multivariate mean vector and a common covariance matrix.
+* Looking for x values where discriminant equations are equal - this defines the boundary between groups. The quadratic term drops out in the equality since it is the same for both discriminants, then we are left with comparing the linear values of x. Therefore the boundaries will be lines.
+
+##### Quadratic Discriminant Analysis
+
+* Assuming a common covariance matrix is restrictive - ensures boundaries are lines, while groups may be separated by non-linear boundaries. Remember a more flexible method only reduces bias in practice when we are dealing with non-linear Bayes boundaries.
+* We no longer drop the quadratic term when comparing discriminant formulae since the covariance matrices are not the same anymore.
+
+##### Evaluating Classification Methods
+
+* 0-1 Loss doesn’t tell you about if you are making the wrong prediction for some classes more than others. Does not distinguish between false positives and negatives.
+* Use a confusion matrix - model the truth as either + or -. Then determine if you have True Negative, False Negative, False Positive, True Positive. 
+* We can have very different error rates for FP and FN - think of Bank trying to determine who will default, cares much more about the error rate in predicting for the defaulting group than the non-defaulting. Can change the threshold for which $p(default=yes|X)$ sorts the data, say changing from 50% down to 30%. In this case it will increase the error for FP and decrease FN. 
 
 ### Chapter 10 - Unsupervised Learning
 

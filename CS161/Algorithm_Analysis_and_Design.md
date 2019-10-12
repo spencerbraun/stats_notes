@@ -8,7 +8,7 @@ Table of Contents
 
 [TOC]
 
-## Part 1
+## Algorithms Part 1
 
 ### Asymptotic Run Time
 
@@ -97,6 +97,8 @@ Table of Contents
 
 ##### Proving Correctness
 
+
+
 ### Glossary of Algorithms
 
 ##### Binary Search
@@ -135,7 +137,47 @@ Table of Contents
 * For n integers, max size M, and base r: # iterations = # digits, base r; d = $log_r(M) + 1$. Time per iteration is still O(n+r).
 * Reasonable choice is r = n. -> $O(n \times(log_M(n) + 1))$. If $M \leq n^c$ for constant c, then this becomes O(n). If M is huge, this is not going to be a good algorithm.
 
-### Probability Reference
+## Data Structures
+
+### Operations on Data
+
+* Given some data structures like sorted arrays or linked lists, want to insert, delete
+* In a sorted array, search is efficient in O(logn) but insert /delete mean moving things in memory, touching every element for O(n). In a linked list just replace the pointer for insert, but search / delete take a long time.
+
+### Binary Tree
+
+* Nodes without children really have NIL children
+* Complete - every level (except last) is completely filled. In the last level all nodes are as far left as they can be.
+
+##### Heaps
+
+* Complete binary tree s.t. every descendent of a node has a larger key
+* Insert fast and extract-min fast
+* Insert - got to first empty node, plop new value there. Make sure we still have a complete binary tree, then make sure that the keys are sorted correctly for a heap. Then “bubble up” if the child is bigger than the parent node until they key is smaller than its children.
+* Extract-min - Look at root, set min to top node. Bubble down to the smaller of the child keys, then re-sort down the tree to make a valid heap.
+* In either case, swapping up the tree or down the tree with O(1) with each operation. In total, we have the O(height), and since it is a binary tree, this is O(logn).
+
+##### Binary Search Tree
+
+* Every left descendent of a node has key less than the node and right has key larger. Look up the tree to check if a tree is violating this property. You can make many different BST for a set of values.
+* Similar to QuickSort - choose a root (pivot), then sort elements left and right, repeat.
+* In order traversal of of BSTs outputs the elements in sorted order. Do the left first, print the key, then traverse the right. Runs in O(n).
+* Search - traverse down the levels of the tree, O(logn). Insert - start with search, then insert when we cannot traverse to a closer key. Delete - search, delete, but also need to move children to new nodes, but this happens in O(1) time so the search time dominates.
+* Could take O(n) if every node has a single child (poorly built). Instead of starting from scratch if it’s unbalanced, could use local operations to fix it. Turn to Red-Black trees - close enough to balanced that maintains itself
+
+##### Red-Black Tree
+
+* Every node is red or black. The root is black. NIL children count as black. The children of every red node are black. For all nodes X, all paths from X to NIL’s have the same number of black nodes (instead of trying to guarantee all paths have the same number of all nodes). Meaning for any NIL, you should have to get through the same number of black nodes when you pick the same starting place.
+* This makes the black nodes completely balances and the red nodes need to be spread out. Easy to maintain these properties with insertion and deletion.
+* The height of a red black tree with n nodes is at most 2log(n) - one side can only be double the short side by padding every other black node with red nodes.
+  * Proof: IH: For subtree of size $\leq k$ (k nodes), $k \geq 2^{b(root)} - 1$
+  * Base case: Tree of 1 node
+  * Inductive step: ​k(x) = k(y) + k(z) + 1​
+  * $k(x) \geq (2^{b(y)} - 1) + (2^{b(z)} - 1) + 1 \geq 2\times2^{b(x)(-1)} - 1 \geq 2^{b(x)} -1$
+  * Notice we plug in the inductive hypothesis by plugging in for k(y), z and bounding
+* Search only takes O(logn) since that is the height of the tree for sure. All other operations are O(logn) as well, though we won’t show exactly why.
+
+## Probability Reference
 
 * Binomial - n trials of a Bernoilli. Expectation = np
 * Bernoulli - indicator with x=1 with probability p, x=0 with probability 1-p. Expectation = p.
