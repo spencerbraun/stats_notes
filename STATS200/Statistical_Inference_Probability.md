@@ -20,7 +20,7 @@ author: Spencer Braun
 * \# of ways n objects can be grouped into r classes with $n_I$ in the $i^{th}$ class: ${n\choose n_1n_2...n_r} = \frac{n!}{n_1!n_2!...n_r!}$
 * Bayes, multiplcation law: $P(A|B) = \frac{P(A \cap B)}{P(B)}$,  $P(B_j|A) = \frac{P(A|B_j)P(B_j)}{\sum P(A|B_i)P(B_i)}$
 * Law of total probability: $P(A) = \sum P(A|B_i)P(B_i)$
-* Independence: $P(A \cap B) = P(A)P(B)$. Mutual independence implies pairwise independence
+* Independence for sets: $P(A \cap B) = P(A)P(B)$. Mutual independence implies pairwise independence
 
 ### Chapter 2: Random Variables
 
@@ -72,6 +72,8 @@ author: Spencer Braun
 
 * If $X∼N(\mu, \sigma^2) \text{and} Y = aX + b,\text{ then }Y∼N(a\mu + b, a^2\sigma^2 ).$
 * **Change of variables for function of RV** $f_Y(y) = f_X(g^{-1}(y))\Big|\frac{d}{dy}g^{-1}(y)\Big|$
+  * Note if you do with CDFs, if z = x/2 then P(Z < z) = P(X/2 < z) = P(X < 2z) = $F_Z(2z)$
+  * Then $f_z(2z)*2$, which is the same thing as taking the Jacobian from the beginning
 * Universality of uniform: Z = F(X) for $Z \sim U(0,1)$. $X = F^{-1}(U)$ then $F(x) = P(U \leq F(x))$
 * If we sum n independent Gam(α) random variables we get a Gam(nα) random variable.
 
@@ -94,7 +96,8 @@ author: Spencer Braun
 
 ### Chapter 4: Expected Values
 
-* $E(X)=\int_{-\infty}^{\infty} x f(x) d x$ provided the expectation of |x| exists
+* $E(X)=\int_{-\infty}^{\infty} x f(x) d x$ provided the expectation of |x| exists. When we get the marginal from a joint, even if x is bound in terms of y, the bounds of the marginal are independent of y. This is why the expectation is integrated over the whole domain.
+* E(X) is a constant. E(X|Y) is a function of Y, and thus a RV.
 * Functions of RVs: $E(g(X))=\int_{-\infty}^{\infty} g(x) f(x) d x$ - do not need the pdf of g(x) for expectation
 * For independent X and Y, E(XY) = E(X)E(Y).
 * Linearity of expectation - constants and coefficients can be pulled out of expectation
@@ -140,12 +143,19 @@ author: Spencer Braun
 * $P(|\bar{X_n} - \mu| > \epsilon) \rightarrow 0$ as $n \rightarrow \infty$
 * $X_1 ... X_i \sim iid$
 * Need to have  constant variance to apply WLLN -> otherwise must normalize across $X_i$s
+* Convergence in probability - the probability goes to zero, but we cannot say what happens to each point in the distribution. We are interested in the output of the CDF in limit.
+* Weak is for a given epsilon, holding that constant, we will converge in probability to zero. For strong, we say for all epsilon it will eventually converge.
 
 ##### Convergence in Distribution
 
 * $X_1, X_2$ sequence of RVs with CDFs $F_!, F_2...$. Let X be RV with distribution function F. Say $X_n$ converges in distribution to X if:
 * $\lim_{n\to \infty} F_n(x) = F(x)$ at every point for continuous F
 * MGFs usually used to show this property. 
+
+##### Almost Sure Convergence
+
+* The difference between a point and alpha is greater than alpha a finite number of times. In the infinite limit, there is some point at which the difference is always less than epsilon.
+* $\varepsilon>0,\left|Z_{n}-\alpha\right|>\varepsilon$
 
 ##### Continuity Theorem
 
@@ -187,3 +197,5 @@ author: Spencer Braun
 * $\bar{X}$ and $S^2$ are independently distributed
 * The distribution of $\frac{(n−1)S^2}{\sigma^2} \sim \chi^2_{n-1} $
 * Important: $\frac{\bar{X} - \mu}{S/\sqrt{n}} \sim t_{n-1}$
+* Note: normalizing - always subtracting off the mean and dividing by the standard deviation of that variable.
+* Var($\bar{xX_n}$) = $\frac{\sigma^2}{n}$
