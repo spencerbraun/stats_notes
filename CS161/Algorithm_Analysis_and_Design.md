@@ -13,8 +13,8 @@ Table of Contents
 ### Asymptotic Run Time
 
 * Adding two n digit integers is an O(n) operation since for each position we add at most three digits
-* Little o vs Big O - Theta is meant to by asymptotically tight, little o is absolute and a looser bound
-* $log(n!) = \Theta(log(n^n))$
+* Little o vs Big O - Theta is meant to be asymptotically tight, little o is absolute and a looser bound
+* $log(n!) = \Theta(log(n^n))= \Theta(nlog(n))$
 
 ##### Proving asymptotic run times
 
@@ -31,7 +31,7 @@ Table of Contents
 * Break the possibilities into cases - if we are trying to find this property, it could occur in the following ways. Given those ways, set up this portion as possible to do recursively, this portion needs to happen before or after recursion. Then think about run time - we are making every possible comparison, do we know of properties, facts, or goals that would reduce the amount of work we need to perform.
 * MergeSort has the clever part hidden in the conquer portion, QuickSort has it hidden before the recursion, in deciding where to pivot. It can also occur in the recursive calls.
 * When we are thinking about the size of the elements in an array, think how sorting could be used. When we are thinking about the index or ordering of an array that should not change, consider comparing certain values of specified indices.  Is it a global all encompassing solution (MergeSort type), or we care about one element or finding one thing (search, BST)
-* After coming up with a brute force recursive algorithm, ask whether any work is duplicated or superfluous. Are there things we are doing that could eliminated like in Karatsuba or are unnecessary like in HW1.
+* After coming up with a brute force recursive algorithm, ask whether any work is duplicated or superfluous. Are there things we are doing that could eliminated like in Karatsuba or can be skirted thanks to the conditions imposed by the invariant.
 * Think of for-free primitives -> if we are already running in a certain omega time, adding a primitive in the same time could help with the algorithm without breaking the runtime
 * If you can take a non-recursive algorithm into recursive form, is there some duplicated work in the recursion that can now be removed
 
@@ -55,13 +55,12 @@ Table of Contents
 ##### Substitution Method
 
 * Guess a function f(n) which you suspect satisties $O(n) \leq O(f(n))$. Prove by induction on n that this is true.
-* Generally want to reverse engineer, if it looks like the recursion will be swamped by the outside factor, maybe use the constant factor as the  guess.
 * Fix a positive integer $n \geq 2$ then try to prove $T(n) \leq l \times n$. 
 * For the base case, we must show that you can pick some d s.t. $T(n_0) \leq d \times g(n_0)$ for our guessed function g(n) and d constant greater than zero. Then assume our guess is correct for everything smaller than n and prove it using the inductive hypothesis. Typically prove the inductive step from the hypothesis and obtain a condiiton for d.
 * Inductive hypothesis we assume our guess is correct for any n < k and prove our guess for k.
-* Concretely, we have $T(n) \leq aT(\frac{n}{n}) + O(n)$. Guess O(n log n), meaning prove  $T(n) \leq c n \,log\,n$ for an appopriate choice of c. Assume this holds for all positive values m < n, or m = n/2. Substitute m for n in the expression and simplify. May have many terms, but can try to bound with our original limit *given* a certain restriction on c (eg. c > 1). Prove with induction for $n > n_0$ where we get to choose $n_0$ to avoid tricky boundaries. Plug in constant values of n, see what values we get and pick a c s.t. the bound always holds. 
+* Concretely, we have $T(n) \leq aT(\frac{n}{b}) + O(n)$. Guess O(n log n), meaning prove  $T(n) \leq c n \,log\,n$ for an appopriate choice of c. Assume this holds for all positive values m < n, or m = n/2. Substitute m for n in the expression and simplify. May have many terms, but can try to bound with our original limit *given* a certain restriction on c (eg. c > 1). Prove with induction for $n > n_0$ where we get to choose $n_0$ to avoid tricky boundaries. Plug in constant values of n, see what values we get and pick a c s.t. the bound always holds. 
 * If you have tricky expressions, bound the expression with a simpler one that eliminates low order terms.
-* For DSelect / DQuickSort the idea used is the fractions in the two recurrences sum to less than 1 -> therefore the guess was a constant times O(n) = cn.
+* For DSelect / DQuickSort the idea used is the fractions in the two recurrences sum to less than 1 -> therefore the guess was a constant times n -> O(n) = cn.
 
 ##### Recursion Trees
 
@@ -173,21 +172,21 @@ Table of Contents
 ##### Heaps
 
 * Complete binary tree s.t. every descendent of a node has a larger key
-* Two invariants - balanced and ordered
+* Two invariants - complete and ordered
 * Insert fast and extract-min fast
 * Insert - got to first empty node, plop new value there, this is O(1). Make sure we still have a complete binary tree, then make sure that the keys are sorted correctly for a heap. Then “bubble up” if the child is bigger than the parent node until they key is smaller than its children. Each bubble up is constant time, so this takes at most O(logn), the total number of levels.
-* Extract-min - Look at root, set min to top node. Bubble down to the smaller of the child keys, then re-sort down the tree to make a valid heap. Book has us setting the bottom node (now violating the invariant) to the root, then bubble down to using smallest child logic until invariants fixed. Taking the right-most, bottom-most element to the top, then bubble down.
+* Extract-min - Extract root, since this is the min. Set the bottom node (now violating the invariant) to the root, then bubble down using smallest child logic until invariant fixed. Taking the right-most, bottom-most element to the top, then bubble down.
 * In either case, swapping up the tree or down the tree with O(1) with each operation. In total, we have the O(height), and since it is a binary tree, this is O(logn).
 * Heap is not a unique ordering of the elements.
 
 ##### Binary Search Tree
 
-* Support all of the operations that a sorted array supports plus insertions and deletions in O(logn) time - dynamic
+* Supports all of the operations that a sorted array supports plus insertions and deletions in O(logn) time - dynamic
 * Invariant: every left descendent of a node has key less than the node and right has key larger.
 * Look up the tree to check if a tree is violating this property. You can make many different BST for a set of values.
 * Similar to QuickSort - choose a root (pivot), then sort elements left and right, repeat.
 * In order traversal - outputs the elements in sorted order. Do the left subtree first, print the key, then traverse the right. Runs in O(n).
-* Search - traverse down the levels of the tree. Right if we are looking for a bigger key than current node, left otherwise. If there is no path towards the direction we need, return None. O(height) / O(logn). To find min or max, we simply traverse a single direction until the end. Note if the value is not in the tree, we may not get the closest value, we get either the key just below or above which might not be the same thing.
+* Search - traverse down the levels of the tree. Right if we are looking for a bigger key than current node, left otherwise. If there is no path towards the direction we need, return None. O(height) / O(logn). To find min or max, we simply traverse a single direction until the end. Note if the value is not in the tree, we may not get the closest value, since if a parent node is the closest but bigger (smaller) than the searched valued, we will perform one more search left (right) and take that value as the terminus.
 * Insert - start with search, then insert when we cannot traverse to a closer key. 
 * Delete - search, delete, but also need to move children to new nodes, but this happens in O(1) time so the search time dominates.
 * Height of tree - longest path from root to leaf. Best case is log(n) but the worst case in n-1 if you have a single chain. Balance is important. Therefore important to think of running time in terms of O(height) and consider whether we can guarantee a certain height limit or know the height from the problem.
@@ -196,7 +195,7 @@ Table of Contents
 
 ##### Red-Black Tree
 
-* Every node is red or black. The root is black. All leaves have NIL children that count as black. The children of every red node are black. For all nodes X, all paths from X to NIL’s have the same number of black nodes (instead of trying to guarantee all paths have the same number of all nodes). Meaning for any NIL, you should have to get through the same number of black nodes when you pick the same starting place. Note a if a black higher up a tree only has one child, then it also has a NIL child and is 0 black nodes away from a NIL.
+* Every node is red or black. The root is black. All leaves have NIL children that count as black. The children of every red node are black. For all nodes X, all paths from X to NIL’s have the same number of black nodes (instead of trying to guarantee all paths have the same number of all nodes). Meaning for any NIL, you should have to get through the same number of black nodes when you pick the same starting place. Note if a black higher up a tree only has one child, then it also has a NIL child and is 0 black nodes away from a NIL.
 * Invariants (4): Valid BST. The root is black. The children of every red node are black. For all nodes X, all paths from X to NIL’s have the same number of black nodes (instead of trying to guarantee all paths have the same number of all nodes).
 * This makes the black nodes completely balanced and the red nodes need to be spread out. Easy to maintain these properties with insertion and deletion. Intuitively, red nodes indicate when a path is becoming too long.
 * Any valid red-black tree on n nodes (non-NIL) has height ≤ 2 log(n + 1) = O(log n) - one side can only be double the short side by padding every other black node with red nodes.

@@ -4,11 +4,13 @@ date: 20191013
 author: Spencer Braun
 ---
 
+[TOC]
+
 ## Divide and Conquer
 
 ### Maximum Sum Subarray
 
-* Brute Force: Calculate every subarray starting with the first element and moving to each subsequent element. To calculate all subarrays takes $O(n^2)$ $(n + n-1 + n-1...)$. Then finding the max is times O(n) giving us $O(n^3)$
+* Brute Force: Calculate every subarray starting with the first element and moving to each subsequent element. To calculate all subarrays takes $O(n^2)$ $(n + n-1 + n-1...)$. Then finding the sum is times O(n) giving us $O(n^3)$
 * Key idea: 3 cases: max array can exist on left, right or middle. Check the middle before splitting and recursing.
 
 1. Check the midpoint subarray moving outwards. O(n)
@@ -25,18 +27,6 @@ author: Spencer Braun
 2. Compare every lightbulb to to the matched socket. Keep list of too large and too small. $O(n)$
 3. Recurse on list of small sockets and small lightbulbs / big sockets and big lightbulbs. If we pick a good lightbulb pivot, $O(log(n))$ levels.
 4. Expected total runtime is then $O(nlog(n))$, the same as QuickSort
-
-### Collinear Lines on a Plane
-
-* Idea: Points on a plane, want to find m, b s.t. the maximum number of points possible lies on that line.
-* Brute force: Take every pair possible, compute line parameters in $O(n^2)$ . Sort and find the maximum with the same parameters, total $O(n^2log(n^2)) = O(n^2log(n))$
-* Given a limitation on the input: Maximum number of collinear points is $\frac{n}{k}$ for constant k.
-* Key idea: The limiting factor allows us to do something otherwise time expensive. In expectation it is a fast approach
-
-1. Pick pair of points randomly and compute m and b. Check to see if every other point lies on this line. $O(n)$
-2. If fewer than $\frac{n}{k}$ points lie on the line, repeat. 
-3. The probability of selecting two points on the line ie. the number of iterations: $\frac{n/{k} \choose 2}{n \choose 2}$ or $\frac{n/k}{n} \times \frac{(n-1)/(k-1)}{n-1} = \frac{1}{k^2}\frac{n-k}{n-1} \leq \frac{1}{k^2} = O(k^{-2})$ 
-4. This is a geometric RV with p = $\frac{1}{k^2}$, therefore in expectation = $k^2$ until our first success. Not a function of n so combined $O(k^2n) = O(n)$. Note that it is not guaranteed to terminate.
 
 ### Catch Friend’s Lie
 
@@ -72,7 +62,39 @@ author: Spencer Braun
 * Key Idea: We can make pairwise comparisons and given the majority, we can maintain the invariant. 
 
 1. Make n/2 comparisons. Take all Truth-Truth pairs and take on individual from each. At most n/2 of them and guarantees majority truth tellers. $O(n)$
-   
 2. Recurse on subpopulation until have a single truth teller. $O(log(n))$
 3. Total search is $O(n)$, since work at each level is shrinking
 4. Note: even vs odd matters here and both cases need to be addressed. Here if we have an odd number of pairs TT, then we do not need the unpaired individual since we are assured a truth majority. If we have an even number of TT pairs, then we add in the individual to ensure truth majority (the individual is truth by the invariant).
+
+### Majority Element
+
+- Idea: Array with $\frac{n}{2} +1$ elements with value x, can only make equality comparisons, want to find the majority element x.
+- Brute Force: Run through array, comparing each value to every other until you find an element that is equal to a majority of the other elements. $O(n^2)$
+- Key idea: If we divide list in two, there will be a majority of x in one of the subarrays. 
+
+1. Recurse on division then at each level, figure out the majority element in the 2 subarrays. 
+2. Return subarray with an element comprising n/2 of the subarray. By top level, with have majority element
+3. log(n) levels, $O(n)$ comparisons at each level. Total $O(nlogn), \,T(n) = 2T(\frac{n}{2}) + O(n)$
+
+## Randomized
+
+### Collinear Lines on a Plane
+
+- Idea: Points on a plane, want to find m, b s.t. the maximum number of points possible lies on that line.
+- Brute force: Take every pair possible, compute line parameters in $O(n^2)$ . Sort and find the maximum with the same parameters, total $O(n^2log(n^2)) = O(n^2log(n))$
+- Given a limitation on the input: Maximum number of collinear points is $\frac{n}{k}$ for constant k.
+- Key idea: The limiting factor allows us to do something otherwise time expensive. In expectation it is a fast approach
+
+1. Pick pair of points randomly and compute m and b. Check to see if every other point lies on this line. $O(n)$
+2. If fewer than $\frac{n}{k}$ points lie on the line, repeat. 
+3. The probability of selecting two points on the line ie. the number of iterations: $\frac{n/{k} \choose 2}{n \choose 2}$ or $\frac{n/k}{n} \times \frac{(n-1)/(k-1)}{n-1} = \frac{1}{k^2}\frac{n-k}{n-1} \leq \frac{1}{k^2} = O(k^{-2})$ 
+4. This is a geometric RV with p = $\frac{1}{k^2}$, therefore in expectation = $k^2$ until our first success. Not a function of n so combined $O(k^2n) = O(n)$. Note that it is not guaranteed to terminate.
+
+### Majority Element
+
+* Idea: Array with $\frac{n}{2} +1$ elements with value x, can only make equality comparisons, want to find the majority element x.
+* Brute Force: Run through array, comparing each value to every other until you find an element that is equal to a majority of the other elements. $O(n^2)$
+* Key idea: Picking an element is a geometric variable with probability $\frac{n}{2}+1$. Randomized picking leads to a linear run time since the expectation of our geometric random variable is a constant.
+
+1. Pick comparison element uniformly at random. Compare to every other element to determine if pick $\in X$. 
+2. Repick until comparison works. Not guaranteed to terminate since a non-member of X could always be picked, but in expectation need to pick twice.
