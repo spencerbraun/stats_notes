@@ -67,6 +67,7 @@ Non-Linear Relationships - Polynomial Regression: Can add a higher order polynom
   * $B_1$ does not correspond to the change in $p(X)$ associated with a one-unit increase in X - the amount that $p(X)$ changes not depends on the value of X.
 * Confounding - one of the x variables explains another variable somewhat. Not collinearity since these are categories, but a relationship exists between X parameters, eg. students are likely to have high card balances, people with high balances are more likely to default, given a high balance students are less likely to default. Running the regression with just student will give you a positive coefficient, and running with balance too will give a negative coefficient for student. In a simple logistic regression, the student is standing in for balance.
 * Similar issues with collinearity - creates instability in estimating the coefficients and affects the convergence of the MLE fitting.
+* Note: training error rate can increase with more parameters since logit does not directly minimize the 0-1 error rate but uses MLE.
 
 ##### Linear Discriminant Analysis
 
@@ -122,19 +123,33 @@ Non-Linear Relationships - Polynomial Regression: Can add a higher order polynom
 
 ###### Leave One Out (LOOCV)
 
-- Train the model on every point except i and compute the test error on the held out point
-- The LOOCV estimate for the test MSE is the average of these n test error estimates: $\mathrm{CV}_{(n)}=\frac{1}{n} \sum_{i=1}^{n} \mathrm{MSE}_{i}$
-- Unlike validation set, always yields the same results and does not train on a particular subset of the available data. Could be expensive to implement if we have a lot of data, but OLS provides shortcut if we implement that type of model: $\mathrm{CV}_{(n)}=\frac{1}{n} \sum_{i=1}^{n}\left(\frac{y_{i}-\hat{y}_{i}}{1-h_{i}}\right)^{2}$ where $\hat{y}_i$ is the ith fitted value from the original least squares fit, and $h_i$ is the leverage.
+- Train the model on every point except i and compute the test error on the held out point - deterministic, eliminating the randomness of the training data chosen.
+- The LOOCV estimate for the test MSE is the average of these n test error estimates: $\mathrm{CV}_{(n)}=\frac{1}{n} \sum_{i=1}^{n} \mathrm{MSE}_{i} =\frac{1}{n} \sum_{i=1}^{n} (y_i - \hat{y}_i^{-i})^2$. The (-i) superscript indicates everything but the the observation i.
+- Unlike validation set, always yields the same results and does not train on a particular subset of the available data. Could be expensive to implement if we have a lot of data, but OLS provides shortcut if we implement that type of model: $\mathrm{CV}_{(n)}=\frac{1}{n} \sum_{i=1}^{n}\left(\frac{y_{i}-\hat{y}_{i}}{1-h_{i}}\right)^{2}$ where $\hat{y}_i$ is the ith fitted value from the original least squares fit, and $h_i$ is the leverage statistic.
+- Keep in mind the square root law - the SE of the average $SE(\bar{X}_n) = \frac{SD(X)}{\sqrt{n}}$. So averaging over n samples, we decrease the variation in the SE.
 
 ###### k-Fold CV
 
-* This approach involves randomly k-fold CV dividing the set of observations into k groups, or folds, of approximately equal size.
+* This approach involves randomly dividing the set of observations into k groups, or folds, of approximately equal size.
 * Iterate through the K groups, holding one out as a validation set each time, with total test error equal to $\mathrm{CV}_{(k)}=\frac{1}{k} \sum_{i=1}^{k} \mathrm{MSE}_{i}$. Thus LOOCV is a special case of k-Fold with k=n.
 
-###### Bias-Variance Tradeoff
+###### Choosing Optimal Model
 
 * Since we are repeating LOOCV on almost identical training sets, they are highly correlated. While this gives us a lower bias in our estimate of MSE, we get a higher variance compared to k-Fold with k < n.
 * Typically, it has been shown that k = 5 or k = 10 is a good spot within the bias-variance tradeoff.
+* Flexiblity vs MSE - Flexibility is essentially the tuning of parameters. The error from CV compared to the test error, the curves may be off but the parameters that provide the minimum for the CV MSE is often very close to the parameters needed to minimize test MSE.
+
+###### One SE Rule
+
+* Choose the simplest model whose CV error is no more than one SE above the model with the lowest CV error
+* The idea: We may continue to get some additional decrease in CV error with more variables, but quite marginal and not significant. Want to reign in model complexity and flexibility by sticking to the simplest error within some standard.
+
+###### Wrong Way to do CV -  ESL
+
+* Proposed strategy: logistic regression against all parameters, choose 20 with highest z-tests, use 10-fold CV to validate this model.
+* We have many more predictors than sample size, so just by chance there will be correlations. If all predictors are actually random, it will still occur, even though each predictor has a small chance of showing correlation, among a large number just by chance some predictors will be correlated with the response.
+* CV here will show a low error rate. Using variable selection against all of the data, some predictors with correlation will turn up in every fold, so CV will conclude these are signficant relationships.
+* How to fix it: Start by dividing the data into 10 folds before picking any parameters. Select the 20 most significant predictors in each K, compute the error on the fold. Then average the error across the 10 folds taken. The whole analysis has to be fresh for each fold.
 
 ### Chapter 10 - Unsupervised Learning
 

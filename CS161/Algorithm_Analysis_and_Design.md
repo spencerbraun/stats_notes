@@ -206,6 +206,21 @@ Table of Contents
   * Notice we plug in the inductive hypothesis by plugging in for k(y), z and bounding
 * Search only takes O(logn) since that is the height of the tree for sure. All other operations are O(logn) as well, though we won’t show exactly why.
 
+##### Hash Tables
+
+* O(1) expected time for insert / delete / search
+* Given a universe U of size M, for very large M. There are only n elements that will ever show up though, we just don’t know which elements in advance.
+* For class examples, we are going to set #buckets = #elements = n. 
+* We have a hash function that maps elements to buckets. We will only consider hashing with chaining in this class. If we get many elements that map to the same bucket, we get a very long chain - could take O(n) time to search through the linked list. Want a hash function that ensures the elements are spread across buckets, ie. O(1) entries per bucket.
+* We cannot choose a hash function that guarantees that an input will be distributed across buckets - so instead we could randomize our pick of hash function. Say we have hash functions h $\sim U(),\, iid$ . If we fix $u_i$ bucket then the chance that $u_j$ gets put in that bucket is $\frac{1}{n}$. Sum over all $j \neq i$. But if we pick a different function for every x, then we would have to store h(x) for every x - terrible. We would need Mlog(n) bits to store, more than the naive storing in M buckets, which only takes M bits.
+  * Aside: description length. Set S with s things in it. l = # of bits. # of l-bit strings = $2^l \geq s$ so $l \geq log(s)$
+  * We have M choices in the universe, and # of hash functions is ${n \choose h(1)}{n \choose h(2)}...{n \choose h(M)}= n^M$.
+  * How do we fix this? Pick from a smaller family of hash functions.
+* Universal Hash Family: for $u_i, u_j$ in U, with $u_i \neq u_j$, $P(h(u_i) == h(u_j)) \leq \frac{1}{n}$
+* Creating a hash family: 
+  * At end, taking mod n ensures there are n buckets
+  * We can store this for a choice on p in log(M) bits
+
 ## Probability Reference
 
 * Binomial - n trials of a Bernoilli. Expectation = np
