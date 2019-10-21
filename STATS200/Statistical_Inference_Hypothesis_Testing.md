@@ -40,7 +40,7 @@ date: 20191016
 ##### Likelihood Ratio Tests for the Multinomial Distribution
 
 * $-2 \log \Lambda \approx \sum_{i=1}^{m} \frac{\left[x_{i}-n p_{i}(\hat{\theta})\right]^{2}}{n p_{i}(\hat{\theta})} = X^2$ : RHS is Pearson’s test statistic for goodness of fit.
-* Can say $X^2 = \sum\frac{(Observed - Expected)^2}{Expected}$
+* Pearson Chi-Square Test $X^2 = \sum\frac{(Observed - Expected)^2}{Expected}$
 
 ##### Poisson Dispersion Test
 
