@@ -22,12 +22,20 @@ date: 20191009
 
 * sample size n, values of the sample are $X_i$
 * sample mean: $\bar{X} = \frac{1}{n}\sum_{i=1}^n X_i$. This is a random variable
+* $\begin{aligned} \operatorname{Var} \bar{X} &=\frac{\sigma^{2}}{n} \end{aligned}$
+* With random sampling: $\begin{aligned} \operatorname{Var}(\bar{X}) &=\frac{\sigma^{2}}{n}\left(1-\frac{n-1}{N-1}\right) \end{aligned}$
+* Without replacement: $\operatorname{Cov}\left(X_{i}, X_{j}\right)=-\frac{\sigma^{2}}{N-1}$
 * Confidence interval for a normal sample: $P\left(-z(\alpha / 2) \leq \frac{\bar{X}-\mu}{\sigma_{\bar{X}}} \leq z(\alpha / 2)\right) \approx 1-\alpha$
 * $P\left(\bar{X}-z(\alpha / 2) \sigma_{\bar{X}} \leq \mu \leq \bar{X}+z(\alpha / 2) \sigma_{\bar{X}}\right) \approx 1-\alpha$
 
+![sampling_estimators](/Users/spencerbraun/Documents/Notes/Stanford/STATS200/sampling_estimators.png)
+
+* $s^{2}=\frac{1}{n-1} \sum_{i=1}^{n}\left(X_{i}-\bar{X}\right)^{2}$
+* CLT: $P\left(\frac{\bar{X}_{n}-\mu}{\sigma / \sqrt{n}} \leq z\right) \rightarrow \Phi(z) \quad \text { as } n \rightarrow \infty$
+
 ### Chapter 8: Estimation of Parameters and Fitting Distributions
 
-- The observed data will be regarded as realizations of random variables $X_1,X_2,...,X_n$,  whose joint distribution depends on an unknown parameter $\theta$. An estimate of $\theta$ will be a function of  $X_1,X_2,...,X_n$,   and will hence be a random variable with a probability distribution called itssampling  distribution.
+- The observed data will be regarded as realizations of random variables $X_1,X_2,...,X_n$,  whose joint distribution depends on an unknown parameter $\theta$. An estimate of $\theta$ will be a function of  $X_1,X_2,...,X_n$,   and will hence be a random variable with a probability distribution called its sampling  distribution.
 - There are three different kinds of $\theta$ in this setting. First there is $\theta$ the parameter which has a range of legal values. Then there is $\theta_0$. When we need to single out the one true value of $\theta$ it is $\theta_0$. In practice we don’t know which value is true. Our MLE is $\hat{\theta}$.
 - Bayesian estimation always treats a parameter as a random variable. Frequentist estimation sees the parameters as an unobserved value for which there is a true value.
 - The set $\Omega$ of all possible values of a parameter $\theta$ or of a vector of parameters $(\theta_1,..., \theta_k)$ is called the parameter space.
@@ -63,7 +71,7 @@ date: 20191009
 
 * For each of the most popular statistical models, there exists a family of distributions for the parameter with a very special property. If the prior distribution is chosen to be a member of that family, then the posterior distribution will also be a member of that family. Such a family of distributions is called a conjugate family.
 * No matter the prior chosen, number of observations, if the posterior ends up as a member of a subset of distributions, we say it is a conjugate family of prior distributions for samples from $f(x|\theta)$
-* Those conjugates may be parametetrized, and those parameters are the hyperparameters of the distribution (either prior or posterior)
+* Those conjugates may be parametrized, and those parameters are the hyper-parameters of the distribution (either prior or posterior)
 * Beta is the conjugate family for Bernoulli -> if prior is Beta then the posterior will be too
 * Gamma is a conjugate family of priors for Poisson
 * Normals are conjugates of normals with unknown mean and known variance
@@ -87,7 +95,7 @@ date: 20191009
 
 - The MLE from an iid sample is consistent (given smoothness of f)
 - Define $I(\theta) = E\Big[\frac{\partial}{\partial\theta}logf(X|\theta) \Big]^2$. This can also be expressed as $I(\theta) = -E\Big[\frac{\partial^2}{\partial\theta^2}logf(X|\theta) \Big]$
-- Under smoothness conditions on f ,the probability distribution of $\sqrt{nI(\theta_0)}(\hat{\theta} −\theta_0)$  tends to a standard normal distribution. We say the MLE is asymptotlically unbiased.
+- Under smoothness conditions on f ,the probability distribution of $\sqrt{nI(\theta_0)}(\hat{\theta} −\theta_0)$  tends to a standard normal distribution. We say the MLE is asymptotically unbiased.
 - Can also be interpreted as for an MLE from the log-likelihood function $l(\theta)$, the asymptotic variance is $\frac{1}{nI(\theta_0)} = -\frac{1}{El’’(\theta_0)}$
 
 ###### CI from MLE

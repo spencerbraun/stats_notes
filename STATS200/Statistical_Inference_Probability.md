@@ -18,7 +18,7 @@ author: Spencer Braun
 * Permutation: ordered arrangement of objects
 * Binomial coefficients: $(a+b)^n = \sum_{k=0}^n a^kb^{n-k}$
 * \# of ways n objects can be grouped into r classes with $n_I$ in the $i^{th}$ class: ${n\choose n_1n_2...n_r} = \frac{n!}{n_1!n_2!...n_r!}$
-* Bayes, multiplcation law: $P(A|B) = \frac{P(A \cap B)}{P(B)}$,  $P(B_j|A) = \frac{P(A|B_j)P(B_j)}{\sum P(A|B_i)P(B_i)}$
+* Bayes, multiplication law: $P(A|B) = \frac{P(A \cap B)}{P(B)}$,  $P(B_j|A) = \frac{P(A|B_j)P(B_j)}{\sum P(A|B_i)P(B_i)}$
 * Law of total probability: $P(A) = \sum P(A|B_i)P(B_i)$
 * Independence for sets: $P(A \cap B) = P(A)P(B)$. Mutual independence implies pairwise independence
 
@@ -166,7 +166,8 @@ author: Spencer Braun
 
 * $X_1, X_2$ sequence of RVs with mean 0 and variance $\sigma^2$ common CDF F and MGF M.
 * $S_n = \Sigma_{i=1}^n X_i$ 
-* $\lim_{n\to \infty} P(\frac{S_n}{\sigma \sqrt(n)} \leq x) = \Phi(x)$ on $-\infty < x < \infty$
+* Book defn: $\lim_{n\to \infty} P(\frac{S_n}{\sigma \sqrt(n)} \leq x) = \Phi(x)$ on $-\infty < x < \infty$
+* More generally for $X_i$ iid, mean $\mu$,  variance $\sigma^2$, $\lim _{n \rightarrow \infty} \operatorname{Pr}\left(\frac{\bar{X}_{n}-\mu}{\sigma / \sqrt{n}}  \leq x\right)=\Phi(x)$
 
 ### Chapter 6: Distributions Derived from the Normal
 

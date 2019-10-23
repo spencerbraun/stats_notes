@@ -40,7 +40,7 @@ Table of Contents
 * $T(n) \leq aT(\frac{n}{b}) + O(n^d)$
 * a = number of recursive calls at an iteration of the algorithm (not all recursive calls total)
 * b=input size shrinkage factor - how much smaller is the element passed to a recursive call
-* d=exponent in running time for the comine step, since $O(n^d)$ is the work done outside of the recursive calls.
+* d=exponent in running time for the combine step, since $O(n^d)$ is the work done outside of the recursive calls.
 * Must be able to compose the algorithm in terms of this standard recurrence. a,b,d are constants, not dependent on n.
 * $a = b^d \rightarrow O(n^d log \,n)$
 * $a < b^d \rightarrow O(n^d)$
@@ -54,11 +54,11 @@ Table of Contents
 
 ##### Substitution Method
 
-* Guess a function f(n) which you suspect satisties $O(n) \leq O(f(n))$. Prove by induction on n that this is true.
+* Guess a function f(n) which you suspect satisfies $O(n) \leq O(f(n))$. Prove by induction on n that this is true.
 * Fix a positive integer $n \geq 2$ then try to prove $T(n) \leq l \times n$. 
-* For the base case, we must show that you can pick some d s.t. $T(n_0) \leq d \times g(n_0)$ for our guessed function g(n) and d constant greater than zero. Then assume our guess is correct for everything smaller than n and prove it using the inductive hypothesis. Typically prove the inductive step from the hypothesis and obtain a condiiton for d.
+* For the base case, we must show that you can pick some d s.t. $T(n_0) \leq d \times g(n_0)$ for our guessed function g(n) and d constant greater than zero. Then assume our guess is correct for everything smaller than n and prove it using the inductive hypothesis. Typically prove the inductive step from the hypothesis and obtain a condition for d.
 * Inductive hypothesis we assume our guess is correct for any n < k and prove our guess for k.
-* Concretely, we have $T(n) \leq aT(\frac{n}{b}) + O(n)$. Guess O(n log n), meaning prove  $T(n) \leq c n \,log\,n$ for an appopriate choice of c. Assume this holds for all positive values m < n, or m = n/2. Substitute m for n in the expression and simplify. May have many terms, but can try to bound with our original limit *given* a certain restriction on c (eg. c > 1). Prove with induction for $n > n_0$ where we get to choose $n_0$ to avoid tricky boundaries. Plug in constant values of n, see what values we get and pick a c s.t. the bound always holds. 
+* Concretely, we have $T(n) \leq aT(\frac{n}{b}) + O(n)$. Guess O(n log n), meaning prove  $T(n) \leq c n \,log\,n$ for an appropriate choice of c. Assume this holds for all positive values m < n, or m = n/2. Substitute m for n in the expression and simplify. May have many terms, but can try to bound with our original limit *given* a certain restriction on c (eg. c > 1). Prove with induction for $n > n_0$ where we get to choose $n_0$ to avoid tricky boundaries. Plug in constant values of n, see what values we get and pick a c s.t. the bound always holds. 
 * If you have tricky expressions, bound the expression with a simpler one that eliminates low order terms.
 * For DSelect / DQuickSort the idea used is the fractions in the two recurrences sum to less than 1 -> therefore the guess was a constant times n -> O(n) = cn.
 
@@ -99,7 +99,7 @@ Table of Contents
 ##### Induction
 
 * Induction - need to state we will be using induction, declare a base case, inductive hypothesis, inductive step, formally state the demonstrated results. The inductive hypothesis should be not quite the conclusion but the specific thing we will show in the inductive step. For example showing the first element is bigger than the last element, use A[0] > A[i] for any i, not jumping specifically to the first element is bigger than the last. 
-* For your induction to be valid for arbitrary *n*, you must be able to point to a base case and sequence of inductive steps that show the claim extends to *n*. As an example, when *n*=3 using boilerplate induction, this corresponds to base case of 1, and inductive steps from 1 to 2 and 2 to 3. If you can formalize a way to show that each *n*from 1 to *k*can be expressed in this form, the induction is valid. 
+* For your induction to be valid for arbitrary *n*, you must be able to point to a base case and sequence of inductive steps that show the claim extends to *n*. As an example, when *n*=3 using boilerplate induction, this corresponds to base case of 1, and inductive steps from 1 to 2 and 2 to 3. If you can formalize a way to show that each *n* from 1 to *k* can be expressed in this form, the induction is valid. 
 * IH: After running for i iterations, we have achieved some goal expected after that iteration. 
 * Base case: typically trivial, something 0, 1 to show our algorithm holds this 
 * Inductive step: Know up to the i-1th iteration, want to show for i. Given generic variable inputs with certain invariant properties known after iteration i-1, explain how the algorithm would actually work upon those variables. This may involve laying out cases for different inputs. Once cases addressed, show that the algorithm does the right thing in all cases and returns an output as expected.
@@ -221,8 +221,35 @@ Table of Contents
   * At end, taking mod n ensures there are n buckets
   * We can store this for a choice on p in log(M) bits
 
+## Graphs
+
+* G(V, E) - V vertices, E edges. n = # of vertices, m = # of edges
+* Neighbors - connected vertices, Degree of vertex - number of neighbors it has. Incoming / outgoing degrees and neighbors 
+* Adjacency matrix - binary whether two vertices share an edge, rows source columns destination, Linked list with pointers to neighbors
+* Linked list is better for s parse graphs, since uses O(n + m) space vs $O(n^2)$ for adjacency matrix. Generally assume linked lists in class. We could use binary search trees to reduce search time to log 
+
+### Depth First Search
+
+* Keep going deeper until you have no new neighbors to go to, mark node as explored, then backtrack until there is an unexplored neighbor
+* Keep track of unvisited, in progress, and all done nodes. Keep track of time we first enter node (start time) and the time we finish and mark it done (finish time)
+* Finds all the nodes reachable from the starting point. Connected component - all of the vertices have some path from one vertex to another. DFS finds all connected components. DFS is really building a tree implicitly and traveling down to a leaf and then backtracking.
+* Run time for DFS? Degree(w) in the for loop, run the for loop for every w: $\sum_w deg(w) + O(1) = 2m + n$. Every edge is plus one to the degree of the 2 nodes it connects, which is why we have 2m. Therefore $O(m + n)$, the n since we do a constant amount of work for every vertex in the recursive call.
+
+##### Directed Acyclic Graph
+
+* Imagine dependencies, need to figure out what relies on what. DFS starts at first node and explores
+* Topological sorting: Given an edge from A to B, then A’s finish time will be larger than B’s finish time. If we order by reverse finish times, we can ensure we follow the dependencies in the right order. As you mark vertices as done, we put it at the beginning of our list, end with a topologically sorted list. If we started at a vertex that isn’t the top, we would complete lower vetices but then we would need to start a new DFS from nodes left unexplored - can end up with a DFS forest instead of a tree.
+
+### Breadth First Search
+
+* Explore immediate neighbors, then their immediate neighbors, etc.
+* Outer for loop over all of the distances, for each vertex of distance i add to $L_{i}$ and look at all of their neighbors, for each neighbor if v is not visited mark as visited and add to $L_{i+1}$
+* Also finds all connected components like DFS. Also runs in $O(m+n)$ - inner loop over the edges for each vertex once, outer for loop over all vertices. Sum of degrees = n, check every edge m
+* Application: shortest path, we know by the level of a vertex how many steps it takes to get from the starting vertex to another, found in $O(m)$
+* Application: bipartite, can we split graph in 2 s.t. no vertices that share a class have edges between them. Think of students enrolled in classes - students cannot be enrolled in students. Could check this with a tree, but with BFS can do it based on level each vertex is a member of, then check if there is a shared edge with any members of the same color. BFS finds not bipartite for odd cycles - can never have an odd cycle graph that is bipartite. Odd cycle is a subgraph with odd number of vertices / edges.
+
 ## Probability Reference
 
-* Binomial - n trials of a Bernoilli. Expectation = np
+* Binomial - n trials of a Bernoulli. Expectation = np
 * Bernoulli - indicator with x=1 with probability p, x=0 with probability 1-p. Expectation = p.
 * Geometric - number of trials until you see a success, where probability of success in each trial is p. Expectation = $\frac{1}{p}$

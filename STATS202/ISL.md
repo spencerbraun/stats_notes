@@ -41,12 +41,12 @@ author: Spencer Braun
 
 ###### KNN
 
-* Given a positive in- K-nearest teger K and a test observation $x_0$, the KNN classifier first identifies the neighbors K points in the training data that are closest to $x_0$, represented by $N_0$. It then estimates the conditional probability for class j as the fraction of points in $N_0$ whose response values equal j: $\operatorname{Pr}\left(Y=j | X=x_{0}\right)=\frac{1}{K} \sum_{i \in \mathcal{N}_{0}} I\left(y_{i}=j\right)$
+* Given a positive integer K and a test observation $x_0$, the KNN classifier first identifies the K points in the training data that are closest to $x_0$, represented by $N_0$. It then estimates the conditional probability for class j as the fraction of points in $N_0$ whose response values equal j: $\operatorname{Pr}\left(Y=j | X=x_{0}\right)=\frac{1}{K} \sum_{i \in \mathcal{N}_{0}} I\left(y_{i}=j\right)$
 * As K grows, the method becomes less flexible and produces a decision boundary that is close to linear. With K = 1, the KNN training error rate is 0, but the test error rate may be quite high.
 
 ### Chapter 3 - Linear Regression
 
-* Residual: $e_i = y_i - \hat{y}_i$. RSS = $e_1^2 + e_2^2 + ... + e_n^2$. Least squares chooses coeffiicients to minimize the RSS
+* Residual: $e_i = y_i - \hat{y}_i$. RSS = $e_1^2 + e_2^2 + ... + e_n^2$. Least squares chooses coefficients to minimize the RSS
 * $\begin{aligned} \hat{\beta}_{1} &=\frac{\sum_{i=1}^{n}\left(x_{i}-\bar{x}\right)\left(y_{i}-\bar{y}\right)}{\sum_{i=1}^{n}\left(x_{i}-\bar{x}\right)^{2}} \\ \hat{\beta}_{0} &=\bar{y}-\hat{\beta}_{1} \bar{x} \end{aligned}$
 * $\operatorname{SE}\left(\hat{\beta}_{1}\right)^{2}=\frac{\sigma^{2}}{\sum_{i=1}^{n}\left(x_{i}-\bar{x}\right)^{2}}$ where $\sigma^2 = Var(\epsilon)$. Notice in the formula that SE(B1) is smaller when the $x_i$ are more spread out; intuitively we have more leverage to estimate a slope when this is the case.
 * In general, $\sigma^2$ is not known, but can be estimated from the data. The estimate of $\sigma$ is known as the residual standard error, and is given by the formula $RSE = \sqrt{RSS/(n − p - 1)}$. Roughly speaking, it is the average amount that the response will deviate from the true regression line - it is a measure of the lack of fit of the model. We end up using $\hat{SE}$ since we do not know the true $\sigma$. For 95% CI’s, we have $\hat{\beta}_{1} \pm 2 \cdot \operatorname{SE}\left(\hat{\beta}_{1}\right)$
@@ -73,17 +73,17 @@ Non-Linear Relationships - Polynomial Regression: Can add a higher order polynom
 
 * Non-linearity - useful to look at residual plots $e_i = y_i - \hat{y_i}$ vs $x_i$. Hope for the residual plot to be white noise, but the presence of a pattern indicates a potential problem with the model. If residuals show non-linearity, could try a transformation of the predictors like log, sqrt, polynomial.
 * Correlated error terms will lead to underestimating the true SEs. Frequent problem with time series. We can see in plots of the residuals that they exhibit tracking, adjacent residuals may have similar values.
-* Heteroscedasticity - non-constant variance of the error terms, ie. correlation between x and $\epsilon$. Often tranform Y to $log(Y)$ or $\sqrt{Y}$ . Typical to see in growth or compounding - think of regressions of volatility at HRT
+* Heteroscedasticity - non-constant variance of the error terms, ie. correlation between x and $\epsilon$. Often transform Y to $log(Y)$ or $\sqrt{Y}$ . Typical to see in growth or compounding - think of regressions of volatility at HRT
 * Outliers - have an unusual value of $y_i$ given $x_i$. Can use studentized residuals, computed by dividing each residual $\epsilon_i$ by its estimated standard studentized error. Observations whose studentized residuals are greater than 3 in absolute value are possible outliers.
 *  High leverage points - have unusual value for $x_i$ and can have a sizable impact on the regression line. This is hard to identify in multiple regression settings just by eyeballing. We can calculate a leverage statistic: $h_i = \frac{1}{n} + \frac{(x_i - \bar{x})^2}{\sum_{i’=1}^n(x’_i - \bar{x})^2}$ . Always between 1/n  and 1 with average leverage over all points (p+1)/n.
 * * If we think the outlier is an error, then we can remove it. But it could indicate misspecification of the model
   * If we have high leverage points for multiple predictors -> can make pairwise comparisons to see high leverage points between predictors. The leverage stat formalizes this idea for any dimension
 * Collinearity - two or more predictors are closely related to one another. Reduces the accuracy of the estimates of the coefficients causing SE for coefficients to grow and the power of the hypothesis test is reduced. Useful to look at a correlation matrix of the variables, though if multicollinearity exists in the interaction of multiple variables this will not be caught. Compute the Variance Inflation Factor (VIF), ratio of variance of a beta when fitting the full model over the variance of beta if fit on its own. $VIF(\Beta_j) = \frac{1}{1 - R^2_{X_J | X_{-j}}}$ where $R^2_{X_J | X_{-j}}$ is the $R^2$ from a regression of $X_j$ onto all of the other predictors (Note $X_{-j}$ indicates all x excluding the jth predictor). If this term is close to 1, then you have collinearity and VIF blow up to be large. 
-  * Collinearity causes coefficient estimates to become less certain. End up with exactly the same fit for mutliple betas - now difficult to optimize the model for each beta. Elongates contour lines of fit, meaning betas of highly varying degree are producing the same goodness of fit / CI for estimate. 
+  * Collinearity causes coefficient estimates to become less certain. End up with exactly the same fit for multiple betas - now difficult to optimize the model for each beta. Elongates contour lines of fit, meaning betas of highly varying degree are producing the same goodness of fit / CI for estimate. 
 
 ##### K-nearest neighbors regression (KNN regression)
 
-* Given value K for prediction point $x_0$, identifies K training obervations closest to $x_o$, represented by $N_0$. It then estimates $f(x_0)$ using the average of all the training responses in $N_0$, ie. $\hat{f}(x_0) = \frac{1}{K}\sum_{x_i \in N_0} y_i$. 
+* Given value K for prediction point $x_0$, identifies K training observations closest to $x_o$, represented by $N_0$. It then estimates $f(x_0)$ using the average of all the training responses in $N_0$, ie. $\hat{f}(x_0) = \frac{1}{K}\sum_{x_i \in N_0} y_i$. 
 * Value of K boils down to bias-variance tradeoff - small values of K more flexible with low bias and high variance. The parametric approach will outperform the nonparametric approach if the parametric form that has been selected is close to the true form of f. 
 * We would not use KNN regression with a linear relationship; no matter how you choose K, you will always have higher test MSE than linear regression, since the linear model has almost no bias and also resists variance better. Linear regression can still outperform for non-linear relationships; may simply depend on the choice of K. For extreme non-linearities, then linear regression tends to underperform for wide range of K. 
 * With small number of predictors, MSE for KNN remains somewhat constant over different f linearities while linear regression has much higher MSE for non-linear relationships. KNN can still underperform significantly with more predictors, however. Spreading 100 observations over p = 20 dimensions results in a phenomenon in which a given observation has no nearby neighbors—this is the so-called curse of dimensionality. 
@@ -123,7 +123,7 @@ Non-Linear Relationships - Polynomial Regression: Can add a higher order polynom
 * Bayesian estimate: $\operatorname{Pr}(Y=k | X=x)= p_k(x) =\frac{\pi_{k} f_{k}(x)}{\sum_{l=1}^{K} \pi_{l} f_{l}(x)}$, for posterior $p_k(x)$
 * $P(Y=k)= \pi_k$ is determined by the training data - this gives us a prior. It is the overall probability that a randomly chosen observation comes from the kth class. In general, estimating $\pi_k$ is easy if we have a random sample of Ys from the population: we simply compute the fraction of the training observations that belong to the kth class.
 * We are assume Gaussian for $p_k(x)$ - think of heights (X) for men and women (Y), then conditioned on gender we have two normal curves.
-* LDA approximates the Bayes classifier by plugging in estimates for the prior and parameters. Mean is sample mean, variance is sample variance for each class k in the training data. However, for sample variance,we assume that there is a shared variance $\sigma^2$  across all K classes, ie. $\hat{\sigma}^2 = \frac{1}{n-K}\sum_{k=1}^K \sum_{i; y_i=k} (x_i - \hat{\mu}_k)^2$. Note we are taking the sum of squared deviations within each k but them sum and normalize them across the different groups.
+* LDA approximates the Bayes classifier by plugging in estimates for the prior and parameters. Mean is sample mean, variance is sample variance for each class k in the training data. However, for sample variance, we assume that there is a shared variance $\sigma^2$  across all K classes, ie. $\hat{\sigma}^2 = \frac{1}{n-K}\sum_{k=1}^K \sum_{i; y_i=k} (x_i - \hat{\mu}_k)^2$. Note we are taking the sum of squared deviations within each k but them sum and normalize them across the different groups.
 * Assuming a normal likelihood, we get a log-likelihood function $\delta_{k}(x)=x \cdot \frac{\mu_{k}}{\sigma^{2}}-\frac{\mu_{k}^{2}}{2 \sigma^{2}}+\log \left(\pi_{k}\right)$. We then need to plug in estimates for these parameters using the sample mean, shared sample variance $\hat{\sigma}^2$, and  $\hat{\pi}_k = \frac{n_k}{n}$. Notice the discriminant functions $\hat{\delta}_k(x)$ are linear functions of x. For a single predictor we assign observation x to the class for which $\hat{\delta}_k(x)$ is largest.
 * To reiterate, the LDA classifier results from assuming that the observations within each class come from a normal distribution with a class-specific mean vector and a common variance $\sigma^2$, and plugging estimates for these parameters into the Bayes classifier.
 * Multivariate case: will assume that $X = (X_1, X_2,...,X_p)$ is drawn from a multivariate Gaussian distribution, with a class-specific multivariate mean vector and a common covariance matrix.
@@ -134,18 +134,18 @@ Non-Linear Relationships - Polynomial Regression: Can add a higher order polynom
 
 * Assuming a common covariance matrix is restrictive - ensures boundaries are lines, while groups may be separated by non-linear boundaries. Remember a more flexible method only reduces bias in practice when we are dealing with non-linear Bayes boundaries.
 * We no longer drop the quadratic term when comparing discriminant formulae since the covariance matrices are not the same anymore.
-* QDA better for higher n or if we have reason to believe common covaraiance across K classes is unrealistic.
+* QDA better for higher n or if we have reason to believe common covariance across K classes is unrealistic.
 
 ##### Evaluating Classification Methods
 
 * 0-1 Loss doesn’t tell you about if you are making the wrong prediction for some classes more than others. Does not distinguish between false positives and negatives.
 * Use a confusion matrix - model the truth as either + or -. Then determine if you have True Negative, False Negative, False Positive, True Positive. FP = Type I error. True Positive = 1 - Type II Error.
-* Sensitivity - percentrage of correctly identified true (true positive). Specificity - percentage of correctly identified false
+* Sensitivity - percentage of correctly identified true (true positive). Specificity - percentage of correctly identified false
 * Thus, the Bayes classifier, and by extension LDA, uses a threshold of 50 % for the posterior probability of default in order to assign an observation to the default class. However, if we are concerned about incorrectly predicting the default status for individuals who default, then we can consider lowering this threshold. For instance, we might label any customer with a posterior probability of default above 20 % to the default class.
 
 * We can have very different error rates for FP and FN - think of Bank trying to determine who will default, cares much more about the error rate in predicting for the defaulting group than the non-defaulting. Can change the threshold for which $p(default=yes|X)$ sorts the data, say changing from 50% down to 20%. In this case it will increase the error for FP and decrease FN. This is an example of tuning - changing certain parameters to improve our model after fitting.
 * The 0-1 error rate puts a lot of weight on the FP and little of the FN - this is why the 0-1 loss is not necessarily the best measure when we care about FN more
-* ROC Curve - False positive rate vs True positive rate (1 - false negative rate). Then the ideal point is (0, 1) - 0 FP and 0 FN. As we increase the FP rate along the x-axis, the FN decreases and the true positive rate approaches 1 monotonically. The better the classfier, the more it will hug the y-axis and y=1. A poor classifier follows x=y, which would be a randomized classifier.
+* ROC Curve - False positive rate vs True positive rate (1 - false negative rate). Then the ideal point is (0, 1) - 0 FP and 0 FN. As we increase the FP rate along the x-axis, the FN decreases and the true positive rate approaches 1 monotonically. The better the classifier, the more it will hug the y-axis and y=1. A poor classifier follows x=y, which would be a randomized classifier.
   * Quantifying the goodness of classifier - take integral of curve to get the area under curve (AUC), closer it is to 1 the better, closer to 0.5 worse
 
 ##### Classification Examples
@@ -153,9 +153,9 @@ Non-Linear Relationships - Polynomial Regression: Can add a higher order polynom
 * In terms of flexibility, have logistic regression, LDA, QDA, KNN-CV, KNN-1 from least flexible to most. Parametric to nonparametric as well.
 * Examples run simulations of the data, and compare the 0-1 error rates across methods.
 * Scenario 1 Bivariate Normal without correlation - the boundary is simple, so the restrictive methods outperform. The more flexible methods are overfitting and since there was little bias to begin with, do not give us much benefit.
-* Scenario 2 Bivariate Normal with correlation - does not impact our results, LDA just assumes same coviarance matrix but that includes situations with correlation
+* Scenario 2 Bivariate Normal with correlation - does not impact our results, LDA just assumes same covariance matrix but that includes situations with correlation
 * Scenario 3 independent t-distribution - QDA suffers from the heavy tails of t-stat. Optimal separation is still a line, so LDA and Logistic still do well. The sensitivity of QDA shows that simple methods may be better in a large data real-life setting - relaxed assumptions of normality do not hurt their fitting as much.
-* Scenario 4 Bivariate Normal with different correlations - LDA assumption is violated, and QDA is made specficially for this situation. QDA does the best here, but the flexible KNN methods still do poorly.
+* Scenario 4 Bivariate Normal with different correlations - LDA assumption is violated, and QDA is made specifically for this situation. QDA does the best here, but the flexible KNN methods still do poorly.
 * Scenario 5 uncorrelated SN with quadratic true decision boundary - QDA does well and KNN also do well. 
 * Scenario 6 Response sampled from nonlinear functions - KNN-CV is the best. Must be reserved for a complicated situation and we need to tune the parameter well. Even then it isn’t outperforming by too much.
 
@@ -190,7 +190,7 @@ Non-Linear Relationships - Polynomial Regression: Can add a higher order polynom
 
 * Since we are repeating LOOCV on almost identical training sets, they are highly correlated. While this gives us a lower bias in our estimate of MSE, we get a higher variance compared to k-Fold with k < n.
 * Typically, it has been shown that k = 5 or k = 10 is a good spot within the bias-variance tradeoff.
-* Flexiblity vs MSE - Flexibility is essentially the tuning of parameters. The error from CV compared to the test error, the curves may be off but the parameters that provide the minimum for the CV MSE is often very close to the parameters needed to minimize test MSE.
+* Flexibility vs MSE - Flexibility is essentially the tuning of parameters. The error from CV compared to the test error, the curves may be off but the parameters that provide the minimum for the CV MSE is often very close to the parameters needed to minimize test MSE.
 * For small sample sizes, cross validation pays a higher price than larger samples.
 
 ###### One SE Rule
@@ -202,7 +202,7 @@ Non-Linear Relationships - Polynomial Regression: Can add a higher order polynom
 
 * Proposed strategy: logistic regression against all parameters, choose 20 with highest z-tests, use 10-fold CV to validate this model.
 * We have many more predictors than sample size, so just by chance there will be correlations. If all predictors are actually random, it will still occur, even though each predictor has a small chance of showing correlation, among a large number just by chance some predictors will be correlated with the response.
-* CV here will show a low error rate. Using variable selection against all of the data, some predictors with correlation will turn up in every fold, so CV will conclude these are signficant relationships.
+* CV here will show a low error rate. Using variable selection against all of the data, some predictors with correlation will turn up in every fold, so CV will conclude these are significant relationships.
 * How to fix it: Start by dividing the data into 10 folds before picking any parameters. Select the 20 most significant predictors in each K, compute the error on the fold. Then average the error across the 10 folds taken. The whole analysis has to be fresh for each fold.
 
 ##### Bootstrap
@@ -223,20 +223,35 @@ Non-Linear Relationships - Polynomial Regression: Can add a higher order polynom
 3. Select a single best model among the $M_k$ using some metric, AIC, BIC, CV, adjusting R^2
 
 * When not talking about linear regression, we use deviance, which is $-2log(lik)$
-* Suffers from computational limitations as possibile models grow at $2^p$. Also considering such a large search space make it more likely to find a model that fits the training data by chance without any predictive power over test data - extreme overfitting.
+* Suffers from computational limitations as possible models grow at $2^p$. Also considering such a large search space make it more likely to find a model that fits the training data by chance without any predictive power over test data - extreme overfitting, similar to multiple testing problem.
 
 ##### Stepwise Selection
 
-* Forward stepwise selection begins with a model containing no predictors, and then adds predictors to the model, one-at-a-time, until all of the predictors are in the model. Consider p-k models that augment the predictors in $M_k$ with one additional parameter. Though forward stepwise tends to do well in practice, it is not guaranteed to find the best possible model out of all 2p models containing subsets of the p predictors. Can be used when n < p since do not have to fit a model with all predictors.
+* Forward stepwise selection begins with a model containing no predictors, and then adds predictors to the model, one-at-a-time, until all of the predictors are in the model. Consider p-k models that augment the predictors in $M_k$ with one additional parameter, choose the one that decreases RSS the most. Though forward stepwise tends to do well in practice, it is not guaranteed to find the best possible model out of all 2p models containing subsets of the p predictors. Can be used when n < p since do not have to fit a model with all predictors.
 * Backward stepwise selection begins with the full least squares model containing all p predictors, and then iteratively removes the least useful predictor, one-at-a-time. Also not guaranteed to select the best model out of all possible models. Backward selection requires that the number of samples n is larger than the number of variables p so the full model can be fit.
+* Both forward and backward are greedy algos and are unlikely to give you the same sequence - can use both to see where you end up.
+* Mixed stepwise - take predictors out that become non-significant as we add more predictors. Can make it harder to remove than add to prevent loops of adding and removing
 
 ##### Optimal Model Criteria
 
-* We can either estimate the test error by making adjustments to the training error to account for bias, or we can directly esimtate the test error with CV
+* We can either estimate the test error by making adjustments to the training error to account for bias, or we can directly estimate the test error with CV. 
 * For a fitted least squares model containing d predictors, the $C_p$ estimate of test MSE is computed using the equation $C_{p}=\frac{1}{n}\left(\mathrm{RSS}+2 d \hat{\sigma}^{2}\right)$.  sigma hat is an estimate of the variance of the error epsilon. Essentially a penalty to the training RSS, and increasing function with the number of parameters used.
-* AIC: $\mathrm{AIC}=\frac{1}{n \hat{\sigma}^{2}}\left(\mathrm{RSS}+2 d \hat{\sigma}^{2}\right)$ For OLS this criterion is proportional to Cp
-* BIC: $\mathrm{BIC}=\frac{1}{n \hat{\sigma}^{2}}\left(\mathrm{RSS}+\log (n) d \hat{\sigma}^{2}\right)$. BIC statistic generally places a heavier penalty on models with many variables, and hence results in the selection of smaller models than Cp.
+* $\mathrm{AIC}=\frac{1}{n \hat{\sigma}^{2}}\left(\mathrm{RSS}+2 d \hat{\sigma}^{2}\right)$ For OLS this criterion is proportional to Cp, differ only by a scaling factor
+* $\mathrm{BIC}=\frac{1}{n \hat{\sigma}^{2}}\left(\mathrm{RSS}+\log (n) d \hat{\sigma}^{2}\right)$. BIC statistic generally places a heavier penalty on models with many variables, and hence results in the selection of smaller models than Cp.
 * $\text { Adjusted } R^{2}=1-\frac{\operatorname{RSS} /(n-d-1)}{\operatorname{TSS} /(n-1)}$ a large value of adjusted R2 indicates a model with a small test error. Adding additional noise variables only decreases RSS minimally and will be outweighed by d in the denominator.
+* A way to do some validation that is much less expensive than CV. Rely on asymptotic arguments and model assumptions like normality of errors - a theoretical approach to limiting computation.
+
+##### Shrinkage
+
+* Keep all predictors but shrink them towards zero. Why is this better? 
+* Introduces bias but may decrease the variance of the estimates - if the variance shrinkage is larger this decreases the test error. Imagine statistic T to estimate parameter $\mu$, $T = \bar{X}_n$. You get a sampling distribution of that statistic T, say a bell curve histogram of T. Often T is restricted to unbiased estimators, but it was found that it might be advantageous to use a biased estimator with a much tighter sampling distribution - most of the time will be closer to true $\mu$ even though in expectation $T \neq \mu$. What we care about is the MSE, which is both bias and variance, so our biased T still might reduce the MSE.
+* Bayesian motivations - the prior tends to shrink the parameters
+
+###### Ridge Regression
+
+* Start with least squares equation, minimizing the sum of squares but now add a multiple of the sum of the beta-squares - the L2 norm of B, $||B||_2^2$. This makes the matrix invertible, but also has a statistical effect of shrinking the betas towards zero.
+* As we increase lambda, the solution becomes smaller and smaller betas - lambda is a tuning parameter that can be chosen by CV. Lambda = 0 is just LS.
+* Scale each variable st it has sample variance = 1 before running regression. Unlike normal regression, scaling matters since the beta terms are not dependent on X.
 
 ### Chapter 10 - Unsupervised Learning
 
@@ -281,7 +296,7 @@ Non-Linear Relationships - Polynomial Regression: Can add a higher order polynom
 * Starting out at the bottom of the dendrogram, each of the n observations is treated as its own cluster. The two clusters that are most similar to each other are then fused so that there now are n−1 clusters.
 
 1. Begin with n observations and a dissimilarity measure. Treat each observation as its own cluster
-2. For each cluster, examine all pairewise inter-cluster dissimilarities and identify the pair of clusters that are least dissimilar. Fuse these two clusters. The dissimilarity measure between these two clusters indicates the height in the dendrogram where the fusion is placed.
+2. For each cluster, examine all pairwise inter-cluster dissimilarities and identify the pair of clusters that are least dissimilar. Fuse these two clusters. The dissimilarity measure between these two clusters indicates the height in the dendrogram where the fusion is placed.
 3. Repeat for remaining i-1 clusters.
 
 * Measures of dissimilarity between clusters
