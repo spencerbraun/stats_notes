@@ -91,7 +91,7 @@ Non-Linear Relationships - Polynomial Regression: Can add a higher order polynom
 ##### Class Notes
 
 * Matrix notation for a regression -> $y = X\beta + \epsilon$ where $y = (y_1 ... y_n)^T$ and $\Beta = (\Beta_1 ... \Beta_n)^T$ and X is our data matrix with an extra column of 1 for the intercept. X stores each variable in a column, so X is dimension n x (p+1) and B is dimension (p+1) vector. Betas are always linear but the predictors X do not have to be linear.
-* Intuition behind F-test - $RSS_0$ is the RSS for the model under the null hypothesis where we set all of the betas to zero, just fitting the intercept. RSS is just the model RSS. $RSS_0$ is always bigger since predictors improve the fit of the regression. Comparing the two RSS stats, if the additional betas don’t help much, then the RSS should be roughly the same. Otherwise we would expect a big improvement in the RSS over the replacement model with fewer betas. F-stat is the scaled ratio of the difference in the RSS over the RSS of the full model. In the specific case where we omit a single beta, then this is equivalent to a t-test for that beta. Note that since F depends on n, when n is large, an F-statistic that is just a little larger than 1 might still provide evidence against H0. In contrast, a larger F-statistic is needed to reject H0 if n is small.
+* F-test: $F=\frac{\left(\mathrm{RSS}_{0}-\mathrm{RSS}\right) / q}{\mathrm{RSS} /(n-p-1)}$ Intuition behind F-test - $RSS_0$ is the RSS for the model under the null hypothesis where we set all of the betas to zero, just fitting the intercept. RSS is just the model RSS. $RSS_0$ is always bigger since predictors improve the fit of the regression. Comparing the two RSS stats, if the additional betas don’t help much, then the RSS should be roughly the same. Otherwise we would expect a big improvement in the RSS over the replacement model with fewer betas. F-stat is the scaled ratio of the difference in the RSS over the RSS of the full model. In the specific case where we omit a single beta, then this is equivalent to a t-test for that beta. Note that since F depends on n, when n is large, an F-statistic that is just a little larger than 1 might still provide evidence against H0. In contrast, a larger F-statistic is needed to reject H0 if n is small.
 * Multiple testing issue - Given 10 betas, could do 10 different t-tests, 1 for each beta. Over a large number of betas and at significance level of 5%, bound to find significance as a false positive. Over 10 tests, P(at least one is positive) = 1 - P(no false positives) = 1 - P(1st test accepts and 2nd...) = 1- P(1st test accepts)P(2nd test accepts)... = $1 - (0.95)^{10} = 0.40$. The F-statistic does not suffer from this problem because it adjusts for the number of predictors.
 * p-value - if the null hypothesis is true, there is a p% chance of making a false positive, ie. rejecting $H_0$ in error.
 * Stepwise approach - construct a sequence of p models and select the best among them. Performed through forward, backward, or mixed selection. Note for forward selection we are looking at the individual linear models to determine which betas to add at each step. If p > n, we must use one of these methods since cannot fit a full model using OLS in this case.
@@ -243,15 +243,38 @@ Non-Linear Relationships - Polynomial Regression: Can add a higher order polynom
 
 ##### Shrinkage
 
-* Keep all predictors but shrink them towards zero. Why is this better? 
+* Keep all predictors but shrink them towards zero. Why is this better? Think of $Var(k\theta) = k^2Var(\theta)$
 * Introduces bias but may decrease the variance of the estimates - if the variance shrinkage is larger this decreases the test error. Imagine statistic T to estimate parameter $\mu$, $T = \bar{X}_n$. You get a sampling distribution of that statistic T, say a bell curve histogram of T. Often T is restricted to unbiased estimators, but it was found that it might be advantageous to use a biased estimator with a much tighter sampling distribution - most of the time will be closer to true $\mu$ even though in expectation $T \neq \mu$. What we care about is the MSE, which is both bias and variance, so our biased T still might reduce the MSE.
 * Bayesian motivations - the prior tends to shrink the parameters
 
 ###### Ridge Regression
 
 * Start with least squares equation, minimizing the sum of squares but now add a multiple of the sum of the beta-squares - the L2 norm of B, $||B||_2^2$. This makes the matrix invertible, but also has a statistical effect of shrinking the betas towards zero.
-* As we increase lambda, the solution becomes smaller and smaller betas - lambda is a tuning parameter that can be chosen by CV. Lambda = 0 is just LS.
+* As we increase lambda, the solution becomes smaller and smaller betas - lambda is a tuning parameter that can be chosen by CV. Lambda = 0 is just LS. However the betas do not become zero for $\lambda < \infty$
 * Scale each variable st it has sample variance = 1 before running regression. Unlike normal regression, scaling matters since the beta terms are not dependent on X.
+* The choice of $\lambda$ is the trade-off between bias and variance - CV should tell us how to optimize this problem. Lambda = 0 equivalent to $||\hat{B}^R_\lambda||_2/||\hat{B}^2||_2$ = 1
+
+###### Lasso
+
+* Here the penalty term is the L1 norm of beta - $||B||_1 = \sum_{j=1}^p |B_j|$
+* Lasso shrinks some coefficients all the way to zero - alternative to best subset selection or stepwise. We can focus on a smaller subset of predictors and obtain a simpler model. Not only simple but performs well in predictions.
+* As you increase lambda, more predictors drop out of the model entirely. For large enough lambda you can eliminate all of the predictors. No guarantee that the shrinkage is monotone as a function of lambda but most often is monotone.
+
+###### Comparing Ridge and Lasso
+
+* Lasso and Ridge are really constrained optimization using Lagrange multipliers - the penalty < constant s is the constraint for a fixed lambda. 
+* Best subset can be included here, minimization constrained by the L0 norm < s, ie $\sum_{j=1}^p1(B_j \neq 0) < s$
+* Visualizing lasso and ridge with 2 predictors
+  * Beta contour lines, each level curve defines a level of equal RSS. The constraints Ridge: $\sum_{j=1}^p B_j^2 < s$, Lasso:  $\sum_{j=1}^p |B_j| < s$ are expanding areas from the origin. The squared ridge constraint is a circle, and the point where it touches the level curves is the optimum. Since it is circular this is unlikely to occur at 0. The L1 ball is a diamond and the level curves are likely to intersect the diamond at 0. Think of in 100 dimensions, there are many vertices and likely to hit one when we intersect with the beta level curves. Note if the beta-hat were constained in the constraint space, then the beta is optimal and we have least squares.
+* Comparison in situations
+  * $R^2$ of training data is used to plot both ridge and lasso together, since plotting against lambda is infeasible since the lambdas are actually different between the two models.
+  * All coefficients are non-zero - then ridge is likely better, since the variance of the ridge is smaller, the bias is about the same, so the ridge MSE is smaller.
+  * Only 2 of 45 coefficients are non-zero - the Lasso is better on all counts, generally lasso especially effective when most variables are not useful for prediction.
+  * Special case n = p, matrix X = I. Therefore $y_j$ depends only on $B_j$ and vice versa, Using Ridge, we get $\hat{B}_j^R = \frac{y_j}{1+\lambda}$. Taking the least squares fit and shrinking it by a positive number greater than 1. Using Lasso, either subtracting off a positive number for positive y or adding a small number to a negative y - soft thresholding.
+  * Bayesian interpretation
+    * Gives us a distribution of a solution for betas, not a single point estimate.
+    * Ridge: $\hat{B}^R$ is the posterior mean with a Normal prior. We take the distribution, take the mean, this is the Ridge beta estimate.
+    * Lasso: $\hat{B}^R$ is the posterior mode with a Laplacian prior. 
 
 ### Chapter 10 - Unsupervised Learning
 

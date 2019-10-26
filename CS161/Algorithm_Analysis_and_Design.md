@@ -226,7 +226,8 @@ Table of Contents
 * G(V, E) - V vertices, E edges. n = # of vertices, m = # of edges
 * Neighbors - connected vertices, Degree of vertex - number of neighbors it has. Incoming / outgoing degrees and neighbors 
 * Adjacency matrix - binary whether two vertices share an edge, rows source columns destination, Linked list with pointers to neighbors
-* Linked list is better for s parse graphs, since uses O(n + m) space vs $O(n^2)$ for adjacency matrix. Generally assume linked lists in class. We could use binary search trees to reduce search time to log 
+* Linked list is better for sparse graphs, since uses O(n + m) space vs $O(n^2)$ for adjacency matrix. Generally assume linked lists in class. We could use binary search trees to reduce search time to log 
+* Undirected Graph Connected Components - a maximal set such that for all u,v in S, there exists a path in G from u to v
 
 ### Depth First Search
 
@@ -234,6 +235,8 @@ Table of Contents
 * Keep track of unvisited, in progress, and all done nodes. Keep track of time we first enter node (start time) and the time we finish and mark it done (finish time)
 * Finds all the nodes reachable from the starting point. Connected component - all of the vertices have some path from one vertex to another. DFS finds all connected components. DFS is really building a tree implicitly and traveling down to a leaf and then backtracking.
 * Run time for DFS? Degree(w) in the for loop, run the for loop for every w: $\sum_w deg(w) + O(1) = 2m + n$. Every edge is plus one to the degree of the 2 nodes it connects, which is why we have 2m. Therefore $O(m + n)$, the n since we do a constant amount of work for every vertex in the recursive call.
+* When you cannot reach all vertices, we start again at an unvisited vertex and get multiple DFS trees - DFS forest
+* Parentheses theorem: if v is a descendent of w in DFS tree, (w.start, v.start, v.finish, w.finish). If neither is a descendent of the other (v.start, v.finish, w.start, w.finish), this is a general claim, not just for DAGs
 
 ##### Directed Acyclic Graph
 
@@ -247,6 +250,25 @@ Table of Contents
 * Also finds all connected components like DFS. Also runs in $O(m+n)$ - inner loop over the edges for each vertex once, outer for loop over all vertices. Sum of degrees = n, check every edge m
 * Application: shortest path, we know by the level of a vertex how many steps it takes to get from the starting vertex to another, found in $O(m)$
 * Application: bipartite, can we split graph in 2 s.t. no vertices that share a class have edges between them. Think of students enrolled in classes - students cannot be enrolled in students. Could check this with a tree, but with BFS can do it based on level each vertex is a member of, then check if there is a shared edge with any members of the same color. BFS finds not bipartite for odd cycles - can never have an odd cycle graph that is bipartite. Odd cycle is a subgraph with odd number of vertices / edges.
+
+### Strongly Connected Components
+
+* Each edge needs to be bidirectional
+* Maximal set S subset V s,t, for all u,v in S there exists a path in G from u to v (and v to u)
+* Weakly connected -  If we turned directed into undirected, then vertices would be connected components
+* Path from every vertex to every other vertex within SCCs. 
+* SCC Graph - can circle the SCC within a total graph, then each SCC can be contracted into a meta-vertex. 
+* Lemma 1:  our SCC graph is a DAG - it cannot have cycles between SCCs
+* Undirected graphs - connected components, find with BFS/DFS. Directed graphs - strongly connected components, find with DFS. There is no overlap here. Do not talk about strongly connected components in undirected graphs
+* An O(n+m) algo for SCC
+  * Starting place matters - starting from one vertex may get us the SCC from running DFS, while another may just have a single tree. Starting DFS from the last SCC is good, because we can only explore that SCC. 
+  * Run DFS from any starting vertex, look at the finish times.
+  * Reverse all of the edges in the graph - this doesn’t change SCCs since they go in both directions
+  * Run DFS again, using the latest finish time for the first run to tell us where to start.
+  * The SCCs are the different trees in the second DFS forest
+* Finish time of an SCC DAG - the largest finish time of any vertex in the SCC. Starting time is the smallest starting time of any vertex
+* SCC DAG can now by topologically sorted based on the SCC finish times (from the regular DFS, not reversed)
+* In the forward SCC graph - if edge from A to B, then A.finish > B.finish. Then (corollary) in the reverse graph if $B\rightarrow A$, A.finish > B.finish in the real graph.
 
 ## Probability Reference
 

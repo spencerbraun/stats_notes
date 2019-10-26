@@ -12,6 +12,7 @@ author: Spencer Braun
 
 * intersection - probability that both A and B occur
 * Complement - $A^c$ event that A does not occur, all events in the sample space that are not A
+* 
 * Disjoint - A and C are disjoint if $A \cap C = \empty$ 
 * Probability Axioms: 1) $P(\Omega) = 1$, 2) If $A \subset \Omega$ then $P(A) \geq 0$ 3) If A, B disjoint then $P(A \cup B) = P(A) + P(B)$
 * Addition Law: $P(A \cup B) = P(A) +P(B) - P(A \cap B)$
@@ -35,10 +36,15 @@ author: Spencer Braun
   \end{Bmatrix}, 
   \: 0\leq p\leq 1$
 
+  * All moments = p
+  
 * Binomial: $p(k)=\binom{n}{k}p^{k}(1-p)^{n-k}\\
   n \in \mathbb{N}, k=0,1,...,n, \,
   0\leq p\leq 1$
 
+  * $Bin(n,p) = \sum_{i=1}^n X_i$, for X Bern(P)
+  * $E(X) = np, Var(x) = np(1-p)$
+  
 * Negative Binomial 
   $$
   P(X=k) = {k-1 \choose r-1}p^r (1-p)^{k-r}
@@ -55,6 +61,8 @@ author: Spencer Braun
   * $P(X=k)=\frac{\binom{r}{k}\binom{n-r}{m-k}}{\binom{n}{m}} \, \max(0,m+r-n) \leq k \leq \min(r,m) \, 0 \leq p(k) \leq 1$
 
 * Poisson: $P(X=k)=\frac{\lambda^k}{k!}e^{-\lambda}\, k = 0,1,2,3,...,\,\, \lambda > 0$
+
+  * $E(X) = \lambda, Var(X) = \lambda$
 
 ##### Continuous Density Functions
 
@@ -96,7 +104,9 @@ author: Spencer Braun
 
 ### Chapter 4: Expected Values
 
-* $E(X)=\int_{-\infty}^{\infty} x f(x) d x$ provided the expectation of |x| exists. When we get the marginal from a joint, even if x is bound in terms of y, the bounds of the marginal are independent of y. This is why the expectation is integrated over the whole domain.
+* Discrete: $E(X)=\sum_{i} x_i p(x_i)$
+* Continuous: $E(X)=\int_{-\infty}^{\infty} x f(x) d x$ provided the expectation of |x| exists. 
+  * When we get the marginal from a joint, even if x is bound in terms of y, the bounds of the marginal are independent of y. This is why the expectation is integrated over the whole domain.
 * E(X) is a constant. E(X|Y) is a function of Y, and thus a RV.
 * Functions of RVs: $E(g(X))=\int_{-\infty}^{\infty} g(x) f(x) d x$ - do not need the pdf of g(x) for expectation
 * For independent X and Y, E(XY) = E(X)E(Y).
@@ -109,6 +119,8 @@ author: Spencer Braun
   * $\operatorname{Cov}(X, Y)=E\left[\left(X-\mu_{X}\right)\left(Y-\mu_{Y}\right)\right] = E(XY) - E(X)E(Y)$. If X,Y independent, Cov = 0
   * $\operatorname{Cov}(aX, bY)=abCov(X, Y)$
   * $\begin{aligned} \operatorname{Var}(X+Y) &=\operatorname{Cov}(X+Y, X+Y) \\ &=\operatorname{Var}(X)+\operatorname{Var}(Y)+2 \operatorname{Cov}(X, Y) \end{aligned}$
+* We can standardize a RV X: $\frac{X - E(X)}{\sqrt{Var(X)}}$. Has mean 0, SD 1.
+* $Corr(X,Y) = Cov(\frac{X - E(X)}{\sqrt{Var(X)}}, \frac{Y - E(Y)}{\sqrt{Var(Y)}}) = \frac{\sigma_XY}{\sigma_X\sigma_Y}$
 * Conditional Expectation: $E(Y | X=x)=\int y f_{Y | X}(y | x) d y$
 * Law of total expectation: E(Y) = E(E(Y|X)), $\operatorname{Var}(Y)=\operatorname{Var}[E(Y | X)]+E[\operatorname{Var}(Y | X)]$
 
@@ -124,7 +136,7 @@ author: Spencer Braun
 
 ###### Moment Generating Functions
 
-* Uniquely determines a probability distribution
+* Uniquely determines a probability distribution - same MGF means same distribution
 * $M(t) = E(e^{tX})= \int_{-\infty}^\infty e^{tx} f(x) \, dx$ 
 * The rth moment: $M^{(r)}(0) = E(X^r)$
 * $\text { If } X \text { has the } \operatorname{mgf} M_{X}(t) \text { and } Y=a+b X, \text { then } Y \text { has the mgf } M_{Y}(t)=e^{a t} M_{X}(b t)$
@@ -132,16 +144,18 @@ author: Spencer Braun
 
 ###### delta Method
 
-* For Y = g(x)
-* $\sigma_{Y}^{2} \approx \sigma_{X}^{2}\left[g^{\prime}\left(\mu_{X}\right)\right]^{2}$ and $E(Y) \approx g\left(\mu_{X}\right)+\frac{1}{2} \sigma_{X}^{2} g^{\prime \prime}\left(\mu_{X}\right)$
+* For $Y = g(x), E(X)=\mu, Var(X)=\sigma^2$ 
+* $Y \approx g(\mu) + g’(\mu)(X-\mu)$
+* $\sigma_{Y}^{2} \approx \sigma_{X}^{2}\left[g^{\prime}\left(\mu_{X}\right)\right]^{2}$ 
+* $E(Y) \approx g\left(\mu_{X}\right)+\frac{1}{2} \sigma_{X}^{2} g^{\prime \prime}\left(\mu_{X}\right)$
 
 ### Chapter 5: Limit Theorems
 
 ##### Weak Law of Large Numbers (Convergence in probability)
 
-* $E(X_i) = \mu $ and $ Var(X_i) =\sigma^2$ . Let $X_n = n^{−1} \sum_{i=1}^n X_i$
-* $P(|\bar{X_n} - \mu| > \epsilon) \rightarrow 0$ as $n \rightarrow \infty$
-* $X_1 ... X_i \sim iid$
+* $X_1 ... X_i \sim iid$, $E(X_i) = \mu $ and $ Var(X_i) =\sigma^2$ . Let $X_n = n^{−1} \sum_{i=1}^n X_i$ and 
+* $lim_{n \rightarrow \infty}P(|\bar{X_n} - \mu| > \epsilon) = 0$
+  * Averages settle down to their corresponding expectations
 * Need to have  constant variance to apply WLLN -> otherwise must normalize across $X_i$s
 * Convergence in probability - the probability goes to zero, but we cannot say what happens to each point in the distribution. We are interested in the output of the CDF in limit.
 * Weak is for a given epsilon, holding that constant, we will converge in probability to zero. For strong, we say for all epsilon it will eventually converge.
@@ -164,24 +178,25 @@ author: Spencer Braun
 
 ##### Central Limit Thm
 
-* $X_1, X_2$ sequence of RVs with mean 0 and variance $\sigma^2$ common CDF F and MGF M.
-* $S_n = \Sigma_{i=1}^n X_i$ 
-* Book defn: $\lim_{n\to \infty} P(\frac{S_n}{\sigma \sqrt(n)} \leq x) = \Phi(x)$ on $-\infty < x < \infty$
-* More generally for $X_i$ iid, mean $\mu$,  variance $\sigma^2$, $\lim _{n \rightarrow \infty} \operatorname{Pr}\left(\frac{\bar{X}_{n}-\mu}{\sigma / \sqrt{n}}  \leq x\right)=\Phi(x)$
+* For $X_i$ iid, $E(X) =\mu$,   $Var(X)=\sigma^2$
+* $\lim _{n \rightarrow \infty} \operatorname{Pr}\left(\frac{\bar{X}_{n}-\mu}{\sigma / \sqrt{n}}  \leq x\right)=\Phi(x)$
+  * Averages have a nearly normal distribution
+* Book defn: $X_1, X_2$ sequence of RVs with mean 0 and variance $\sigma^2$ common CDF F and MGF M. $S_n = \Sigma_{i=1}^n X_i$ , $\lim_{n\to \infty} P(\frac{S_n}{\sigma \sqrt(n)} \leq x) = \Phi(x)$ on $-\infty < x < \infty$
 
 ### Chapter 6: Distributions Derived from the Normal
 
 ##### Chi Square Distribution
 
 * U = $Z^2$ for $Z \sim N(0,1)$ , then $U \sim \chi^2_1$ 
-* Note that the distribution is equivalent to $\chi^2_1 \sim \Gamma(\frac{n}{2}, \frac{1}{2})$
+* Note that the distribution is equivalent to $\chi^2_1 \sim \Gamma(\frac{1}{2}, \frac{1}{2})$, $\chi^2_n \sim \Gamma(\frac{n}{2}, \frac{1}{2})$
 * If U1, U2, ... ,Un are independent chi-square random variables with 1 degree of  freedom, the distribution of V = U1 + U2 + ··· + Un is called the chi-square distribution with n degrees of freedom and is denoted by $\chi^2_n$
 
 ##### t-distribution
 
 * $Z \sim N(0,1)$ and  $U \sim \chi^2_n$ for Z, U independent, then 
 * $\frac{Z}{\sqrt{\frac{U}{n}}}$ is a t-distribution with n degrees of freedom
-* density function of $$f(t) = \frac{\Gamma[\frac{1}{2}(n+1)]}{\sqrt{n\pi}\Gamma(n/2)}\Big(1 + \frac{t^2}{n}\Big)^{-\frac{n+1}{2}}$$
+* density function of $$f(t) = \frac{\Gamma[\frac{1}{2}(n+1)]}{\sqrt{n\pi}\Gamma(n/2)}\Big(1 + \frac{t^2}{n}\Big)^{-\frac{n+1}{2}}$$ on $t \in \R$
+* Notice $t_1 \sim Cauchy$
 
 ##### F Distribution
 
@@ -190,13 +205,13 @@ author: Spencer Braun
 
 ##### Sample Statistics
 
-* For $X_1, ..., X_n$ iid normals, we sometimes refer to them as a sample from a normal distribution.
+* For $X_1, ..., X_n$ iid **normals**, we sometimes refer to them as a sample from a normal distribution.
 * $\bar{X} = \frac{1}{n} \sum_{i=1}^n X_i$ = sample mean
-* $S^2 = \frac{1}{n-1} \sum_{i=1}^n (X_i - \bar{X})^2$ = sample variance
+* $s^2 = \frac{1}{n-1} \sum_{i=1}^n (X_i - \bar{X})^2$ = sample variance
 * Note that $E(\bar{X}) = \mu$ and $Var(\bar{X}) = \frac{\sigma^2}{n}$
 * The RV X-bar and the vector of RVs $(X_1 - \bar{X}, ...)$ are independent
-* $\bar{X}$ and $S^2$ are independently distributed
-* The distribution of $\frac{(n−1)S^2}{\sigma^2} \sim \chi^2_{n-1} $
-* Important: $\frac{\bar{X} - \mu}{S/\sqrt{n}} \sim t_{n-1}$
+* $\bar{X}$ and $s^2$ are independently distributed
+* The distribution of $\frac{(n−1)s^2}{\sigma^2} \sim \chi^2_{n-1} $
+* Important: $\frac{\bar{X} - \mu}{s/\sqrt{n}} \sim t_{n-1}$. We have one unknown value $\mu$, but from a known distribution allowing us to make a CI with the t distribution
 * Note: normalizing - always subtracting off the mean and dividing by the standard deviation of that variable.
-* Var($\bar{xX_n}$) = $\frac{\sigma^2}{n}$
+* Var($\bar{X_n}$) = $\frac{\sigma^2}{n}$, then $\bar{X}_n \sim N(\mu, \frac{\sigma^2}{n})$

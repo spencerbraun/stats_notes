@@ -8,69 +8,113 @@ date: 20191016
 
 ### Chapter 9 - Testing Hypotheses and Goodness of Fit
 
-* Likelihood Ratio - For two distributions, the probability of observing an event from one over the other.
-  * Bayesian approach: $\frac{P\left(H_{0} | x\right)}{P\left(H_{1} | x\right)}=\frac{P\left(H_{0}\right)}{P\left(H_{1}\right)} \frac{P\left(x | H_{0}\right)}{P\left(x | H_{1}\right)}$
-  * The product of the ratio of prior probabilities and the likelihood ratio. Thus, the  evidence provided by the data is contained in the likelihood ratio, which is multiplied  by the ratio of prior probabilities to produce the ratio of posterior probabilities.
-
 ##### Neyman-Pearson Paradigm
 
-* Null hypothesis $H_0$ and alternative hypothesis $H_1$
-  * Type I error: rejecting null when it is true. The probability of type I error is the significance level of the test $\alpha$ - jury returns guilty when innocent
-  * Type II error: accepting the null hypothesis when false, denoted by $\Beta$. Jury says innocent when guilty
+* Null hypothesis $H_0$ and alternative hypothesis $H_A$
+  * **Type I error**: rejecting null when it is true, FP. The probability of type I error is the **significance level of the test $\alpha$** - jury returns guilty when innocent. $\alpha = P(T(X_1,...,X_n) > t_0 | H_0)$
+  * **Type II error**: accepting the null hypothesis when false, FN. Denoted by $\Beta$. Jury says innocent when guilty
+    * $\beta = P(T(X_1,...,X_n) \leq t_0 | H_A)$
     * Inherent trade off between Type I error and Type II - Type I maximized when Type II minimized and vice versa
-  * Power: the probability that the null hypothesis is rejected when false, $1-\Beta$
+  * p-value: $p = P(T(X_1,...,X_n) \geq T(x_1,...,x_n) | H_0)$ The chance of getting a value of T as large as the one we got or larger under the null hypothesis. Our test rejects when $p < \alpha$
+  * **Power**: the probability that the null hypothesis is rejected when false, $1-\Beta$
   * Test statistic, statistic we are using as a test of the hypothesis. A function of sample we are going to test - eg. LRT
   * Null distribution: the probability distribution of the test statistic when the null hypothesis is true
 
-1. Determine hypotheses and set an alpha for the test
-2. Either compute critical value from PDF of x and alpha (don’t need x) or compute p-value from x and its PDF (don’t need alpha)
-3. Determine if we reject null or not
+1. Construct a test statistic T from our data, eg. for  $H_0: \mu = 0,\,H_1:\mu \neq 0$, take $T=|\bar{X}|$
+2. Construct probability of exceeding critical value, set an alpha for the test.
+3. Either compute critical value from PDF of x and alpha (don’t need x) or compute p-value from x and its PDF (don’t need alpha)
+4. Determine if we reject null or not
 
-* Suppose that $H_0$ and $H_1$ are simple hypotheses and that the test that rejects $H_0$  whenever the likelihood ratio is less than c and significance level $\alpha$. Then any other test for which the significance level is less than or equal to $\alpha$ has power less than or equal to that of the likelihood ratio test.
-* For simple hypothesis: We write down the likelihood ratio and observe that small values of it correspond in a  one-to-one manner with extreme values of a test statistic, in this case X. Knowing the null distribution of the test statistic makes it possible to choose a critical level that  produces a desired significance level $\alpha$.
-* p-value is the smallest alpha for which we reject the null hypothesis - critical value < test stat equivalent to p-value < alpha
-* ![hypothesis_test_regions](/Users/spencerbraun/Documents/Notes/Stanford/STATS200/hypothesis_test_regions.png)
-* If a hypothesis does not completely specify the probability distribution, the hypothesis is called a composite hypothesis. This means a hypothesis like this is Poisson distributed or not is composite, because the null hypothesis needs to be a specific distribution with specified parameter to be simple. It is convention to choose the simpler hypothesis to be the null.
-*  If the alternative $H_1$ is composite, a test that is most powerful for every simple alternative  in $H_1$ is said to be uniformly most powerful. 
-* In typical composite situations, there is no uniformly most powerful test. The alternatives $H_1 : \mu < \mu_0$ and $H_1 : \mu> \mu_0$ are called one-sided alternatives. The  alternative $H_1 : \mu = \mu_0$ is a two-sided alternative. 
+* A simple hypothesis: $H_0$ and $H_1$ each have parameter equal to a specific value, specify a complete probability distribution. If a hypothesis does not completely specify the probability distribution, the hypothesis is called a composite hypothesis. This means a hypothesis like this is Poisson distributed or not is composite, because the null hypothesis needs to be a specific distribution with specified parameter to be simple. It is convention to choose the simpler hypothesis to be the null.
+
+* Neyman Pearson Lemma: Suppose that $H_0$ and $H_A$ are simple hypotheses and that the test that rejects $H_0$  whenever the likelihood ratio is less than c and significance level $\alpha$. Then any other test for which the significance level is less than or equal to $\alpha$ has power less than or equal to that of the likelihood ratio test.
+
+* For simple hypothesis: We write down the likelihood ratio and observe that small values of it correspond in a one-to-one manner with extreme values of a test statistic, in this case X. Knowing the null distribution of the test statistic makes it possible to choose a critical level that  produces a desired significance level $\alpha$.
+
+* p-value is the smallest alpha for which we reject the null hypothesis 
+
+  * critical value < test stat $\iff$ p-value < alpha
+  * The p-value is the probability of a result as or more extreme than that actually observed if the null hypothesis were true.
+
+
+  ![hypothesis_test_regions](/Users/spencerbraun/Documents/Notes/Stanford/STATS200/hypothesis_test_regions.png)
+
+*  UMP: If the alternative $H_1$ is composite, a test that is most powerful for every simple alternative  in $H_1$ is said to be uniformly most powerful. 
+
+   * In typical composite situations, there is no uniformly most powerful test. 
+
+* The alternatives $H_1 : \mu < \mu_0$ and $H_1 : \mu> \mu_0$ are called one-sided alternatives. The  alternative $H_1 : \mu = \mu_0$ is a two-sided alternative. 
+
 * Confidence Intervals: $\mu_0$ lies in the confidence interval for $\mu$ if and only if the hypothesis test accepts. In  other words, the confidence interval consists precisely of all those values of $\mu_0$ for  which the null hypothesis $H_0: \mu= \mu_0$ is accepted.
-* Suppose that for every value $\theta_0  \in \Theta$ there is a test at level $\alpha$ of the hypothesis  $H_0: \theta=\theta_0$. Denote the acceptance region of the test by $A(\theta_0)$. Then the set  $C(X) = {\theta: X \in A(\theta)}$  is a $100(1−\alpha)\%$ confidence region for $\theta$. Basically if a value for theta lies in the confidence region, the hypothesis test would be accepted for that value.
+
+* Hypothesis testing with samples:
+
+  * $\operatorname{Pr}\left(\bar{X}-\frac{s t_{(n-1)}^{1-\alpha / 2}}{\sqrt{n}} \leqslant \mu \leqslant \bar{X}+\frac{s t_{(n-1)}^{1-\alpha / 2}}{\sqrt{n}}\right)=1-\alpha$
+  * Since symmetric t distribution: $\operatorname{Pr}\left(\bar{X}+\frac{s t_{(n-1)}^{\alpha / 2}}{\sqrt{n}} \leqslant \mu \leqslant \bar{X}+\frac{s t_{(n-1)}^{1-\alpha / 2}}{\sqrt{n}}\right)=1-\alpha$
+  * 2 Sample t-test estimating $\mu_x - \mu_y$ by $\bar{X} - \bar{Y}$. 
+    * $\bar{X} - \bar{Y} \sim N(\mu_x - \mu_y, \sigma^2(1/n + 1/m))$
+    * $s^2_{pooled} = \frac{(n-1)s^2_x + (m-1)s^2_y}{n+m -2}$
+    * $\hat{\Delta} \pm t^{1-\alpha / 2} s_{\text {pooled }} \sqrt{1 / n+1 / m}$
+
+##### Bayes Testing / LRT
+
+* For simple hypotheses. Likelihood Ratio - For two distributions, the probability of observing an event from one over the other.
+* $LR = \frac{P(\text{all our data}|H_0)}{P(\text{all our data}|H_1)}$
+
+1. Use density functions of data in the LR
+2. Plug in the parameters under $H_0$ and $H_1$, eg $\mu_1, \mu_2$
+3. Simplify LR and determine how LR changes as a function of X
+4. Assume X is distributed by the density given in $H_0$. We use this density in the test.
+5. Set LRT greater than some constant critical value and determine CI for given alpha using some known distribution approximation (eg. normal, chi-square)
+
+* This example is typical of the way that the Neyman-Pearson Lemma is used. We write down the likelihood ratio and observe that small values of it correspond in a one-to-one manner with extreme values of a test statistic, fore example $\bar{X}$. Knowing  the null distribution of the test statistic makes it possible to choose a critical level that  produces a desired significance level $\alpha$. 
+* The evidence provided by the data is contained in the likelihood ratio, which is multiplied by the ratio of prior probabilities to produce the ratio of posterior probabilities.
 
 ##### Generalized Likelihood Ratio Tests
 
-* $\Lambda=\frac{\max _{\theta \in \omega_0 }[\operatorname{lik}(\theta)]}{\max _{\theta \in \Omega}[\operatorname{lik}(\theta)]}$ - Testing the parameter space for observations.
-* For $H_0: \mu = \mu_0,\,H_1:\mu \neq \mu_0$, the numerator of the likelihood ratio is the density function at point $\mu_0$ and the denominator we plug in the mle of the parameter $\mu$, (so here for example, $\bar{X}$) 
+* $\Lambda=\frac{\max _{\theta \in \omega_0 }[\operatorname{lik}(\theta)]}{\max _{\theta \in \Omega}[\operatorname{lik}(\theta)]} \leq \lambda_0$ - Testing the parameter space for observations against some cutoff value. $\Lambda \leq 1$ since numerator is a subset of the denominator
+* We have to work out the distribution of $\Lambda$ under $H_0$ to get a signficance level. This can be quite hard, so for iid data, we approximate using $-2log(\Lambda) \approx \chi^2_{(d)}$ under $H_0$ as $n \rightarrow \infty$. 
+  * DoF d = # free parameters in H1 - # free parameters in H0. Example: N(2, 1) has 0 free parameters, $N(\sigma^2 + 1, \sigma^2)$ has 1, and $N(\mu, \sigma^2)$ has 2.
+  * Intuition: the more free parameters you allow, the more the alternative can fit to the data and explain it. Therefore $-2log(\Lambda)$ must be larger to provide evidence against the null.
+* For $H_0: \mu = \mu_0,\,H_1:\mu \neq \mu_0$, the numerator of the likelihood ratio is the density function at point $\mu_0$ and the denominator we plug in the mle of the parameter $\mu$, (so here for example, $\bar{X}$). This follows from the definition, since the maximum of the likelihood function over the parameter space is the MLE.
+* Knowing the null  distribution of the test statistic makes possible the construction of a rejection region  for any significance level $\alpha$. Using the chi-square, RR is given by $\left|\bar{X}-\mu_{0}\right| \geq \frac{\sigma}{\sqrt{n}} z(\alpha / 2)$
+
 * Under smoothness conditions on the probability density or frequency functions  involved, the null distribution of $−2 log \Lambda$ tends to a chi-square distribution  with degrees of freedom equal to  $dim\,\Omega−dim\,ω_0$ as the sample size tends to  infinity.
 * Generally - set up the distributions, compose the likelihood ratio, often take the log of both sides, try to determine how the likelihood changes for different observed values.
-
 * $-2 \log \Lambda \approx \sum_{i=1}^{m} \frac{\left[x_{i}-n p_{i}(\hat{\theta})\right]^{2}}{n p_{i}(\hat{\theta})} = X^2$ : RHS is Pearson’s test statistic for goodness of fit. Degrees of freedom (df): # of free parameters (think: # of unknown parameters) 
-* Pearson Chi-Square Test $X^2 = \sum\frac{(Observed - Expected)^2}{Expected}$
-  * $\chi_{\text {stat }}^{2}:=\sum_{1}^{n} \frac{\left(O_{i}-E_{i}\right)^{2}}{E_{i}} \sim \chi_{\mathrm{d} f:=n-s-1}^{2}$
-  * Goodness-of-fit: whether eCDF differs from *any* theoretical CDF 
-  * 1) build test statistic for n bins - Oi is the observed count in each bin and Ei is the expected count in each bin
-  * 2) null hypoth is O ~ E, so build test statistic, find p-value, decide whether to accept or reject
+
+##### Pearson Chi-Square Test 
+
+* Used on grouped data into bins
+* $X^2 = \sum\frac{(Observed - Expected)^2}{Expected}$
+
+* $\chi_{\text {stat }}^{2}:=\sum_{1}^{n} \frac{\left(O_{i}-E_{i}\right)^{2}}{E_{i}} \sim \chi_{\mathrm{d} f:=n-s-1}^{2}$
+* Goodness-of-fit: whether eCDF differs from *any* theoretical CDF 
+* 1) build test statistic for n bins - Oi is the observed count in each bin and Ei is the expected count in each bin
+* 2) null hypoth is O ~ E, so build test statistic, find p-value, decide whether to accept or reject
 
 ##### Poisson Dispersion Test
 
 * If one  has a specific alternative hypothesis in mind, better power can usually be obtained  by testing against that alternative rather than against a more general alternative.
-* The two key assumptions underlying the Poisson distribution are that the rate  is constant and that the counts in one interval of time or space are independent of  the counts in disjoint intervals. These conditions are often not met.
+* The two key assumptions underlying the Poisson distribution are that the rate  is constant and that the counts in one interval of time or space are independent of the counts in disjoint intervals. These conditions are often not met.
 * Given counts $x_1,..., x_n$, we consider testing the null hypothesis that the counts  are Poisson with the common parameter $\lambda$ versus the alternative hypothesis that  they are Poisson but have different rates, $\lambda1,...,\lambda_n$.
 * $\begin{aligned} \Lambda &=\frac{\prod_{i=1}^{n} \hat{\lambda}^{x_{i}} e^{-\hat{\lambda}} / x_{i} !}{\prod_{i=1}^{n} \tilde{\lambda}_{i}^{x_{i}} e^{-\bar{\lambda}_{i}} / x_{i} !} =\prod_{i=1}^{n}\left(\frac{\bar{x}}{x_{i}}\right)^{x_{i}} e^{x_{i}-\bar{x}} \end{aligned}$
 * $-2 \log \Lambda \approx \frac{1}{\bar{x}} \sum_{i=1}^{n}\left(x_{i}-\bar{x}\right)^{2}$ using Taylor approximation. 
-* This equation is roughly the ratio of  n times the estimated variance to the estimated mean. For the Poisson distribution, the  variance equals the mean; for the types of alternatives discussed above, the variance is typically greater than the mean. For this reason the test is often called the Poisson dispersion test.
+* We use the above formula as the test statistic and find the relevant signficance level / p-value from the poisson distribution.
 
 ##### Hanging Rootograms
 
 * Hanging rootograms are a  graphical display of the differences between observed and fitted values in histograms. 
 * Suppose we estimate $\bar{x} \rightarrow \mu, \, \hat{\sigma} \rightarrow \sigma$, the then probability that an observation falls in an interval between $x_{j-1}, x_j$ is $\hat{p}_{j}=\Phi\left(\frac{x_{j}-\bar{x}}{\hat{\sigma}}\right)-\Phi\left(\frac{x_{j-1}-\bar{x}}{\hat{\sigma}}\right)$. For sample size n, the predicted count in the jth interval is $\hat{n}_j = n\hat{p}_j$, which we then compare to the observed counts
 * The hanging histogram is then the difference between the fitted frequency of the bins and the observed. Expect larger fluctuations in the center than in the tails since variance across buckets is not constant - can use a variance-stabilizing transformation. Often use $f(x) = \sqrt{x}$ so get a hanging rootogram showing $\sqrt{n_j} - \sqrt{\hat{n}_j}$
+* From delta-method,  for $Y= f(X)$,  $\operatorname{Var}(Y) \approx \sigma^{2}(\mu)\left[f^{\prime}(\mu)\right]^{2}$. Variance is stabilized by making a transformation under which this is constant.
 * Generally, deviations in the center  have been down-weighted and those in the tails emphasized by the transformation. 
 * Hanging chi-gram: plots $\frac{n_j - \hat{n}_j}{\sqrt{\hat{n}_j}}$
 
 ##### Probability Plots
 
 * Useful graphical tool for qualitatively assessing the  fit of data to a theoretical distribution
-* Plotting the ordered observations against expected values (find order statistic of data and plot against quantiles of a known distribution)
+* Plotting the ordered observations against expected values ($E\left(X_{(j)}\right)=\frac{j}{n+1}$) (find order statistic of data and plot against quantiles of a known distribution)
 * Probability integral transform: $Y = F_X(X)$ to get uniform distribution. Then can plot against uniform quantiles.
 
 #####  Tests for Normality
@@ -89,40 +133,59 @@ date: 20191016
   * $n F_{n}(x)$ is a binomial RV - n trials with F(x) probability of success
   * $\begin{aligned} E\left[F_{n}(x)\right] &=F(x) \\ \operatorname{Var}\left[F_{n}(x)\right] &=\frac{1}{n} F(x)[1-F(x)] \end{aligned}$
 * Survival Function: $S(t)=P(T>t)=1-F(t)$
-  * Simply a reversal of the CDF for data consist of time until death or failure.
-* Hazard Function: as the instantaneous death rate for individuals who  have survived up to a given time. $h(t)=\frac{f(t)}{1-F(t)}$
+  * Simply a reversal of the CDF for data consist of time until death or failure, chance of surviving past t.
+
+###### Hazard Functions
+
+* As the instantaneous death rate for individuals who  have survived up to a given time. $h(t)=\frac{f(t)}{1-F(t)} = \frac{f(t)}{S(t)} = -\frac{d}{dt}log(S(t))$
+* May be thought of as the instantaneous rate of mortality for an individual alive at time t. If T is the lifetime of a manufactured component, it may be natural to think  of h(t) as the instantaneous or age-specific failure rate.
 
 ##### QQ Plots
 
+* Shoes the ith order statistic $X_{(i)}$ against $F^{-1}(i/(n+1))$ for some distribution CDF F
 * Pth quantile: $F(x) = p$ or $x_p = F^{-1}(p)$
 * Plot the quantiles of one distribution against another
-* Additive: if $y_{p}=x_{p}+h$, then for the quantiles $G(y)=F(y-h)$
+* Additive: if $y_{p}=x_{p}+h$, then for the quantiles $G(y)=F(y-h)$, for control group x with CDF F and treatment y with CDF G. For values of y G(y) = F(y) shifted to the right.
 * Multiplicative: if $y_{p}=c x_{p}$, then for quantiles $G(y)=F(y / c)$
+* If the values in the right tail would have to move down to the line that means they would have to become smaller and the data has a heavier tail than the distribution.
+* To compare two batches of n numbers with order statistics X(1) ,..., X(n) and  Y(1) ,..., Y(n) , a Q-Q plot is simply constructed by plotting the points (X(i) , Y(i)). The difference from PP plots is simply that we are plotting two data quantiles now instead of data against a theoretical distribution.
+
 
 ##### Histograms, Density Curves, Stem / Leaf plots
 
-* Smooth probability density estimate: using w, smooth weight function integrating to 1 and centered at 0, 
-* Kernel probability density estimate: $f_{h}(x)=\frac{1}{n} \sum_{i=1}^{n} w_{h}\left(x-X_{i}\right)$ - superposition of hills centered on the observations. If w(x) is standard normal w(x - Xi) is normal with mean Xi and SD h. The parameter h, bandwidth, controls the smoothness and is the bin width of the histogram. With histograms and density estimates, we lose information and cannot reconstruct the data.
+* Let w(x) be a weight function: 
+  * nonnegative 
+  * symmetric
+  * centered at zero
+  * integrating to 1
+* We rescale w: $w_{h}(x)=\frac{1}{h} w\left(\frac{x}{h}\right)$. Small h causes kernel function to be more peaked about 0, large h more spread out.
+* Kernel probability density estimate: $f_{h}(x)=\frac{1}{n} \sum_{i=1}^{n} w_{h}\left(x-X_{i}\right)$ - superposition of hills centered on the observations. If $w_h(x)$ is standard normal $w_h(x - Xi)$ is normal with mean Xi and SD h. 
+* The parameter h, bandwidth, controls the smoothness and is the bin width of the histogram. With histograms and density estimates, we lose information and cannot reconstruct the data.
 *  Stem and leaf plots - retain numerical information while showing shape. 
 
 ##### Measures of Location
 
 * Measure of the center of batch of numbers
 * Arithmetic mean - sum over the count
-* robust measures  - insensitive to outliers
+* Robust measures  - insensitive to outliers, such as the median.
 * When the data are a sample from a continuous probability law, the sample median can be viewed as an estimate of the population median. The distribution of the number of observations greater than the median is binomial  with n trials and probability 1/2 of success on each trial.
-* Trimmed mean - mean. The 100α%  trimmed mean is easy to calculate: Order the data, discard the lowest 100α% and the  highest 100α%, and take the arithmetic mean of the remaining data: $\bar{x}_{\alpha}=\frac{x_{([n \alpha]+1)}+\cdots+x_{(n-[n \alpha])}}{n-2[n \alpha]}$
+* Trimmed mean - The $100\alpha\%$  trimmed mean is easy to calculate: Order the data, discard the lowest $100\alpha\%$  and the highest $100\alpha\%$, and take the arithmetic mean of the remaining data: $\bar{x}_{\alpha}=\frac{x_{([n \alpha]+1)}+\cdots+x_{(n-[n \alpha])}}{n-2[n \alpha]}$
 * M Estimates - minimizers of $\sum_{i=1}^{n} \Psi\left(\frac{X_{i}-\mu}{\sigma}\right)$. where the weight function is a compromise between the weight functions for the  mean and the median.
 * Estimating variability of location estimates by bootstrap:
-  * n. Suppose we denote the location estimate asθˆ; it is important to keep in  mind that $\hat{\theta}$ is a function of the random variables $X_1, X_2,..., X_n$ and hence has a probability distribution, its sampling distribution, which is determined by n and F. We don’t know F and $\hat{\theta}$ may be complicated.
-  * We generate many samples from F (if we knew it) and calculate the value of $\hat{\theta}$, then could find measures on the samples like SD. Use empirical CDF instead as an approximation of F. Then the SD is estimated as: $s_{\hat{\theta}}=\sqrt{\frac{1}{B} \sum_{i=1}^{B}\left(\theta_{i}^{*}-\bar{\theta}^{*}\right)^{2}}$
+  * Suppose we denote the location estimate as $\hat{\theta}$; it is important to keep in  mind that $\hat{\theta}$ is a function of the random variables $X_1, X_2,..., X_n$ and hence has a probability distribution, its sampling distribution, which is determined by n and F. We don’t know F and $\hat{\theta}$ may be complicated.
+  * We generate many samples from F (if we knew it) and calculate the value of $\hat{\theta}$, then could find measures on the samples like SD. Use empirical CDF instead as an approximation of F. 
+  * A sample of size n from Fn is thus a sample of size n drawn with replacement from the collection $x_1, x_2,..., x_n$. We thus draw B samples of size n with replacement from the observed  data, producing $\theta_{1}^{*}, \theta_{2}^{*}, \ldots, \theta_{B}^{*}$.
+  
+  * Then the SD is estimated as: $s_{\hat{\theta}}=\sqrt{\frac{1}{B} \sum_{i=1}^{B}\left(\theta_{i}^{*}-\bar{\theta}^{*}\right)^{2}}$
 
 ##### Measures of Dispersion
 
-* sample standard deviation: $s^{2}=\frac{1}{n-1} \sum_{i=1}^{n}\left(X_{i}-\bar{X}\right)^{2}$ (use n-1 as divisor to make s^2 unbiased estimate of population variance)
+* Sample standard deviation: $s^{2}=\frac{1}{n-1} \sum_{i=1}^{n}\left(X_{i}-\bar{X}\right)^{2}$ (use n-1 as divisor to make s^2 unbiased estimate of population variance)
   * If sample from standard normal, $\frac{(n-1) s^{2}}{\sigma^{2}} \sim \chi_{n-1}^{2}$
 * Median absolute deviation from the median (MAD): the data  are $x_1,..., x_n$ with median $\tilde{x}$, the MAD is defined to be the median of the numbers  $|x_i − \tilde{x}|$.
+* These two measures of dispersion, the IQR and the MAD, can be converted into estimates of $\sigma$ for a normal distribution by dividing them by 1.35 and .675,  respectively.
+
 
 ##### Boxplot
 
-* The range lines - A vertical line is drawn up from the upper quartile to the most extreme data point that is within a distance of 1.5 (IQR) of the upper quartile. A similarly defined vertical line is drawn down from the lower quartile. Short horizontal lines are  added to mark the ends of these vertical lines. 
+* The range lines - A vertical line is drawn up from the upper quartile to the most extreme data point that is within a distance of 1.5 (IQR) of the upper quartile, ie $X_i > Q^{0.75} + 1.5\times IQR$  and $X_i < Q^{0.25} - 1.5\times IQR$. A similarly defined vertical line is drawn down from the lower quartile. Short horizontal lines are  added to mark the ends of these vertical lines. 
