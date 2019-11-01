@@ -274,7 +274,54 @@ Non-Linear Relationships - Polynomial Regression: Can add a higher order polynom
   * Bayesian interpretation
     * Gives us a distribution of a solution for betas, not a single point estimate.
     * Ridge: $\hat{B}^R$ is the posterior mean with a Normal prior. We take the distribution, take the mean, this is the Ridge beta estimate.
-    * Lasso: $\hat{B}^R$ is the posterior mode with a Laplacian prior. 
+    * Lasso: $\hat{B}$ is the posterior mode with a Laplacian prior. 
+
+##### Dimensionality Reduction
+
+* Added penalties are very common in statistics and optimization to create function that can be worked with.
+* Increasing lambda increases bias, but it reduces variance
+* Idea: define a small set of M predictors which summarize the information in all p predictors - we saw this with PCA, using a transformation to combine information from many predictors into a smaller set of new predictors
+
+###### Principal Components Regression
+
+* The loadings show how the variables weigh on the given principal component
+* In the USArrests data, we saw the loadings for the first PC were heavy for the various crimes, low for criminal pop. Therefore the score for the first PC represents the overall reate of crime in each state. Each M (state) gets a score, each predictor assigned loadings
+* In the regression, we replace our p predictors with M score vectors. Obtain then M coefficients $\theta_0,...,\theta_M$. We can rearrange terms to see that we are still doing a regression on the original space of x, but now the betas are restricted. The coefficients are interdependent, and we only have M $\theta$ terms across p X terms to vary. Think of constrained to working in a plane in three dimensional space.
+* Usefulness is dependent on the actual dataset. The Credit dataset has best error at 10 components instead of the full 11 - there is almost no dimensionality reduction here. If the best error is with all parameters, then just have least squares. So PCR should only improve on the least squares fit since OLS is always an option in selection number of components.
+* In the case of 45 predictors with 42 significant, PCR performs worse than Ridge. In 45 predictors with 2 significant, PCR does worse than Lasso. PCR really fit for when the response variable is really a combination of the principal components.
+
+###### Partial Least Squares
+
+* PCR only uses information in the X predictors. What if we include information from the Y responses as well.
+* Regress Y onto $X_j$, then our $\phi_{j1}$ is the coefficient from this regression. Look at the direction that explains Y best, instead of the direction of greatest X variance. Gives more weight to the variables / residuals that are more correlated with the response.
+* Take the residuals of the simple linear regression, and repeat. Run a gression of Y against the residuals. Continue to define $Z_1, Z_2,...$
+* Then do a regression of Y onto the Z vectors.
+* Compared to PCR ,PLS has less bias, more variance ie. tendency to overfit. The Y responses have noise, and now we increase the chance of fitting to that noise as well.
+
+##### High Dimensional Regression
+
+* Bag of words - count the words in data, turns it into quantitative measures. Number of predictors is as many as the words in the dictionary, so p >> n
+* When p > n, formally we have no solution, but if we assume the effect is simple enough, the real p that drives the effect can be found, say through regularization / shrinkage
+* Plots of Lasso performance vs increasing predictors - adding many noise predictors hurts Lasso performance of the regression. Lasso looking at all possible options of selecting variables, but too much noise to find the signal when p >> n
+* With p unknowns and n equations, there is always multicollinearity - some predictors will have to be defined in terms of others. There are then many ways to write out a good solution.
+
+### Chapter 7 - Non Linear Methods
+
+* Wage vs Age - could fit a polynomial regression to show the concave down shape. But also have a classification problem, since the high earning group is very split off from the lower earning group. Could use logistic regression with higher order terms and get a flexible classification model, finding probability of being in higher age group given age. Standard error blows up on the upper end, possible due to the matrix becoming singular in that region
+* Could instead use piecewise indicator functions, get averages over certain age groups.
+
+##### Piecewise Polynomials
+
+* Fit cubic polynomial up to age 50, then look at the data above age 50 and fit another polynomial to that data. 
+* Piecewise continuous - force the functions to meet at 50 to make function continuous 
+* Cubic spline - fits polynomials on each data set, and has continuous point at 50 with 1st and 2nd derivatives continuous too.
+  * define knots - ie. the break points, 1 - K
+  * Fit a cubic polynomial $Y = f(x)$ between each pair of knots, s.t. 1st and 2nd derivatives exist
+  * Can write f in terms of K+3 basis functions. At each knot point can change the higher order terms while keeping the continuity conditions.
+* Linear spline - simple linear fits continuous at the break point.
+* Natural cubic splines - At the end points, use linear spline instead of cubic, use cubic on the rest. Helps control the SEs at the end points, since polynomials tend to become more erratic at their endpoints - Gibbs phenomenon
+* Choosing knots - back to bias-variance tradeoff, chosen through CV. Locations are typically at quantiles of X.
+* Splines can fit complex functions without the weird behavior of a very high degree polynomial.
 
 ### Chapter 10 - Unsupervised Learning
 

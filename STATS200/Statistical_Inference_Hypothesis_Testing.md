@@ -73,11 +73,11 @@ date: 20191016
 ##### Generalized Likelihood Ratio Tests
 
 * $\Lambda=\frac{\max _{\theta \in \omega_0 }[\operatorname{lik}(\theta)]}{\max _{\theta \in \Omega}[\operatorname{lik}(\theta)]} \leq \lambda_0$ - Testing the parameter space for observations against some cutoff value. $\Lambda \leq 1$ since numerator is a subset of the denominator
-* We have to work out the distribution of $\Lambda$ under $H_0$ to get a signficance level. This can be quite hard, so for iid data, we approximate using $-2log(\Lambda) \approx \chi^2_{(d)}$ under $H_0$ as $n \rightarrow \infty$. 
+* We have to work out the distribution of $\Lambda$ under $H_0$ to get a significance level. This can be quite hard, so for iid data, we approximate using $-2log(\Lambda) \approx \chi^2_{(d)}$ under $H_0$ as $n \rightarrow \infty$. 
   * DoF d = # free parameters in H1 - # free parameters in H0. Example: N(2, 1) has 0 free parameters, $N(\sigma^2 + 1, \sigma^2)$ has 1, and $N(\mu, \sigma^2)$ has 2.
   * Intuition: the more free parameters you allow, the more the alternative can fit to the data and explain it. Therefore $-2log(\Lambda)$ must be larger to provide evidence against the null.
 * For $H_0: \mu = \mu_0,\,H_1:\mu \neq \mu_0$, the numerator of the likelihood ratio is the density function at point $\mu_0$ and the denominator we plug in the mle of the parameter $\mu$, (so here for example, $\bar{X}$). This follows from the definition, since the maximum of the likelihood function over the parameter space is the MLE.
-* Knowing the null  distribution of the test statistic makes possible the construction of a rejection region  for any significance level $\alpha$. Using the chi-square, RR is given by $\left|\bar{X}-\mu_{0}\right| \geq \frac{\sigma}{\sqrt{n}} z(\alpha / 2)$
+* Knowing the null distribution of the test statistic makes possible the construction of a rejection region for any significance level $\alpha$. Using the chi-square, RR is given by $\left|\bar{X}-\mu_{0}\right| \geq \frac{\sigma}{\sqrt{n}} z(\alpha / 2)$
 
 * Under smoothness conditions on the probability density or frequency functions  involved, the null distribution of $−2 log \Lambda$ tends to a chi-square distribution  with degrees of freedom equal to  $dim\,\Omega−dim\,ω_0$ as the sample size tends to  infinity.
 * Generally - set up the distributions, compose the likelihood ratio, often take the log of both sides, try to determine how the likelihood changes for different observed values.
@@ -88,10 +88,14 @@ date: 20191016
 * Used on grouped data into bins
 * $X^2 = \sum\frac{(Observed - Expected)^2}{Expected}$
 
-* $\chi_{\text {stat }}^{2}:=\sum_{1}^{n} \frac{\left(O_{i}-E_{i}\right)^{2}}{E_{i}} \sim \chi_{\mathrm{d} f:=n-s-1}^{2}$
+* $X^{2}:=\sum_{1}^{n} \frac{\left(O_{i}-E_{i}\right)^{2}}{E_{i}} =\sum_{i=1}^{m} \frac{\left[x_{i}-n p_{i}(\hat{\theta})\right]^{2}}{n p_{i}(\hat{\theta})} \sim \chi_{\mathrm{d} f:=n-s-1}^{2}$
+* $\begin{array}{l}{x^{2}=\text { Pearson's cumulative test statistic, which asymptotically approaches a } \chi^{2} \text { distribution. }} \\ {O_{i}=\text { the number of observations of type } i .} \\ {N=\text { total number of observations }} \\ {E_{i}=N p_{i}=\text { the expected (theoretical) count of type } i, \text { asserted by the null hypothesis that the fraction of type in the population is } p_{i}} \\ {n=\text { the number of cells in the table. }}\end{array}$
 * Goodness-of-fit: whether eCDF differs from *any* theoretical CDF 
-* 1) build test statistic for n bins - Oi is the observed count in each bin and Ei is the expected count in each bin
-* 2) null hypoth is O ~ E, so build test statistic, find p-value, decide whether to accept or reject
+
+1. Build test statistic for n bins - $Oi$ is the observed count in each bin and $Ei$ is the expected count in each bin
+2. Null hypothesis is O ~ E 
+3. Compare the test statistic to critical values in the chi-square distribution
+4. Degrees of freedom is number of cells less parameters being estimated.
 
 ##### Poisson Dispersion Test
 
@@ -100,7 +104,7 @@ date: 20191016
 * Given counts $x_1,..., x_n$, we consider testing the null hypothesis that the counts  are Poisson with the common parameter $\lambda$ versus the alternative hypothesis that  they are Poisson but have different rates, $\lambda1,...,\lambda_n$.
 * $\begin{aligned} \Lambda &=\frac{\prod_{i=1}^{n} \hat{\lambda}^{x_{i}} e^{-\hat{\lambda}} / x_{i} !}{\prod_{i=1}^{n} \tilde{\lambda}_{i}^{x_{i}} e^{-\bar{\lambda}_{i}} / x_{i} !} =\prod_{i=1}^{n}\left(\frac{\bar{x}}{x_{i}}\right)^{x_{i}} e^{x_{i}-\bar{x}} \end{aligned}$
 * $-2 \log \Lambda \approx \frac{1}{\bar{x}} \sum_{i=1}^{n}\left(x_{i}-\bar{x}\right)^{2}$ using Taylor approximation. 
-* We use the above formula as the test statistic and find the relevant signficance level / p-value from the poisson distribution.
+* We use the above formula as the test statistic and find the relevant significance level / p-value from the poisson distribution.
 
 ##### Hanging Rootograms
 

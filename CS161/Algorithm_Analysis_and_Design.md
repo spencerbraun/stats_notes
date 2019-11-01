@@ -8,7 +8,7 @@ Table of Contents
 
 [TOC]
 
-## Algorithms Part 1
+## Algorithms
 
 ### Asymptotic Run Time
 
@@ -269,6 +269,70 @@ Table of Contents
 * Finish time of an SCC DAG - the largest finish time of any vertex in the SCC. Starting time is the smallest starting time of any vertex
 * SCC DAG can now by topologically sorted based on the SCC finish times (from the regular DFS, not reversed)
 * In the forward SCC graph - if edge from A to B, then A.finish > B.finish. Then (corollary) in the reverse graph if $B\rightarrow A$, A.finish > B.finish in the real graph.
+
+## Dynamic Programming
+
+* Algorithm design paradigm, storing our work to reduce repeated computation
+* Usually used for optimization problems. Big problems break into sub-problems like in divide and conquer. 
+* Keep a table of solutions to the subproblems, refer to the table instead of recomputing work already performed
+* Bottom up
+  * Solve the small problems first, then the bigger problems, and the final steps solve the real problem. 
+  * Often the easier one to write and analyze the running time
+* Top down
+  * Like a recursive algorithm, similar to divide and conquer
+  * The difference is memoization - when we encounter an already solved subproblem, we just plug in. This means we have to keep track of what we have already solved.
+* Bottom up often nested for loop, top down is more recursive
+* Optimal substructures 
+  * BF used $d^{i+1}(s,v) = min_u( d^{i}(s,u)+ w(u,v))$
+  * FW used $D^{(k)}[u, v] = min(D^{(k-1)}[u, v], D^{(k-1)}[u, k] + D^{(k-1)}[k, v])$
+  * The fact that we cared about all of the pairs in FW, but wouldn’t work for BF because we aren’t just considering distances from the sources to the destination. 
+  * For FW, its substructure is best since it only has to take the minimum of two things, whereas using BF for this task takes min over all neighbors U. Substructure should be designed to fit the problem.
+
+### LCS
+
+* Backtracking - look up and left - if letters don’t match we got current count from one of these cells. If they do match, then append to list of matching characters
+
+### Knapsack
+
+* Various items in a knapsack with values and weights. Want to maximize value for a constrained weight. Cna also have an unbounded knapsack, or a 0-1 knapsack. The first has infinite copies of each item and the second only has a single copy of each item.
+* Unbounded: Solve the problem for smaller knapsack and work up to a larger knapsack. 
+  * We only care about the weights, not really the items added to the knapsack
+  * Say $k[x] = v$
+  * $k[x-w_i] = V - v_i$ the value before we added the last item to fill the knapsack.
+  * We take the max over all previous possibilies plus a new item’s value
+  * W is the capacity of the backpack, sum of weights that fit
+  * Items array keeps track of the items used 
+* 0-1 Knapsack
+  * Can only take one or 0 iterations of each item. We will keep track of the items used
+  * Start with constrained possible items and move up to including more items to be considered. Also move up to larger knapsacks, so 2D to track.
+  * Look at first j items, with total capacity constrained to x index.
+  * 2 Cases: either we use item j or we do not use item j
+  * Don’t use j = $k[x, j-1]$. Using j = $k[x - w_j, j-1] + v_j$ We take the max of previous values when we don’t use j, or we take the previous value (less j’s weight) and add the value of j. 
+
+### BFS as DP
+
+* Optimal substructure - shortest path using $\leq i$ edges
+* Recursive formulation: $d^{i+1}(s,v) \leq d^{i}(s,u)+ d^{i}(u,v) = i + 1$ One way to get to s to v, is s to u, then u to v. There might be better paths, so we use $\leq$
+
+### Weighted Graphs
+
+* Cost of a path is a sum of the weights along that path. Shortest path has minimum cost
+* Assume no negative cycles, since would travel it infinitely. But we can have negative weights.
+* **Bellman-Ford**: Using DP to find shortest path. Runs in O(nm)
+  * Optimal substructure - shortest path using $\leq i$ edges
+  * Recursive formulation $d^{i+1}(s,v) = min_u( d^{i}(s,u)+ w(u,v))$ . Last vertex was some neighbor u, so the distance is the last distance to u plus the weight from u to v. 
+  * Lemma: A sub-path of a shortest path is also a shortest path
+  * If no actual path from u to v, could think of it as an infinite weight
+  * Bottom up, finding the shortest path from i = 0, working up to the path we want to calculate 0 to n - 2.
+  * Could improve by looping over only the paths that updated in the last iteration - since if it did not update, we won’t have a new shortest path for it in the next iteration. 
+  * Can just keep the previous two rows in the table, since rest not used for further computation. 
+* **Floyd - Warshall**
+  * Want to find all pairs of shortest paths
+  * n by n table of all sources to all destinations with all 0’s on diagonals. 
+  * Running with B-F, now have n more starting points - $O(n^2m)$, could be even worse if $m = n^2$. This is the time to beat
+  * Define a substructure of a collection of points s.t. u has one path entering substructure and one leaving to reach v
+  * Given the shortest path from u to v using a collection of k-1, how do we find it using a collection of k? Either we use the kth vertex or not. If it doesn’t then the shortest path did not change $D^{(k)}[u, v] = D^{(k-1)}[u, v]$. If it does, then we must have already calculated the path from u to k and the distance from k to v, since it follows a subpath using nodes for which we have calculated distances. $D^{(k)}[u, v] = D^{(k-1)}[u, k] + D^{(k-1)}[k, v]$
+  * We have $n^3$ iterations, so $O(n^3)$. So we saved $\frac{m}{n}$ time from BF. Every vertex has at least one edge and at most $n^2$ so this is an improvement.
 
 ## Probability Reference
 

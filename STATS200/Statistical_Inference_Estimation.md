@@ -17,7 +17,8 @@ date: 20191009
 * Then population mean = $\frac{1}{N}\sum_{i=1}^N x_i$
 * t = $\sum_{i=1}^N x_i = N \mu$
 * Population variance: $\sigma^{2}=\frac{1}{N} \sum_{i=1}^{N}\left(x_{i}-\mu\right)^{2}$
-* Population Confidence Interval for $X \sim N(\mu, \sigma^2)$ : $P\left(\bar{X}-z(\alpha / 2) \frac{\sigma^2}{\sqrt{n}} \leq \mu \leq \bar{X}+z(\alpha / 2) \frac{\sigma^2}{\sqrt{n}}\right) = 1-\alpha$
+* Population Confidence Interval for $X \sim N(\mu, \sigma^2)$ 
+  * $P\left(\bar{X}-z(\alpha / 2) \frac{\sigma^2}{\sqrt{n}} \leq \mu \leq \bar{X}+z(\alpha / 2) \frac{\sigma^2}{\sqrt{n}}\right) = 1-\alpha$
   * eg: $P\left(\bar{X}-2.58 \frac{\sigma^2}{\sqrt{n}} \leq \mu \leq \bar{X}+2.58 \frac{\sigma^2}{\sqrt{n}}\right) = 0.99$
 * CLT: $P\left(\frac{\bar{X}_{n}-\mu}{\sigma / \sqrt{n}} \leq z\right) \rightarrow \Phi(z) \quad \text { as } n \rightarrow \infty$
 
@@ -53,7 +54,7 @@ date: 20191009
 
 * This measure has the intuitive properties that more data provide more information, and more precise data provide more information. The variance of the distribution tends to be inversely proportional to I. 
 * Define $\lambda(x | \theta)=\log f(x | \theta)$ - log likelihood function
-* The Fisher information = $I(\theta)=E_{\theta}\left\{\left[\lambda^{\prime}(X | \theta)\right]^{2}\right\} = -E_{\theta}\left[\lambda^{\prime \prime}(X | \theta)\right] =\operatorname{Var}_{\theta}\left[\lambda^{\prime}(X | \theta)\right]$. Can make it a function with respect to n and it is a sample statistic. 
+* The Fisher information = $I(\theta)=E_{\theta}\left\{\left[\lambda^{\prime}(X | \theta)\right]^{2}\right\} = -E_{\theta}\left[\lambda^{\prime \prime}(X | \theta)\right] =\operatorname{Var}_{\theta}\left[\lambda^{\prime}(X | \theta)\right]$. 
 * Staring into it we see it is an expected squared slope of log likelihood. If the slope is large then small changes in $\theta$ change the log likelihood a lot. That should help separate likely from unlikely values. If that slope were zero then we get no effect of changing $\theta$.
 * $I_n(\theta) = nI(\theta)$ the Fisher information in a random sample of n observations is simply n times the Fisher information in a single observation.
 * Can be used to compare sampling plans. Calculating the Fisher information for each and equating them will tell you something about the necessary parameters to yield the same information.
@@ -62,7 +63,7 @@ date: 20191009
 
 ##### Method of Moments
 
-- Generaly have a sample of $X_i \sim iid$. We are only missing a parameter $\theta$ to know the distribution of these RVs
+- Generally have a sample of $X_i \sim iid$. We are only missing a parameter $\theta$ to know the distribution of these RVs
 - kth sample moment defined as $\hat{\mu_k} = \frac{1}{n}\sum_{i=1}^nX_i^k$, where mu-hat is an estimate of the kth moment.
 - If two parameters $\theta_1, \theta_2$ can be expressed in terms of the first two moments as $\theta_1 = f_1(\mu_1, \mu_2), \theta_2 = f_2(\mu_1, \mu_2)$ then the method of moments estimates are $\hat{\theta_1} = f_1(\hat{\mu_1}, \hat{\mu_2}), \hat{\theta_2} = f_2(\hat{\mu_1}, \hat{\mu_2})$ 
 - Steps
@@ -77,16 +78,17 @@ date: 20191009
 
 - Random variables $X_1,X_2,...,X_n$ have a joint density or frequency function $f (x_1, x_2,..., x_n|\theta)$. Given observed values $X_i = x_i$ , where $i = 1,..., n$  the likelihood of $\theta$ as a function of $x_1, x_2,..., x_n$ is defined as  $lik(\theta) = f (x_1, x_2,..., x_n|\theta)$. When the joint p.d.f. or the joint p.f. $fn(x|\theta)$ of the observations in a random sample is regarded as a function of $\theta $ forgiven values of $x_1,...,x_n$, it is called the likelihood function.
 - The MLE of $\theta$ is that value that maximizes the likelihood of f - it makes the observed data most probable. For large samples, MLE often yields a very good estimator. It is a value we believe the parameter to be near, but other estimates are likely to be better with smaller samples or any prior information. MLE is range respecting unlike MOM - we won’t get an estimate that is beyond the domain of the parameter.
-- If $\hat{\theta} $ is the maximum likelihood estimator of $\theta$ and if g is a one-to-one function, then $g(\hat{\theta})$ is the maximum likelihood estimator of $g(\theta)$. Or, if not one to one,, if we define $g(\theta)$ to be a function of $\theta$, then $g(\hat{\theta})$ is an MLE of  $g(\theta)$
+- If $\hat{\theta} $ is the maximum likelihood estimator of $\theta$ and if g is a one-to-one function, then $g(\hat{\theta})$ is the maximum likelihood estimator of $g(\theta)$. Or, if not one to one,, if we define $g(\theta)$ to be a function of $\theta$, then $g(\hat{\theta})$ is an MLE of $g(\theta)$
 
-- Therefore, the maximum likelihood estimate is the value of θ that assigned the highest probability to seeing the observed data. It is not necessarily the value of the parameter that appears to be most likely given the data.
+- Therefore, the maximum likelihood estimate is the value of $\theta$ that assigned the highest probability to seeing the observed data. It is not necessarily the value of the parameter that appears to be most likely given the data.
 
 - For iid X, $lik(\theta) = \prod_{i=1}^nf(X_i|\theta)$. Can also use the log likelihood: $l(\theta) = \prod_{i=1}^nlog[f(X_i|\theta)]$
 - Steps
   - Find joint density function, viewed as a function of the parameters.
   - Take partials with respect to the parameters (eg. $\mu, \sigma$). Set partials to zero and solve for parameters.
   - Those parameters are the estimates - may need to solve system of equations to get RHS of equations just in terms of X’s. May also need to use one estimated parameter to estimate the other (eg. for Normal, estimate $\mu$ and plug in this estimate into equation for $\sigma$ estimate)
-- Range respecting: never gives illegal values (eg. Var < 0) unlike MOM. Tranformations: $\hat{\theta} = MLE(\theta)$, then $g(\hat{\theta}) = MLE(g(\theta)$
+  - Ensure you have a maximum with 2nd derivative test and bound checking
+- Range respecting: never gives illegal values (eg. Var < 0) unlike MOM. Transformations: $\hat{\theta} = MLE(\theta)$, then $g(\hat{\theta}) = MLE(g(\theta)$
 
 ###### Large Sample Theory for MLE
 
@@ -135,7 +137,7 @@ date: 20191009
   - Take a prior distribution, eg. $\Theta \sim U(a,b)$
   - Find $f(x|\theta)$, ie. the distribution of the data in terms of the parameter. Eg. $X \sim N(\theta, \sigma^2)$
   - Calculate $f(x|\theta)f(\theta)$
-  - Try to figure out constant from a recognized probability distribution. If must integrate of the denominator of Bayes, ie $\int f_{X|\Theta}(x|\theta)f_\Theta(\theta) \, d\theta$
+  - Try to figure out constant from a recognized probability distribution. Last resort integrate the denominator of Bayes, ie $\int f_{X|\Theta}(x|\theta)f_\Theta(\theta) \, d\theta$
 - We can also calculate sequentially using one data point at a time to obtain the same posterior, using the posterior from one observation as the prior for the next. For improper priors, we use some constant, and then $posterior(\theta) \propto likelihood(\theta) \times constant$ 
 - Steps for finding an estimator $\hat{\theta}$
   - It could be the mean, median or mode of the posterior distribution.
@@ -150,7 +152,7 @@ date: 20191009
 
 ###### Gibbs Sampling
 
-* Instead of relying on analyitically finding normalizing constant or using conjugates, can computationally find what the constant needs to be using Monte Carlo. We have a joint density that is hard to estimate. Suppose, though, that we can easily sample from the conditional distributions p(x|y) and p(y|x).
+* Instead of relying on analytically finding normalizing constant or using conjugates, can computationally find what the constant needs to be using Monte Carlo. We have a joint density that is hard to estimate. Suppose, though, that we can easily sample from the conditional distributions p(x|y) and p(y|x).
 * Gibbs Sampling alternates back and forth between the two conditional distributions:
 
 1. Choose starting value for $\theta_0$, usually $\bar{x}$
@@ -165,12 +167,14 @@ date: 20191009
 * In science, flat / uninformative priors are often used because another prior may determine the shape of the posterior. Improper priors do not integrate to one, so the posterior may not integrate to one either.
 * Make the calculations in Bayesian estimation easier by telling you what distribution the posterior should be
 * For each of the most popular statistical models, there exists a family of distributions for the parameter with a very special property. If the prior distribution is chosen to be a member of that family, then the posterior distribution will also be a member of that family. Such a family of distributions is called a conjugate family.
-* No matter the prior chosen, number of observations, if the posterior ends up as a member of a subset of distributions, we say it is a conjugate family of prior distributions for samples from $f(x|\theta)$
-* Those conjugates may be parametrized, and those parameters are the hyper-parameters of the distribution (either prior or posterior)
-* Beta is the conjugate family for Bernoulli -> if prior is Beta then the posterior will be too
-* Gamma is a conjugate family of priors for Poisson
-* Normals are conjugates of normals with unknown mean and known variance
-* Gamma is conjugate of Posterior for exponential with known parameter
+* Prior / Posterior - Likelihood
+  * Beta - Bernoulli
+  * Beta - Binomial
+  * Beta - Geometric
+  * Gamma - Poisson
+  * Normal - Normal (precision or variance)
+  * Gamma - Exponential
+  * Gamma - Gamma
 
 ##### Sufficiency
 

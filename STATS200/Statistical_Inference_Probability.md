@@ -10,9 +10,8 @@ author: Spencer Braun
 
 ### Chapter 1: Probability
 
-* intersection - probability that both A and B occur
+* Intersection - probability that both A and B occur
 * Complement - $A^c$ event that A does not occur, all events in the sample space that are not A
-* 
 * Disjoint - A and C are disjoint if $A \cap C = \empty$ 
 * Probability Axioms: 1) $P(\Omega) = 1$, 2) If $A \subset \Omega$ then $P(A) \geq 0$ 3) If A, B disjoint then $P(A \cup B) = P(A) + P(B)$
 * Addition Law: $P(A \cup B) = P(A) +P(B) - P(A \cap B)$
@@ -35,23 +34,17 @@ author: Spencer Braun
   0, & otherwise
   \end{Bmatrix}, 
   \: 0\leq p\leq 1$
-
-  * All moments = p
-  
+* All moments = p
 * Binomial: $p(k)=\binom{n}{k}p^{k}(1-p)^{n-k}\\
   n \in \mathbb{N}, k=0,1,...,n, \,
   0\leq p\leq 1$
-
-  * $Bin(n,p) = \sum_{i=1}^n X_i$, for X Bern(P)
+* $Bin(n,p) = \sum_{i=1}^n X_i$, for X Bern(P)
   * $E(X) = np, Var(x) = np(1-p)$
-  
-* Negative Binomial 
-  $$
-  P(X=k) = {k-1 \choose r-1}p^r (1-p)^{k-r}
+* Geometric: $p(k)=p(1-p)^{k-1}, \quad k=\N$
+  * $\begin{aligned} E(X) &=\frac{1}{p} \\ \operatorname{Var}(X) &=\frac{1-p}{p^{2}} \end{aligned}$
+* Negative Binomial: $P(X=k) = {k-1 \choose r-1}p^r (1-p)^{k-r}
   \quad \quad
-  , 0 \leq p \leq 1,  k = r, r+1, \ldots,  r = 1, 2, \ldots, k
-  $$
-
+  , 0 \leq p \leq 1,  k = r, r+1, \ldots,  r = 1, 2, \ldots, k$
 * Hypergeometric
 
   * *n*: population size; *n*∈N
@@ -59,21 +52,25 @@ author: Spencer Braun
   * *m*: number drawn from population; *m*∈{0,1,...,*n*}
   * *X*: number of successes in drawn group
   * $P(X=k)=\frac{\binom{r}{k}\binom{n-r}{m-k}}{\binom{n}{m}} \, \max(0,m+r-n) \leq k \leq \min(r,m) \, 0 \leq p(k) \leq 1$
-
 * Poisson: $P(X=k)=\frac{\lambda^k}{k!}e^{-\lambda}\, k = 0,1,2,3,...,\,\, \lambda > 0$
-
   * $E(X) = \lambda, Var(X) = \lambda$
 
 ##### Continuous Density Functions
 
 * Uniform: $f(x) = \begin{cases}   1/ (b - a) & a \leq x \leq b\\  0 & x < a \ or \ x > b \\  \end{cases} \,, x \in [a,b] \,,  a<b\, , f : \mathbb{R} \mapsto [0, \infty )$
+  * $E(X) = \frac{1}{2}(a+b)$
+  * $Var(X) = \frac{1}{12}(b-a)^2$
 * Exponential $f(x) = \left\{\begin{matrix}   \lambda e^{-\lambda x} , &  x \geq 0\\   0 , & x< 0 \end{matrix}\right. \, ,\, \lambda > 0$
+  * $E(X) = \frac{1}{\lambda}$
+  * $Var(X) = \frac{1}{\lambda^2}$
 * Normal: $f(x\mid \mu,\sigma^2)=\frac{1}{\sqrt{2 \pi}\sigma }e^{-\frac{(x-\mu)^2}{2\sigma^2}}, f:\mathbb{R}\to(0,\infty), \mu\in \mathbb{R},\sigma>0$
 * Gamma: 
   * $\Gamma(x) = \int_0^\infty u^{x-1}e^{-u} \, du, x > 0$
   * $g(t \mid \alpha, \lambda) = \begin{cases} \frac{\lambda^\alpha}{\Gamma(\alpha)} t^{\alpha-1} e^{-\lambda t}, t \geq 0 \\ 0, t < 0 \end{cases}$
   * $g: \mathbb{R} \to [0,\infty), \alpha > 0, \lambda > 0$
+  * $\begin{aligned} E(X) &=\frac{\alpha}{\lambda} \\ \operatorname{Var}(X) &=\frac{\alpha}{\lambda^{2}} \end{aligned}$ 
 * Beta: $f(u) = \frac{\Gamma(a+b)}{\Gamma(a)\Gamma(b)}u^{a-1}(1-u)^{b-1}, 0\leq u\leq 1, \,\, a, b > 0$ 
+  * $\begin{aligned} E(X) &=\frac{a}{a+b} \\ \operatorname{Var}(X) &=\frac{a b}{(a+b)^{2}(a+b+1)} \end{aligned}$
 * Cauchy: $f_Z(z) = \frac{1}{\pi(z^2 + 1)}$ for $z \in (-\infty,\infty)$
 
 ##### Functions of RVs
@@ -162,7 +159,7 @@ author: Spencer Braun
 
 ##### Convergence in Distribution
 
-* $X_1, X_2$ sequence of RVs with CDFs $F_!, F_2...$. Let X be RV with distribution function F. Say $X_n$ converges in distribution to X if:
+* $X_1, X_2$ sequence of RVs with CDFs $F_1, F_2...$. Let X be RV with distribution function F. Say $X_n$ converges in distribution to X if:
 * $\lim_{n\to \infty} F_n(x) = F(x)$ at every point for continuous F
 * MGFs usually used to show this property. 
 
@@ -195,13 +192,14 @@ author: Spencer Braun
 
 * $Z \sim N(0,1)$ and  $U \sim \chi^2_n$ for Z, U independent, then 
 * $\frac{Z}{\sqrt{\frac{U}{n}}}$ is a t-distribution with n degrees of freedom
-* density function of $$f(t) = \frac{\Gamma[\frac{1}{2}(n+1)]}{\sqrt{n\pi}\Gamma(n/2)}\Big(1 + \frac{t^2}{n}\Big)^{-\frac{n+1}{2}}$$ on $t \in \R$
+* Density function of $$f(t) = \frac{\Gamma[\frac{1}{2}(n+1)]}{\sqrt{n\pi}\Gamma(n/2)}\Big(1 + \frac{t^2}{n}\Big)^{-\frac{n+1}{2}}$$ on $t \in \R$
 * Notice $t_1 \sim Cauchy$
 
 ##### F Distribution
 
 * U, V independent chi-square RVs wit m and n respective DoF
 * $W = \frac{U/M}{V/n}$ is F with m and n DoF, ie. $F_{m,n}$
+* $f(w)=\frac{\Gamma[(m+n) / 2]}{\Gamma(m / 2) \Gamma(n / 2)}\left(\frac{m}{n}\right)^{m / 2} w^{m / 2-1}\left(1+\frac{m}{n} w\right)^{-(m+n) / 2}$ for $w \geq 0$
 
 ##### Sample Statistics
 
