@@ -208,106 +208,156 @@ Table of Contents
 
 ##### Hash Tables
 
-* O(1) expected time for insert / delete / search
+* Hash tables are all about fast lookups for dynamic data sets. O(1) expected time for insert / delete / search. Ideal for when we want to store values but do not care about ordering.
 * Given a universe U of size M, for very large M. There are only n elements that will ever show up though, we just don’t know which elements in advance.
 * For class examples, we are going to set #buckets = #elements = n. 
 * We have a hash function that maps elements to buckets. We will only consider hashing with chaining in this class. If we get many elements that map to the same bucket, we get a very long chain - could take O(n) time to search through the linked list. Want a hash function that ensures the elements are spread across buckets, ie. O(1) entries per bucket.
+* For any fixed choice hash function h, one can always produce a subset of keys S such that all keys in S are mapped to the same location in the hash table. 
+* Let X be the size of the hash bucket that ki maps to:
+  * $\begin{aligned} E[X] &=\sum_{j=1}^{n} \operatorname{Pr}\left[h\left(x_{i}\right)=h\left(x_{j}\right)\right] \\ &=1+\sum_{j \neq i} \operatorname{Pr}\left[h\left(x_{i}\right)=h\left(x_{j}\right)\right] \\ &=1+\frac{n-1}{n} \leq 2 \end{aligned}$
+  * This follows from $\operatorname{Pr}\left[h\left(x_{i}\right)=h\left(x_{j}\right)\right]=1 / n$
 * We cannot choose a hash function that guarantees that an input will be distributed across buckets - so instead we could randomize our pick of hash function. Say we have hash functions h $\sim U(),\, iid$ . If we fix $u_i$ bucket then the chance that $u_j$ gets put in that bucket is $\frac{1}{n}$. Sum over all $j \neq i$. But if we pick a different function for every x, then we would have to store h(x) for every x - terrible. We would need Mlog(n) bits to store, more than the naive storing in M buckets, which only takes M bits.
   * Aside: description length. Set S with s things in it. l = # of bits. # of l-bit strings = $2^l \geq s$ so $l \geq log(s)$
   * We have M choices in the universe, and # of hash functions is ${n \choose h(1)}{n \choose h(2)}...{n \choose h(M)}= n^M$.
   * How do we fix this? Pick from a smaller family of hash functions.
-* Universal Hash Family: for $u_i, u_j$ in U, with $u_i \neq u_j$, $P(h(u_i) == h(u_j)) \leq \frac{1}{n}$
+* Universal Hash Family: for $u_i, u_j$ in U, with $u_i \neq u_j$, $P(h(u_i) == h(u_j)) \leq \frac{1}{n}$. Point is to mimic the uniform distribution of a random hash function while limiting the space it requires to store.
+* Determining if universal - can we generate a pair of numbers that are mapped disproportionately to certain buckets. For example, hash family of mods, every integer + mod will map to the same buckets, so the chance that mapping two values to the same bucket is more than 1/n. The contradiction to universality should be relative to the pair of inputs picked $u_i, u_j$. If we find two hash functions with the same output for our pair, calculate what fraction of the total buckets this would make up.
 * Creating a hash family: 
-  * At end, taking mod n ensures there are n buckets
-  * We can store this for a choice on p in log(M) bits
+  * Pick prime $P > |U|$
+  * For $a, b \in\{0, \dots p-1\}$ consider family $h_{a, b}(x)=a x+b \bmod p \quad \bmod n$
+  * Taking mod p maintains there are p different assignments in the first step. Taking mod n ensures there are n buckets and is where the collisions happen, mapping a space of p onto n buckets.
+  * We can store this for a choice on p in log(M) bits. A universal hash family of size $O(m^2)$ exists using this method, since p-1 choices for a, p choices for b = p(p-1) = $O(M^2)$
+* Good for lookup of pairs - loop through list of numbers and look for pair in the hash table in constant time. Could also think of BFS looking in a hash table to see if it has explored that vertex yet.
 
 ## Graphs
 
-* G(V, E) - V vertices, E edges. n = # of vertices, m = # of edges
-* Neighbors - connected vertices, Degree of vertex - number of neighbors it has. Incoming / outgoing degrees and neighbors 
-* Adjacency matrix - binary whether two vertices share an edge, rows source columns destination, Linked list with pointers to neighbors
+* G(V, E) - V vertices, E edges. n = # of vertices, m = # of edges. Degree of vertex = # of edges from vertex. Can also specify in-degree / out-degree for directed graphs. Neighbors = connected vertices
+* Can store a graph in either: Adjacency matrix - binary whether two vertices share an edge, rows source columns destination. Linked list - pointers to neighbors.
 * Linked list is better for sparse graphs, since uses O(n + m) space vs $O(n^2)$ for adjacency matrix. Generally assume linked lists in class. We could use binary search trees to reduce search time to log 
-* Undirected Graph Connected Components - a maximal set such that for all u,v in S, there exists a path in G from u to v
+* Undirected Graph Connected Components - a maximal set such that for all u,v in S, there exists a path in G from u to v. Connected components can just be found using BFS/DFS.
+* **Parentheses theorem**: if v is a descendent of w in a tree, (w.start, v.start, v.finish, w.finish). If neither is a descendent of the other (v.start, v.finish, w.start, w.finish), this is a general claim, not just for DAGs
+* Note that a tree is a connected graph with no cycles
 
 ### Depth First Search
 
 * Keep going deeper until you have no new neighbors to go to, mark node as explored, then backtrack until there is an unexplored neighbor
 * Keep track of unvisited, in progress, and all done nodes. Keep track of time we first enter node (start time) and the time we finish and mark it done (finish time)
-* Finds all the nodes reachable from the starting point. Connected component - all of the vertices have some path from one vertex to another. DFS finds all connected components. DFS is really building a tree implicitly and traveling down to a leaf and then backtracking.
+* Finds all the nodes reachable from the starting point. Connected component - all of the vertices have some path from one vertex to another. DFS finds all connected components. **DFS is really building a tree implicitly and traveling down to a leaf** and then backtracking.
 * Run time for DFS? Degree(w) in the for loop, run the for loop for every w: $\sum_w deg(w) + O(1) = 2m + n$. Every edge is plus one to the degree of the 2 nodes it connects, which is why we have 2m. Therefore $O(m + n)$, the n since we do a constant amount of work for every vertex in the recursive call.
 * When you cannot reach all vertices, we start again at an unvisited vertex and get multiple DFS trees - DFS forest
-* Parentheses theorem: if v is a descendent of w in DFS tree, (w.start, v.start, v.finish, w.finish). If neither is a descendent of the other (v.start, v.finish, w.start, w.finish), this is a general claim, not just for DAGs
+* If (u,v) is an edge in an undirected graph and during DFS, $finish(v) < finish(u)$, then u is an ancestor of v in the DFS tree. When we do DFS, we store “Visited” nodes in a stack to keep track of the order in which they were visited. Stacks, by nature, have a “last-in first-out” order, meaning the last node you added into the stack will be popped out before any of the nodes before it.  
 
 ##### Directed Acyclic Graph
 
 * Imagine dependencies, need to figure out what relies on what. DFS starts at first node and explores
-* Topological sorting: Given an edge from A to B, then A’s finish time will be larger than B’s finish time. If we order by reverse finish times, we can ensure we follow the dependencies in the right order. As you mark vertices as done, we put it at the beginning of our list, end with a topologically sorted list. If we started at a vertex that isn’t the top, we would complete lower vetices but then we would need to start a new DFS from nodes left unexplored - can end up with a DFS forest instead of a tree.
+* **Topological sorting**
+  * In a DAG, given an edge  $A \rightarrow B$, then $B.finishTime < A.finishTime$. If we order by reverse finish times, we can ensure we follow the dependencies in the right order. 
+  * If an edge from $A \rightarrow B$, then A appears before B in the sort. If there aren’t edges connecting two vertices, there is not a rule in TopoSort about which should come first.
+  * As you mark vertices as done, we put it at the beginning of our list, end with a topologically sorted list. If we started at a vertex that isn’t the top, we would complete lower vertices but then we would need to start a new DFS from nodes left unexplored - can end up with a DFS forest instead of a tree.
+  * Runs in $O(m+n)$ since is just an alteration of DFS
 
 ### Breadth First Search
 
 * Explore immediate neighbors, then their immediate neighbors, etc.
+* Think of it running on a FIFO queue. When travel to a vertex, create an **adjacency list** of the vertices that are its neighbors.
 * Outer for loop over all of the distances, for each vertex of distance i add to $L_{i}$ and look at all of their neighbors, for each neighbor if v is not visited mark as visited and add to $L_{i+1}$
-* Also finds all connected components like DFS. Also runs in $O(m+n)$ - inner loop over the edges for each vertex once, outer for loop over all vertices. Sum of degrees = n, check every edge m
-* Application: shortest path, we know by the level of a vertex how many steps it takes to get from the starting vertex to another, found in $O(m)$
-* Application: bipartite, can we split graph in 2 s.t. no vertices that share a class have edges between them. Think of students enrolled in classes - students cannot be enrolled in students. Could check this with a tree, but with BFS can do it based on level each vertex is a member of, then check if there is a shared edge with any members of the same color. BFS finds not bipartite for odd cycles - can never have an odd cycle graph that is bipartite. Odd cycle is a subgraph with odd number of vertices / edges.
+* Also finds all connected components like DFS. Also runs in $O(m+n)$ - inner loop over the adjacency list for each vertex once, outer for loop over all vertices. Sum of degrees = n, check every edge m
+* Application: shortest path, we know by the level of a vertex how many steps it takes to get from the starting vertex to another, found in $O(m)$. The distance is the difference in layers between the source and destination. Just initialize a distance estimate, 0 for source and $\infty$ for all others, then each distance is updated as +1 compared to the distance of the neighbor from which it was discovered.
+* Application: bipartite, can we split graph in 2 s.t. no vertices that share a class have edges between them. Think of students enrolled in classes - students cannot be enrolled in students. Could check this with a tree, but with BFS can do it based on level each vertex is a member of, then check if there is a shared edge with any members of the same color. BFS finds not bipartite for odd cycles - can never have an odd cycle graph that is bipartite. Odd cycle is a subgraph with odd number of vertices / edges - starting from one vertex, how many steps does it take to cycle back to that vertex.
 
 ### Strongly Connected Components
 
-* Each edge needs to be bidirectional
-* Maximal set S subset V s,t, for all u,v in S there exists a path in G from u to v (and v to u)
+* Maximal set S subset V s,t, for all u,v in S there exists a path in G from u to v and v to u
 * Weakly connected -  If we turned directed into undirected, then vertices would be connected components
 * Path from every vertex to every other vertex within SCCs. 
 * SCC Graph - can circle the SCC within a total graph, then each SCC can be contracted into a meta-vertex. 
 * Lemma 1:  our SCC graph is a DAG - it cannot have cycles between SCCs
 * Undirected graphs - connected components, find with BFS/DFS. Directed graphs - strongly connected components, find with DFS. There is no overlap here. Do not talk about strongly connected components in undirected graphs
+* To find SCCs we need to find a sink SCC. Basically need to find a set of vertices from which we cannot move onto the rest of the graph. This means a reverse topological traversal of SCCs - Kosaraju’s Algorithm
+* Topological Ordering of SCCs - can take the smallest finish time of a node in an SCC to be the smallest finish time of the SCC
 * An O(n+m) algo for SCC
   * Starting place matters - starting from one vertex may get us the SCC from running DFS, while another may just have a single tree. Starting DFS from the last SCC is good, because we can only explore that SCC. 
   * Run DFS from any starting vertex, look at the finish times.
   * Reverse all of the edges in the graph - this doesn’t change SCCs since they go in both directions
   * Run DFS again, using the latest finish time for the first run to tell us where to start.
   * The SCCs are the different trees in the second DFS forest
+* The SCCs of G are the same as those in $G_{reverse}$ - it does not matter whether we run DFS first or reverse the edges first.
 * Finish time of an SCC DAG - the largest finish time of any vertex in the SCC. Starting time is the smallest starting time of any vertex
 * SCC DAG can now by topologically sorted based on the SCC finish times (from the regular DFS, not reversed)
-* In the forward SCC graph - if edge from A to B, then A.finish > B.finish. Then (corollary) in the reverse graph if $B\rightarrow A$, A.finish > B.finish in the real graph.
+* **Key Lemma**: In the forward SCC graph - if edge from A to B, then A.finish > B.finish. Then (corollary) in the reverse graph if $B\rightarrow A$, A.finish > B.finish in the real graph.
 
 ## Dynamic Programming
 
 * Algorithm design paradigm, storing our work to reduce repeated computation
+* The idea of dynamic programming is to have a table of solutions of subproblems and fill it out in a particular order (e.g. left to right and top to bottom) so that the contents of any particular table cell only depends on the contents of cells before it. 
 * Usually used for optimization problems. Big problems break into sub-problems like in divide and conquer. 
 * Keep a table of solutions to the subproblems, refer to the table instead of recomputing work already performed
+* Runtime - (size of cache) x (# of operations each time you add to cache)
 * Bottom up
   * Solve the small problems first, then the bigger problems, and the final steps solve the real problem. 
   * Often the easier one to write and analyze the running time
+  * Think of solving F[0], F[1], then iterating to find $F[2],...,F[n]$
 * Top down
   * Like a recursive algorithm, similar to divide and conquer
   * The difference is memoization - when we encounter an already solved subproblem, we just plug in. This means we have to keep track of what we have already solved.
+  * Top down fibonacci - have list of computed values. Check if we have value of F[n] and return else run the recursion then return F[n]
+  * Make sure the **cache is updated** before returning the value within the recursive function.
 * Bottom up often nested for loop, top down is more recursive
 * Optimal substructures 
+  * The optimal substructure is how we express the solution to the big problem as solutions to smaller problems.
   * BF used $d^{i+1}(s,v) = min_u( d^{i}(s,u)+ w(u,v))$
   * FW used $D^{(k)}[u, v] = min(D^{(k-1)}[u, v], D^{(k-1)}[u, k] + D^{(k-1)}[k, v])$
   * The fact that we cared about all of the pairs in FW, but wouldn’t work for BF because we aren’t just considering distances from the sources to the destination. 
   * For FW, its substructure is best since it only has to take the minimum of two things, whereas using BF for this task takes min over all neighbors U. Substructure should be designed to fit the problem.
 
-### LCS
+### Algorithm Strategies
 
-* Backtracking - look up and left - if letters don’t match we got current count from one of these cells. If they do match, then append to list of matching characters
+* Book Recipe
+  * Identify a small collection of subproblems
+  * Show how to solve larger problems using solutions to smaller ones
+  * Infer the final solution from the solutions to all subproblems
+* Class Recipe
+  * Identify optimal substructure 
+  * Recursively define the value of an optimal solution 
+  * Find the optimal value - write the pseudocode to find the value of our optimal solution
+  * Find the optimal solution - how do we modify the code to keep track of what is included in our optimal solution
+* Find a recursion that determines how we would find an optimal solution for the jth input given a solution for smaller indices up to j. This typically involves breaking into cases - whether the $jth$ input improves our previous solution or not determines whether it is included in the $jth$ optimal solution
+* Jump into the middle of the problem imagining someone has handed us a solution up to the point we are considering
+* The recursion helps define the invariant of the problem. The recursion itself would take many redundant calculations, but we use a cache to limit our calculations to one or two recent iterations by looking at the stored values from the last iteration.
+* May make sense to work bottom up when the solution to a subproblem depends on the solution to more subproblems - then we are using nested for-loops
+* For running times, consider the invariant on inputs - eg. every recursive call is given some $G_i$ already computed, how many such $G_i$ exist at the end. The number of subproblems is a lower bound on the running time of the algorithm. Running time is at most:
+  * (# subproblems x time per subproblem) + postprocessing
+* Differences in approach from divide and conquer
+  * subproblems may be split into multiple types / cases instead of a single invariant
+  * subproblems recur across different recursive calls so caching has obvious benefits
+  * often working on reducing exponential time algorithms vs polynomial 
+  * correctness is considered first and foremost over running time
+  * subproblems are often just slightly smaller than their parents
+* Bottom up: Initialize cache, using the recurrence relation to determine the dimension, ie. how many indices do we need. Define base cases to ensure we have filled in the values reference later in the code. Fill in the cache and return the value desired. Runtime tends to be easy then - often constant time in work, then just size of the cache is the run time.
 
 ### Knapsack
 
-* Various items in a knapsack with values and weights. Want to maximize value for a constrained weight. Cna also have an unbounded knapsack, or a 0-1 knapsack. The first has infinite copies of each item and the second only has a single copy of each item.
-* Unbounded: Solve the problem for smaller knapsack and work up to a larger knapsack. 
+* Essentially constrained optimization. Various items in a knapsack with values and weights. Want to maximize value for a constrained weight. Can also have an unbounded knapsack, or a 0-1 knapsack. The first has infinite copies of each item and the second only has a single copy of each item.
+* Unbounded: Solve the problem for smaller knapsack and work up to a larger knapsack. Runs in $O(nW)$
   * We only care about the weights, not really the items added to the knapsack
-  * Say $k[x] = v$
+  * Optimal substructure: solve problem for a smaller knapsack and increase the capacity. If S is an optimal solution for capacity x, then the optimal substructure for capacity $x - w_i$ is $S - v_i$ - since if we could do better it would be part of the optimal solution S for the larger problem too.
+  * Definitions: k[x] is the optimal value for capacity x. Say $k[x] = V$
   * $k[x-w_i] = V - v_i$ the value before we added the last item to fill the knapsack.
-  * We take the max over all previous possibilies plus a new item’s value
+  * We take the max over all previous possibilities plus a new item’s value
   * W is the capacity of the backpack, sum of weights that fit
-  * Items array keeps track of the items used 
+  * Items array keeps track of the items used
+  * Looping over capacities x and items i: $K[x]=\max \left\{K[x], K\left[x-w_{i}\right]+v_{i}\right\}$
+  * Optimal substructure
+    * Define S as optimal solution to problem with $n \geq 1$ items. S is either an optimal solution for the first n-1 items with capacity C or an optimal solution for the first n-1 items with capacity C - $s_n$ supplemented with the last item n. The second case creates an optimal subproblem in which we reserve space for the last item n
+    * Therefore for $V_{i,c}$ the maximum total value of a subset of first i items with capacity w, $V_{i,c} = \begin{cases} V_{i-1,c} & \text{if } s_i > c \\ max(V_{i-1,c}, V_{i-1,c-s_i} + v_i) & \text{if } s_i \leq c \end{cases}$
+    * Loops over the items i to n, then over the capacities 0 to C
+  * Reconstruction
+    * Can have the algorithm yield the value of the optimal solution, then reconstruct what items actually are in the optimal solution by traversing the structure created. Input of the array created then checking the neighbors up and to the left to see where the current value came from.
 * 0-1 Knapsack
-  * Can only take one or 0 iterations of each item. We will keep track of the items used
-  * Start with constrained possible items and move up to including more items to be considered. Also move up to larger knapsacks, so 2D to track.
-  * Look at first j items, with total capacity constrained to x index.
+  * Optimal Substructure: 0/1 knapsack with fewer items. Solve the problem with restricted set of items then increase items and size of knapsacks. Indexed by x and j - first j items with capacity x
+  * Can only take one or 0 iterations of each item. We will keep track of the items used. Each subproblem requires the memory of what was used before it since we can only use each item once. Therefore we leave out one at a time.
   * 2 Cases: either we use item j or we do not use item j
-  * Don’t use j = $k[x, j-1]$. Using j = $k[x - w_j, j-1] + v_j$ We take the max of previous values when we don’t use j, or we take the previous value (less j’s weight) and add the value of j. 
+  * If we don’t use j , then we have the same solution as for j-1 items considered: j = $k[x, j-1]$. If we use j, then the optimal solution for j-1 must remove the weight of j and its value: j = $k[x - w_j, j-1] + v_j$ We take the max of previous values when we don’t use j, or we take the previous value (less j’s weight) and add the value of j. 
 
 ### BFS as DP
 
@@ -319,19 +369,23 @@ Table of Contents
 * Cost of a path is a sum of the weights along that path. Shortest path has minimum cost
 * Assume no negative cycles, since would travel it infinitely. But we can have negative weights.
 * **Bellman-Ford**: Using DP to find shortest path. Runs in O(nm)
-  * Optimal substructure - shortest path using $\leq i$ edges
+  * If there is a negative cycle reachable from s, then the Bellman-Ford algorithm detects and reports “Negative Cycles”. If there is a path from s to v, then there exists a shortest path from s to v has at most n − 1 edges. Why? If a shortest path has a cycle, the cycle cannot be negative and we can remove it and improve its total distance. 
+  * Optimal substructure - shortest path using $\leq i$ edges. $i$ is like a budget allowed to a path as the number of vertex hops we make, as we increase $i$ we allow more hops and open up more potential paths. Instead of limiting the input, we are limiting the size of the output produced by the algorithm.
   * Recursive formulation $d^{i+1}(s,v) = min_u( d^{i}(s,u)+ w(u,v))$ . Last vertex was some neighbor u, so the distance is the last distance to u plus the weight from u to v. 
   * Lemma: A sub-path of a shortest path is also a shortest path
+  * Definition: Simple Path in a graph with n vertices has at most n-1 edges in it, ie. simple means that the path has no cycles. There is a shortest path with at most n-1 edges when we have no negative cycles.
   * If no actual path from u to v, could think of it as an infinite weight
-  * Bottom up, finding the shortest path from i = 0, working up to the path we want to calculate 0 to n - 2.
+  * Stopping criterion: once the output for a recurrence is the same as the previous one, no improvement can be made. With no negative cycles, guaranteed to terminate by the time $i=n$. Bottom up, finding the shortest path from i = 0, working up to the path we want to calculate 0 to n - 2.
   * Could improve by looping over only the paths that updated in the last iteration - since if it did not update, we won’t have a new shortest path for it in the next iteration. 
   * Can just keep the previous two rows in the table, since rest not used for further computation. 
 * **Floyd - Warshall**
-  * Want to find all pairs of shortest paths
+  * Want to find all pairs of shortest paths (APSP)
   * n by n table of all sources to all destinations with all 0’s on diagonals. 
   * Running with B-F, now have n more starting points - $O(n^2m)$, could be even worse if $m = n^2$. This is the time to beat
   * Define a substructure of a collection of points s.t. u has one path entering substructure and one leaving to reach v
+  * Optimal substructure: For all pairs, u,v, find the cost of the shortest path from u to v, so that all the internal vertices on that path are in ${1,...,k-1}$.
   * Given the shortest path from u to v using a collection of k-1, how do we find it using a collection of k? Either we use the kth vertex or not. If it doesn’t then the shortest path did not change $D^{(k)}[u, v] = D^{(k-1)}[u, v]$. If it does, then we must have already calculated the path from u to k and the distance from k to v, since it follows a subpath using nodes for which we have calculated distances. $D^{(k)}[u, v] = D^{(k-1)}[u, k] + D^{(k-1)}[k, v]$
+  * Left with recursive formulation: $\mathrm{D}^{(k)}[\mathrm{u}, \mathrm{v}]=\min \left\{\mathrm{D}^{(k-1)}[\mathrm{u}, \mathrm{v}], \mathrm{D}^{(\mathrm{k}-1)}[\mathrm{u}, \mathrm{k}]+\mathrm{D}^{(\mathrm{k}-1)}[\mathrm{k}, \mathrm{v}]\right\}$
   * We have $n^3$ iterations, so $O(n^3)$. So we saved $\frac{m}{n}$ time from BF. Every vertex has at least one edge and at most $n^2$ so this is an improvement.
 
 ## Probability Reference

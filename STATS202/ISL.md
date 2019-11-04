@@ -281,29 +281,34 @@ Non-Linear Relationships - Polynomial Regression: Can add a higher order polynom
 * Added penalties are very common in statistics and optimization to create function that can be worked with.
 * Increasing lambda increases bias, but it reduces variance
 * Idea: define a small set of M predictors which summarize the information in all p predictors - we saw this with PCA, using a transformation to combine information from many predictors into a smaller set of new predictors
+* Let $Z_1, Z_2,...,Z_M$ represent $M<p$ linear combinations of our original reduction linear combination p predictors: $Z_{m}=\sum_{j=1}^{p} \phi_{j m} X_{j}$
+* Fit the regression model $y_{i}=\theta_{0}+\sum_{m=1}^{M} \theta_{m} z_{i m}+\epsilon_{i}, \quad i=1, \ldots, n$
+* All dimension reduction methods work in two steps. First, the transformed predictors $Z_1, Z_2,...,Z_M$ are obtained. Second, the model is fit using these M predictors. However, the choice of $Z_1, Z_2,...,Z_M$ or equivalently, the selection of the $\phi_{jm}$’s, can be achieved in different ways.
+
 
 ###### Principal Components Regression
 
-* The loadings show how the variables weigh on the given principal component
-* In the USArrests data, we saw the loadings for the first PC were heavy for the various crimes, low for criminal pop. Therefore the score for the first PC represents the overall reate of crime in each state. Each M (state) gets a score, each predictor assigned loadings
+* We assume that the directions in which $X_1,...,X_p$ show the most variation are the directions that are associated with Y .
+
+* In the USArrests data, we saw the loadings for the first PC were heavy for the various crimes, low for criminal pop. Therefore the score for the first PC represents the overall rate of crime in each state. Each M (state) gets a score, each predictor assigned loadings
 * In the regression, we replace our p predictors with M score vectors. Obtain then M coefficients $\theta_0,...,\theta_M$. We can rearrange terms to see that we are still doing a regression on the original space of x, but now the betas are restricted. The coefficients are interdependent, and we only have M $\theta$ terms across p X terms to vary. Think of constrained to working in a plane in three dimensional space.
 * Usefulness is dependent on the actual dataset. The Credit dataset has best error at 10 components instead of the full 11 - there is almost no dimensionality reduction here. If the best error is with all parameters, then just have least squares. So PCR should only improve on the least squares fit since OLS is always an option in selection number of components.
-* In the case of 45 predictors with 42 significant, PCR performs worse than Ridge. In 45 predictors with 2 significant, PCR does worse than Lasso. PCR really fit for when the response variable is really a combination of the principal components.
+* In the case of 45 predictors with 42 significant, PCR performs worse than Ridge. In 45 predictors with 2 significant, PCR does worse than Lasso. PCR will tend to do well in cases when the first few principal components are sufficient to capture most of the variation in the predictors as well as the relationship with the response.
+* Note this is not a feature selection method, since the principal components are linear combinations of all p of the original features. Note also since PCR is unsupervised, there is no guarantee that the directions that best explain the predictors will also be the best directions to use for predicting the response.
 
 ###### Partial Least Squares
 
-* PCR only uses information in the X predictors. What if we include information from the Y responses as well.
+* PLS is a supervised alternative to PCR: PCR only uses information in the X predictors, but now we include information from the Y responses as well.
 * Regress Y onto $X_j$, then our $\phi_{j1}$ is the coefficient from this regression. Look at the direction that explains Y best, instead of the direction of greatest X variance. Gives more weight to the variables / residuals that are more correlated with the response.
-* Take the residuals of the simple linear regression, and repeat. Run a gression of Y against the residuals. Continue to define $Z_1, Z_2,...$
-* Then do a regression of Y onto the Z vectors.
-* Compared to PCR ,PLS has less bias, more variance ie. tendency to overfit. The Y responses have noise, and now we increase the chance of fitting to that noise as well.
+* Take the residuals of the simple linear regression, and repeat. Run a gression of Y against the residuals. Continue to define $Z_1, Z_2,...$ Then do a regression of Y onto the Z vectors.
+* Compared to PCR, PLS has less bias, more variance ie. tendency to overfit. The Y responses have noise, and now we increase the chance of fitting to that noise as well.
 
 ##### High Dimensional Regression
 
 * Bag of words - count the words in data, turns it into quantitative measures. Number of predictors is as many as the words in the dictionary, so p >> n
-* When p > n, formally we have no solution, but if we assume the effect is simple enough, the real p that drives the effect can be found, say through regularization / shrinkage
+* When p > n, formally we have no solution, but if we assume the effect is simple enough, the real p that drives the effect can be found, say through regularization / shrinkage. In actuality the regression line becomes too flexible, since we have so many predictors, we overfit to our exact data set of n.
 * Plots of Lasso performance vs increasing predictors - adding many noise predictors hurts Lasso performance of the regression. Lasso looking at all possible options of selecting variables, but too much noise to find the signal when p >> n
-* With p unknowns and n equations, there is always multicollinearity - some predictors will have to be defined in terms of others. There are then many ways to write out a good solution.
+* With p unknowns and n equations, there is always multicollinearity - some predictors will have to be defined in terms of others. There are then many ways to write out a good solution, we should not take the fitted model as the one true model given our data.
 
 ### Chapter 7 - Non Linear Methods
 
@@ -322,6 +327,43 @@ Non-Linear Relationships - Polynomial Regression: Can add a higher order polynom
 * Natural cubic splines - At the end points, use linear spline instead of cubic, use cubic on the rest. Helps control the SEs at the end points, since polynomials tend to become more erratic at their endpoints - Gibbs phenomenon
 * Choosing knots - back to bias-variance tradeoff, chosen through CV. Locations are typically at quantiles of X.
 * Splines can fit complex functions without the weird behavior of a very high degree polynomial.
+
+##### Smoothing Splines
+
+* Writes an optimization problem as the addition of the sum of squares differences and a penalty: $\sum_i^n(y_i - f(x_i))^2 + \lambda \int f’'(x)^2 dx$
+* The second derivative defines the curvature of the model - penalize flexability through the curvature of the function. A large second derivative is a more flexible model. Since all linear functions of $f’’(x) = 0$, they have no penalty. Integration over the whole line to capture the curvature over the whole domain.
+* For large lambda, we force the second derivative to be small and we force the model towards least squares. Very small lambdas allow for very flexible models that could interpolate between every data point for an exact fit to the training data. 
+* The minimizer $\hat{f}$ of this function is a natural cubic spline with knots at each sample point $x_1,...,x_n$. Contrast that to piecewise knots where we had a fixed number of knots over the data set. Even though we have many knots, we are forcing them to be smooth so still has limited flexibility.
+* Choosing the regularization parameter $\lambda$ - chosen with CV.
+
+##### Local Regression
+
+* At each point, use regression function fit only to nearest neighbors of that point - this is a generalization of KNN regression. While KNN fit an average of $y_i$, we now fit a least squares line through those neighbors - could end up with pretty different y values depending on how the data is distributed around the point.
+* Span - fraction of training samples used in each regression. Smaller span increases flexibility.
+* Weighting function K - 0 outside of the nearest neighbors, and decreases away from our $x_i$ within the collection of nearest neighbors - seems similar to kernel density functions. Leaves us with a weighted least squares problem: $\sum_{i=1}^n K_i(y_i - \beta_0 - \beta_1 x_i)^2$ - while we sum over all n, the weight is 0 outside of nearest neighbors, but this allows us to simply use the least squares optimization.
+
+##### GAMs
+
+* Extension of non-linear models to multiple predictors. Take functions of our predictors - don’t use $f(x_1, x_2, x_3)$, instead use $f_1(x_1) + f_2(x_2) +  f_3(x_3)$ hence the name additive.
+* Still restrictive - no interaction since it is an additive model. If we wanted it to be more flexible, we would have to combine the variables into a single function - but this leads to the curse of dimensionality, overfitting becomes exponentially worse, etc. May want to start by including interaction terms to two variables to keep the dimensions constrained.
+* Could use splines, polynomials, step functions, etc for the $f$ applied, and then have a basis representation. Then we are back to least squares in fitting the model.
+* If we use a function without a basis representation, can use backfitting. Keep all $f$ fixed except for the one fitting, and fit it on the partial residuals of the model. Could start out say with the identity function, fit it, then refine on the partial residuals. This works for smoothing splines and local regression.
+* Somewhere between linear regression and a fully nonparametric method.
+
+##### Text Mining
+
+* Given a large corpus of documents, how do we gain an unsupervised understanding of the content and relationships
+* Latent variables - hidden variables, are there certain underlying topics that drive the content of certain documents
+* Turn each document into a bag of words - count how often each word comes up in the document in a long vector. Characterizes the article (perhaps almost uniquely). 
+* Create a matrix, row for each document, each column a word count in the article. 
+* Apply PCA to the matrix - reduction of dimensionality of the matrix. 
+* Latent Dirichlet Allocation - can model these documents by topics. Say we have K topics, and each topic is a distribution over words. Then each document is a distribution over topics.
+
+### Chapter 8 - Tree-based Methods
+
+##### Decision Trees
+
+* Find a partition of the space of predictors, predict a constant in each set of the partition. Defined by splitting the range of one predictor at a time - draw a single partition over one predictor then iterate, ie recursive splits.
 
 ### Chapter 10 - Unsupervised Learning
 
