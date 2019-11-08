@@ -315,10 +315,23 @@ Non-Linear Relationships - Polynomial Regression: Can add a higher order polynom
 * Wage vs Age - could fit a polynomial regression to show the concave down shape. But also have a classification problem, since the high earning group is very split off from the lower earning group. Could use logistic regression with higher order terms and get a flexible classification model, finding probability of being in higher age group given age. Standard error blows up on the upper end, possible due to the matrix becoming singular in that region
 * Could instead use piecewise indicator functions, get averages over certain age groups.
 
+##### Step Functions
+
+* We break the range of X into bins, and fit a different constant in each bin. This amounts to converting a continuous variable into an ordered categorical variable.
+* Create cutpoints then use indicator functions for points that lie within each range: $C_{1}(X) \quad=\quad I\left(c_{1} \leq X<c_{2}\right)$ - ie. dummy variables
+* $y_{i}=\beta_{0}+\beta_{1} C_{1}\left(x_{i}\right)+\beta_{2} C_{2}\left(x_{i}\right)+\ldots+\beta_{K} C_{K}\left(x_{i}\right)+\epsilon_{i}$
+
+##### Basis Functions
+
+* The idea is to have at hand a family of functions or transformations that can be applied to a variable $X: b_1(X), b_2(X),...,b_K(X).$
+* Fit the model $y_{i}=\beta_{0}+\beta_{1} b_{1}\left(x_{i}\right)+\beta_{2} b_{2}\left(x_{i}\right)+\beta_{3} b_{3}\left(x_{i}\right)+\ldots+\beta_{K} b_{K}\left(x_{i}\right)+\epsilon_{i}$. Think of generalized version of polynomial or piecewise functions
+
 ##### Piecewise Polynomials
 
 * Fit cubic polynomial up to age 50, then look at the data above age 50 and fit another polynomial to that data. 
 * Piecewise continuous - force the functions to meet at 50 to make function continuous 
+* A piecewise cubic polynomial with a single knot at a point c takes the form: $y_{i}=\left\{\begin{array}{ll}{\beta_{01}+\beta_{11} x_{i}+\beta_{21} x_{i}^{2}+\beta_{31} x_{i}^{3}+\epsilon_{i}} & {\text { if } x_{i}<c} \\ {\beta_{02}+\beta_{12} x_{i}+\beta_{22} x_{i}^{2}+\beta_{32} x_{i}^{3}+\epsilon_{i}} & {\text { if } x_{i} \geq c}\end{array}\right.$
+
 * Cubic spline - fits polynomials on each data set, and has continuous point at 50 with 1st and 2nd derivatives continuous too.
   * define knots - ie. the break points, 1 - K
   * Fit a cubic polynomial $Y = f(x)$ between each pair of knots, s.t. 1st and 2nd derivatives exist
@@ -331,10 +344,12 @@ Non-Linear Relationships - Polynomial Regression: Can add a higher order polynom
 ##### Smoothing Splines
 
 * Writes an optimization problem as the addition of the sum of squares differences and a penalty: $\sum_i^n(y_i - f(x_i))^2 + \lambda \int f’'(x)^2 dx$
+* The term $\sum_i^n(y_i - f(x_i))^2$ is a loss function that encourages g to fit the data well, and the term  $\lambda \int f’'(x)^2 dx$ is a penalty term
+
 * The second derivative defines the curvature of the model - penalize flexability through the curvature of the function. A large second derivative is a more flexible model. Since all linear functions of $f’’(x) = 0$, they have no penalty. Integration over the whole line to capture the curvature over the whole domain.
 * For large lambda, we force the second derivative to be small and we force the model towards least squares. Very small lambdas allow for very flexible models that could interpolate between every data point for an exact fit to the training data. 
 * The minimizer $\hat{f}$ of this function is a natural cubic spline with knots at each sample point $x_1,...,x_n$. Contrast that to piecewise knots where we had a fixed number of knots over the data set. Even though we have many knots, we are forcing them to be smooth so still has limited flexibility.
-* Choosing the regularization parameter $\lambda$ - chosen with CV.
+* Choosing the regularization parameter $\lambda$ - chosen with CV. The tuning parameter $\lambda$ controls the roughness of the smoothing spline, and hence the effective degrees of freedom. Although a smoothing spline has n parameters and hence n nominal degrees of freedom, these n parameters are heavily constrained or shrunk down.
 
 ##### Local Regression
 
@@ -361,9 +376,23 @@ Non-Linear Relationships - Polynomial Regression: Can add a higher order polynom
 
 ### Chapter 8 - Tree-based Methods
 
-##### Decision Trees
+##### Regression Trees
 
 * Find a partition of the space of predictors, predict a constant in each set of the partition. Defined by splitting the range of one predictor at a time - draw a single partition over one predictor then iterate, ie recursive splits.
+* Could get splits that are concentrated in one section of the $X_1, \, X_2$ grid, where there is a lot of variability in the response variable in that area and relatively static response values elsewhere. Can be a simple method to work with high dimensions
+* We divide the predictor space—that is, the set of possible values for $X_1, X_2,...,X_p$—into J distinct and non-overlapping regions, $R_1, R_2,...,R_J$
+* For every observation that falls into the region $R_j$ , we make the same prediction, which is simply the mean of the response values for the training observations in $R_j$.
+* To split, we take a top-down, greedy approach that is known as recursive binary splitting. We first select the predictor $X_j$ and the cutpoint s such that splitting the predictor space into the regions $\{X|X_j < s\}$ and $\{X|X_j ≥ s\}$ leads to the greatest possible reduction in RSS. For any j and s, $R_{1}(j, s)=\left\{X | X_{j}<s\right\} \text { and } R_{2}(j, s)=\left\{X | X_{j} \geq s\right\}$, we seek j and s that minimize $\sum_{i: x_{i} \in R_{1}(j, s)}\left(y_{i}-\hat{y}_{R_{1}}\right)^{2}+\sum_{i: x_{i} \in R_{2}(j, s)}\left(y_{i}-\hat{y}_{R_{2}}\right)^{2}$. Repeat for new best predictor and new cutpoints. Terminate when there are 5 observations or fewer in each region (or some other stopping criterion) in a top down greedy approach.
+* This doesn’t encounter the same curse of dimensionality, since we consider one axis at a time - we aren’t looking for near neighbors over many dimensions at once.
+* This tends to overfit - so we grow a large tree and then prune it back. For each value of $\alpha$ there corresponds a subtree $T \subset T_0$ such that $\sum_{m=1}^{|T|} \sum_{i: x_{i} \in R_{m}}\left(y_{i}-\hat{y}_{R_{m}}\right)^{2}+\alpha|T|$ is as small as possible. |T| is the number of terminal nodes / leaves. When $\alpha = \infty$ we select the null tree. When $\alpha =0$, we select the full tree. Then can choose the optimal $\alpha$ by CV.
+* Alternative pruning approach starts with the full tree $T_0$ and replaces a subtree with a leaf node. Minimize $\frac{RSS(T_1) - RSS(T_0)}{|T_0| - |T_1|}$. Turns out you get the same sequence of trees from this procedure as the other pruning procedure. While $\alpha$ moves continuously and this procedure is discrete, since the trees are discrete they produce the same sequence. These methods are very similar to Lasso.
+* Other ideas don’t work as well: CV across all trees still overfits due to too many possibilities. Stopping the growth of the tree onec we have diminishing returns to the decrease in RSS may prevent us from finding good cuts after bad ones.
+* For the baseball data - our model fit predicts if year below 4.5, we make a single prediction. Above this number of years, we split into two regions based on number of hits. Like KNN, we use the average response as the prediction for a region.
+
+##### Classification Trees
+
+* We predict that each observation belongs to the most commonly occurring class of training observations in the region to which it belongs. We use the error function $E=1-\max _{k}\left(\hat{p}_{m k}\right)$. This is often not sensitive enough so can use the Gini index $G=\sum_{k=1}^{K} \hat{p}_{m k}\left(1-\hat{p}_{m k}\right)$, a measure of total variance across the K classes. Entropy can also be used: $D=-\sum_{k=1}^{K} \hat{p}_{m k} \log \hat{p}_{m k}$
+* 
 
 ### Chapter 10 - Unsupervised Learning
 

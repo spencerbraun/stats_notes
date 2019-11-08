@@ -193,3 +193,62 @@ date: 20191016
 ##### Boxplot
 
 * The range lines - A vertical line is drawn up from the upper quartile to the most extreme data point that is within a distance of 1.5 (IQR) of the upper quartile, ie $X_i > Q^{0.75} + 1.5\times IQR$  and $X_i < Q^{0.25} - 1.5\times IQR$. A similarly defined vertical line is drawn down from the lower quartile. Short horizontal lines are  added to mark the ends of these vertical lines. 
+
+### Chapter 11 - Comparing Two Samples
+
+#### Independent Samples
+
+##### Normal Methods
+
+* The observations from the control group are modeled as independent random  variables with a common distribution, F, and the observations from the treatment  group are modeled as being independent of each other and of the controls and as  having their own common distribution function, G.
+* We will assume that a sample, $X_1,...,X_n$, is drawn from a normal distribution that has mean  $\mu_X$ and variance $\sigma^2$ , and that an independent sample,  $Y_1,...,Y_m$, is drawn from another normal distribution that has mean $\mu_Y$ and the same  variance, $\sigma^2$
+
+* Estimate difference in means: $\bar{X}-\bar{Y} \sim N\left[\mu_{X}-\mu_{Y}, \sigma^{2}\left(\frac{1}{n}+\frac{1}{m}\right)\right]$, with CI for known variance: $(\bar{X}-\bar{Y}) \pm z(\alpha / 2) \sigma \sqrt{\frac{1}{n}+\frac{1}{m}}$
+* Usually do not know variance, use pooled sample variance; $s_{p}^{2}=\frac{(n-1) s_{X}^{2}+(m-1) s_{Y}^{2}}{m+n-2}$
+* Test statistic: $t=\frac{(\bar{X}-\bar{Y})-\left(\mu_{X}-\mu_{Y}\right)}{s_{p} \sqrt{\frac{1}{n}+\frac{1}{m}}} \sim t_{m+n-2}$. Standard error of $\bar{X} - \bar{Y}$: $s_{\bar{X}-\bar{Y}}=s_{p} \sqrt{\frac{1}{n}+\frac{1}{m}}$. Confidence interval: $(\bar{X}-\bar{Y}) \pm t_{m+n-2}(\alpha / 2) s_{\bar{X}-\bar{Y}}$
+* Hypothesis testing: $H_{0}: \mu_{X}=\mu_{Y}, \,H_{1}: \mu_{X} \neq \mu_{Y}$. Uses test stat: $t=\frac{\bar{X}-\bar{Y}}{s_{\bar{X}-\bar{Y}}}$ since essentially testing if the difference has zero mean. If we wanted to test against a non-zero difference, might look something like $\mu_X - (\mu_Y + 5) = 0$ This test can be derived from the GLRT - rejects for large values.
+* Without assumption of equal variances, estimate of $\operatorname{Var}(\bar{X}-\bar{Y}) = \frac{s_{X}^{2}}{n}+\frac{s_{Y}^{2}}{m}$ with $\mathrm{df}=\frac{\left[\left(s_{X}^{2} / n\right)+\left(s_{Y}^{2} / m\right)\right]^{2}}{\frac{\left(s_{X}^{2} / n\right)^{2}}{n-1}+\frac{\left(s_{Y}^{2} / m\right)^{2}}{m-1}}$ 
+* It is sometimes advocated that skewed data be transformed to a more symmetric  shape before normal theory is applied. Transformations such as taking the log or the square root can be effective in symmetrizing skewed distributions because they  spread out small values and compress large ones.
+* The ratio of the  standard deviation of a distribution to the mean is called the coefficient of variation (CV); it expresses the standard deviation as a fraction of the mean.
+* The power of the two-sample t test  depends on four factors: 
+  1. The real difference $\triangle = |\mu_X −\mu_Y |$. The larger this difference, the greater the power. 
+  2. The significance level $\alpha$ at which the test is done. Large alpha larger power
+  3. The smaller the population standard deviation, the larger the power. 
+  4. The sample sizes n and m. The larger the sample sizes, the greater the power. 
+
+##### Nonparametric Method - Mann-Whitney
+
+* Suppose that we have  m + n experimental units to assign to a treatment group and a control group. The  assignment is made at random: n units are randomly chosen and assigned to  the control, and the remaining m units are assigned to the treatment.
+* First, we group all m + n  observations together and rank them in order of increasing size. We next calculate the sum of the ranks of those observations that came  from the control group. If this sum is too small or too large, we will reject the null  hypothesis. We have not made any assumption that the observations  from the control and treatment groups are samples from a probability distribution. 
+* When it is more appropriate to model the control values, $X_1,...,X_n,$ as a sample  from some probability distribution F and the experimental values, $Y_1,..., Y_m$, as a  sample from some distribution G, the Mann-Whitney test is a test of the null hypothesis  $H_0: F = G$. The reasoning is exactly the same: Under $H_0$, any assignment of ranks  to the pooled m + n observations is equally likely.
+* If the groups are roughly the same, then the ranks will have a good amount of alternation and be mixed from each group. The more separation in the ranks, the more different the two groups.
+* Let $T_Y$ denote the sum of the ranks of $Y_1, Y_2,..., Y_m$.  $E(T_Y )$ and $Var(T_Y )$ under the null hypothesis F = G: $E\left(T_{Y}\right)=\frac{m(m+n+1)}{2}$, $\operatorname{Var}\left(T_{Y}\right)=\frac{m n(m+n+1)}{12}$
+  * Under $H_0: F = G$, $E\left(U_{Y}\right)=\frac{m n}{2}$, $\operatorname{Var}\left(U_{Y}\right)=\frac{m n(m+n+1)}{12}$, and $\frac{U_{Y}-E\left(U_{Y}\right)}{\sqrt{\operatorname{Var}\left(U_{Y}\right)}} \sim N(0,1)$ for m, n over 10.
+* Since the actual numerical values are replaced by their ranks, the test is  insensitive to outliers, whereas the t test is sensitive. It has been shown that even  when the assumption of normality holds, the Mann-Whitney test is nearly as powerful as the t test and it is thus generally preferable, especially for small sample  sizes. 
+* Bootstrap: As before, suppose that $X_1, X_2,..., X_n$ and $Y_1, Y_2,..., Y_m$ are  two independent samples from distributions F and G, respectively, and that $pi=  P(X < Y )$ is estimated by $\hat{\pi}$. How can the standard error of $\hat{\pi}$ be estimated and how  can an approximate confidence interval for $\pi$ be constructed?
+  * An approximation can be obtained by using the empirical distributions $F_n$ and $G_n$ in their places. This means that a bootstrap value of  $\hat{\pi}$ is generated by randomly selecting n values from $X_1, X_2,..., X_n$ with replacement,  m values from $Y_1, Y_2,..., Y_m$ with replacement and calculating the resulting value  of $\hat{\pi}$
+
+##### Bayesian Approach
+
+* The $X_i$ are i.i.d. normal with mean $\mu_X$ and precision $\xi$; and the $Y_j$ are i.i.d. normal with mean $\mu_Y$, precision $\xi$, and independent of the $X_i$
+* We use improprer priors to get an approx result
+* $\frac{\Delta-(\bar{x}-\bar{y})}{s_{p} \sqrt{n^{-1}+m^{-1}}} \sim t_{n+m-2}$ but here the mean difference and $s_p$ are fixed and $\triangle$ is random. The posterior can then be found using the t distribution: $=P\left(T \geq \frac{\bar{y}-\bar{x}}{s_{p} \sqrt{n^{-1}+m^{-1}}}\right)$
+
+#### Comparing Paired Samples
+
+* May match subjects with related characteristics, then assign one to the control and one to the experimental group.
+* Pairs are $(X_i, Y_i), \, i=1,...,n$, different means and variances. Different pairs are independently distributed and $\operatorname{Cov}\left(X_{i}, Y_{i}\right)=\sigma_{X Y}$
+* For $D_{i}=X_{i}-Y_{i}$, independent with $E\left(D_{i}\right)=\mu_{X}-\mu_{Y}$, $\begin{aligned} \operatorname{Var}\left(D_{i}\right) &=\sigma_{X}^{2}+\sigma_{Y}^{2}-2 \sigma_{X Y} =\sigma_{X}^{2}+\sigma_{Y}^{2}-2 \rho \sigma_{X} \sigma_{Y} \end{aligned}$
+
+##### Normal Methods
+
+* $\begin{aligned} E\left(D_{i}\right) &=\mu_{X}-\mu_{Y}=\mu_{D} , \, \operatorname{Var}\left(D_{i}\right) =\sigma_{D}^{2} \end{aligned}$
+* Test stat: $t=\frac{\bar{D}-\mu_{D}}{s_{\bar{D}}}$, CI: $\bar{D} \pm t_{n-1}(\alpha / 2) s_{\bar{D}}$, Two sided RR: $|\bar{D}|>t_{n-1}(\alpha / 2) s_{\bar{D}}$
+
+##### Nonparametric Method - Signed Rank Test
+
+* Test statistic:
+  * Calculate differences $D_i$ and rank by absolute values of the diffs
+  * Restore the signs of the differences to the ranks
+  * Calculate $W_+$, the sum of ranks that have positive signs
+* If one condition produces larger values than the other, $W_+$ will take on extreme values. We test the null hypothesis that the distribution of $D_i$ is symmetric about zero.

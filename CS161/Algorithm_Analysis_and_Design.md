@@ -286,6 +286,15 @@ Table of Contents
 * SCC DAG can now by topologically sorted based on the SCC finish times (from the regular DFS, not reversed)
 * **Key Lemma**: In the forward SCC graph - if edge from A to B, then A.finish > B.finish. Then (corollary) in the reverse graph if $B\rightarrow A$, A.finish > B.finish in the real graph.
 
+### Dijkstra’s Algorithm
+
+* Assume all weights are non-negative. In general making some assumptions about your input can make faster algorithm choices
+* SSSP $O(m+nlog(n))$, APSP $O(m+n^2log(n)$)
+* In BFS, when we put u in $L_i$, we know that u is exactly i away in the shortest possible path. For B-F, we loop over vertices more than once because we don’t know that we have the shortest path to u in the previous iteration.
+* Maintains a set S of vertices whose final shortest-path weights from the source s have already been determined. Repeated selects the vertex $u \in V -S$ with the min shortest-path estimate adds u to S, and relaxes all edges leaving u. Maintains the invariant Q = V  - S at the start of each while loop.
+* The algorithm only extracts vertices from Q and each vertex is added to S once, so loops exactly n times. once a vertex is in S, it is done and the paths leading from it can be considered (not just from the node last added to S). It always chooses the vertex in V-S closest to S. This is a greedy strategy
+* Note the algorithm calls insert and extract-min once per vertex and decrease key once per edge. 
+
 ## Dynamic Programming
 
 * Algorithm design paradigm, storing our work to reduce repeated computation
