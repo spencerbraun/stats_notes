@@ -168,7 +168,7 @@ Non-Linear Relationships - Polynomial Regression: Can add a higher order polynom
 ###### Validation Set Approach 
 
 - Can create a validation set that we hold out from the training data
-- divide the data, train on one part, compute the error on the other.
+- Divide the data, train on one part, compute the error on the other.
 - Can use the `sample()` in r to pick random indices to include in one group or the other
 - But 1) end up with different results based on the sample chosen 2) overestimate test error rate for the model trained on entire data set since training on smaller data set will reduce performance
 
@@ -384,15 +384,59 @@ Non-Linear Relationships - Polynomial Regression: Can add a higher order polynom
 * For every observation that falls into the region $R_j$ , we make the same prediction, which is simply the mean of the response values for the training observations in $R_j$.
 * To split, we take a top-down, greedy approach that is known as recursive binary splitting. We first select the predictor $X_j$ and the cutpoint s such that splitting the predictor space into the regions $\{X|X_j < s\}$ and $\{X|X_j ≥ s\}$ leads to the greatest possible reduction in RSS. For any j and s, $R_{1}(j, s)=\left\{X | X_{j}<s\right\} \text { and } R_{2}(j, s)=\left\{X | X_{j} \geq s\right\}$, we seek j and s that minimize $\sum_{i: x_{i} \in R_{1}(j, s)}\left(y_{i}-\hat{y}_{R_{1}}\right)^{2}+\sum_{i: x_{i} \in R_{2}(j, s)}\left(y_{i}-\hat{y}_{R_{2}}\right)^{2}$. Repeat for new best predictor and new cutpoints. Terminate when there are 5 observations or fewer in each region (or some other stopping criterion) in a top down greedy approach.
 * This doesn’t encounter the same curse of dimensionality, since we consider one axis at a time - we aren’t looking for near neighbors over many dimensions at once.
-* This tends to overfit - so we grow a large tree and then prune it back. For each value of $\alpha$ there corresponds a subtree $T \subset T_0$ such that $\sum_{m=1}^{|T|} \sum_{i: x_{i} \in R_{m}}\left(y_{i}-\hat{y}_{R_{m}}\right)^{2}+\alpha|T|$ is as small as possible. |T| is the number of terminal nodes / leaves. When $\alpha = \infty$ we select the null tree. When $\alpha =0$, we select the full tree. Then can choose the optimal $\alpha$ by CV.
+* This tends to overfit - so we grow a large tree and then prune it back. For each value of $\alpha$ there corresponds a subtree $T \subset T_0$ such that $\sum_{m=1}^{|T|} \sum_{i: x_{i} \in R_{m}}\left(y_{i}-\hat{y}_{R_{m}}\right)^{2}+\alpha|T|$ is as small as possible. |T| is the number of terminal nodes / leaves. When $\alpha = \infty$ we select the null tree. When $\alpha =0$, we select the full tree. $\alpha$ penalizes having many terminal nodes. Then can choose the optimal $\alpha$ by CV.
 * Alternative pruning approach starts with the full tree $T_0$ and replaces a subtree with a leaf node. Minimize $\frac{RSS(T_1) - RSS(T_0)}{|T_0| - |T_1|}$. Turns out you get the same sequence of trees from this procedure as the other pruning procedure. While $\alpha$ moves continuously and this procedure is discrete, since the trees are discrete they produce the same sequence. These methods are very similar to Lasso.
 * Other ideas don’t work as well: CV across all trees still overfits due to too many possibilities. Stopping the growth of the tree onec we have diminishing returns to the decrease in RSS may prevent us from finding good cuts after bad ones.
 * For the baseball data - our model fit predicts if year below 4.5, we make a single prediction. Above this number of years, we split into two regions based on number of hits. Like KNN, we use the average response as the prediction for a region.
 
 ##### Classification Trees
 
-* We predict that each observation belongs to the most commonly occurring class of training observations in the region to which it belongs. We use the error function $E=1-\max _{k}\left(\hat{p}_{m k}\right)$. This is often not sensitive enough so can use the Gini index $G=\sum_{k=1}^{K} \hat{p}_{m k}\left(1-\hat{p}_{m k}\right)$, a measure of total variance across the K classes. Entropy can also be used: $D=-\sum_{k=1}^{K} \hat{p}_{m k} \log \hat{p}_{m k}$
-* 
+* We predict that each observation belongs to the most commonly occurring class of training observations in the region to which it belongs. We use the error function $E=1-\max _{k}\left(\hat{p}_{m k}\right)$. Here $\hat{p}_{m k}$ represents the proportion (on 0 to 1) of training observations in the mth region that are from the kth class.
+* This is often not sensitive enough so can use the Gini index $G=\sum_{k=1}^{K} \hat{p}_{m k}\left(1-\hat{p}_{m k}\right)$, a measure of total variance across the K classes. The Gini index is a measure of node purity - a small value indicates that a node contains predominantly observations from a single class.
+* Entropy can also be used: $D=-\sum_{k=1}^{K} \hat{p}_{m k} \log \hat{p}_{m k}$. Similary measure of node purity.
+* Typically use Gini / Entropy to evaluate the quality of a split due to their node purity sensitivity, but classification error rate is best for pruning when prediction accuracy is the goal.
+* Splits can yield the same predicted value, because it leads to increased node purity. This split does not reduce classfication error but improves node purity - ie. we are more certain of our predicted value along one of those split paths.
+
+##### Evaluation of Trees
+
+* Tend to work better than linear regression when we have a highly non-linear, complex relationship (say a square boundary) between features the response. Also may be preferred simply for interpretability or visualization
+* However tend to not have the prediction accuracy of other approaches and are not robust - small changes in the data can cause a large change in the estimated tree. This can be improved through bagging, random forests, and boosting.
+
+##### Bagging
+
+* Bootstrap aggregation, or bagging, is a general-purpose procedure for reducing the variance of a statistical learning method
+* Recall $Var(\bar{X}) = \frac{\sigma^2}{n}$ - averaging over observations reduces variance. Bagging simply takes samples from the training data set and trains our method on the bth bootstrapped training set, then averages across all predictions: $\hat{f}_{\mathrm{bag}}(x)=\frac{1}{B} \sum_{b=1}^{B} \hat{f}^{* b}(x)$
+* To apply bagging to regression trees, we simply construct B regression trees using B bootstrapped training sets, and average the resulting predictions. These trees are grown deep, and are not pruned. Hence each individual tree has high variance, but low bias. Averaging these B trees reduces the variance.
+* The number of trees B is not a critical parameter with bagging; using a very large value of B will not lead to overfitting. In practice we use a value of B sufficiently large that the error has settled down.
+* On average, each bagged tree makes use of around two-thirds of observations - the remaining third are referred to as the out-of-bag  (OOB) observations. We predict the response for the ith observation averaging (regression) / voting (classification) across tree in which it was an OOB observation. Can get the test error by looking at this measure across all n observations without resorting the CV.
+* Bagging reduces interpretability of the model, since it is no longer clear which variables are most important. Instead, we can record the total amount that the RSS is decreased due to splits over a given predictor, averaged over all B trees. A large value indicates an important predictor. For classification, use Gini index instead of RSS.
+
+##### Random Forests
+
+* Random forests provide an improvement over bagged trees by way of a random small tweak that decorrelates the trees.
+* Uses similar procedure as bagging, but when building these decision trees, each time a split in a tree is considered, a random sample of m predictors is chosen as split candidates from the full set of p predictors.
+* A fresh sample of m predictors is taken at each split, and typically we choose $m \approx \sqrt{p}$ - that is, the number of predictors considered at each split is approximately equal to the square root of the total number of predictors
+* Bagged trees may be highly correlated if there is one big predictor, since almost every tree will use this as its top split. Averaging across correlated quantities does not reduce the variance as much. Random forests overcome this problem by forcing each split to consider only a subset of the predictors. Therefore, on average $(p − m)/p$ of the splits will not even consider the strong predictor, and so other predictors will have more of a chance. If we choose m = p, then the random forest is exactly the same as bagging.
+* Using a small value of m in building a random forest will typically be helpful when we have a large number of correlated predictors.
+
+
+##### Boosting
+
+* Boosting works similarly to bagging, except that the trees are grown sequentially: each tree is grown using information from previously grown trees. Boosting does not involve bootstrap sampling; instead each tree is fit on a modified version of the original data set.
+* Given the current model, we fit a decision tree to the residuals from the model. By fitting small trees to the residuals, we slowly improve $\hat{f}$ in areas where it does not perform well. The shrinkage parameter $\lambda$ slows the process down even further, allowing more and different shaped trees to attack the residuals.
+* 3 tuning parameters: 
+  * B: # of trees. Can overfit if B is too large. B is selected through CV
+  * $\lambda$: shrinkage parameter, a small positive number. Controls the rate of learning, the small lambda requires larger B
+  * $d$: number of splits in each tree. Controls the complexity of the boosted ensemble. Often use d=1 and each tree is a single split, which is just an additive model. More generally d is the interaction depth, controlling the interaction order of the overall model.
+* Procedure
+  * Set $\hat{f}(x)=0 \text { and } r_{i}=y_{i}$ for all i
+  * Looping over 1 to B:
+    * Fit a tree with d splits to the training data.
+    * Update model $\hat{f}(x) \leftarrow \hat{f}(x)+\lambda \hat{f}^{b}(x)$
+    * Update the residuals $r_{i} \leftarrow r_{i}-\lambda \hat{f}^{b}\left(x_{i}\right)$
+  * Total model: $\hat{f}(x)=\sum_{b=1}^{B} \lambda \hat{f}^{b}(x)$
+
+### Chapter 9 - Support Vector Machines
 
 ### Chapter 10 - Unsupervised Learning
 
