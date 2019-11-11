@@ -207,7 +207,7 @@ date: 20191016
 * Usually do not know variance, use pooled sample variance; $s_{p}^{2}=\frac{(n-1) s_{X}^{2}+(m-1) s_{Y}^{2}}{m+n-2}$
 * Test statistic: $t=\frac{(\bar{X}-\bar{Y})-\left(\mu_{X}-\mu_{Y}\right)}{s_{p} \sqrt{\frac{1}{n}+\frac{1}{m}}} \sim t_{m+n-2}$. Standard error of $\bar{X} - \bar{Y}$: $s_{\bar{X}-\bar{Y}}=s_{p} \sqrt{\frac{1}{n}+\frac{1}{m}}$. Confidence interval: $(\bar{X}-\bar{Y}) \pm t_{m+n-2}(\alpha / 2) s_{\bar{X}-\bar{Y}}$
 * Hypothesis testing: $H_{0}: \mu_{X}=\mu_{Y}, \,H_{1}: \mu_{X} \neq \mu_{Y}$. Uses test stat: $t=\frac{\bar{X}-\bar{Y}}{s_{\bar{X}-\bar{Y}}}$ since essentially testing if the difference has zero mean. If we wanted to test against a non-zero difference, might look something like $\mu_X - (\mu_Y + 5) = 0$ This test can be derived from the GLRT - rejects for large values.
-* Without assumption of equal variances, estimate of $\operatorname{Var}(\bar{X}-\bar{Y}) = \frac{s_{X}^{2}}{n}+\frac{s_{Y}^{2}}{m}$ with $\mathrm{df}=\frac{\left[\left(s_{X}^{2} / n\right)+\left(s_{Y}^{2} / m\right)\right]^{2}}{\frac{\left(s_{X}^{2} / n\right)^{2}}{n-1}+\frac{\left(s_{Y}^{2} / m\right)^{2}}{m-1}}$ 
+* Without assumption of equal variances, estimate of $\operatorname{Var}(\bar{X}-\bar{Y}) = \frac{s_{X}^{2}}{n}+\frac{s_{Y}^{2}}{m}$  and we use the t-distribution with $\mathrm{df}=\frac{\left[\left(s_{X}^{2} / n\right)+\left(s_{Y}^{2} / m\right)\right]^{2}}{\frac{\left(s_{X}^{2} / n\right)^{2}}{n-1}+\frac{\left(s_{Y}^{2} / m\right)^{2}}{m-1}}$ 
 * It is sometimes advocated that skewed data be transformed to a more symmetric  shape before normal theory is applied. Transformations such as taking the log or the square root can be effective in symmetrizing skewed distributions because they  spread out small values and compress large ones.
 * The ratio of the  standard deviation of a distribution to the mean is called the coefficient of variation (CV); it expresses the standard deviation as a fraction of the mean.
 * The power of the two-sample t test  depends on four factors: 
@@ -219,12 +219,12 @@ date: 20191016
 ##### Nonparametric Method - Mann-Whitney
 
 * Suppose that we have  m + n experimental units to assign to a treatment group and a control group. The  assignment is made at random: n units are randomly chosen and assigned to  the control, and the remaining m units are assigned to the treatment.
-* First, we group all m + n  observations together and rank them in order of increasing size. We next calculate the sum of the ranks of those observations that came  from the control group. If this sum is too small or too large, we will reject the null  hypothesis. We have not made any assumption that the observations  from the control and treatment groups are samples from a probability distribution. 
+* First, we group all m + n  observations together and rank them in order of increasing size. We next calculate the sum of the ranks of those observations that came from the control group. If this sum is too small or too large, we will reject the null  hypothesis. We consult a rank table to determine the level of significance for the rank sum obtained for the group with the smaller rank sum. We have not made any assumption that the observations  from the control and treatment groups are samples from a probability distribution. 
 * When it is more appropriate to model the control values, $X_1,...,X_n,$ as a sample  from some probability distribution F and the experimental values, $Y_1,..., Y_m$, as a  sample from some distribution G, the Mann-Whitney test is a test of the null hypothesis  $H_0: F = G$. The reasoning is exactly the same: Under $H_0$, any assignment of ranks  to the pooled m + n observations is equally likely.
 * If the groups are roughly the same, then the ranks will have a good amount of alternation and be mixed from each group. The more separation in the ranks, the more different the two groups.
 * Let $T_Y$ denote the sum of the ranks of $Y_1, Y_2,..., Y_m$.  $E(T_Y )$ and $Var(T_Y )$ under the null hypothesis F = G: $E\left(T_{Y}\right)=\frac{m(m+n+1)}{2}$, $\operatorname{Var}\left(T_{Y}\right)=\frac{m n(m+n+1)}{12}$
   * Under $H_0: F = G$, $E\left(U_{Y}\right)=\frac{m n}{2}$, $\operatorname{Var}\left(U_{Y}\right)=\frac{m n(m+n+1)}{12}$, and $\frac{U_{Y}-E\left(U_{Y}\right)}{\sqrt{\operatorname{Var}\left(U_{Y}\right)}} \sim N(0,1)$ for m, n over 10.
-* Since the actual numerical values are replaced by their ranks, the test is  insensitive to outliers, whereas the t test is sensitive. It has been shown that even  when the assumption of normality holds, the Mann-Whitney test is nearly as powerful as the t test and it is thus generally preferable, especially for small sample  sizes. 
+* Since the actual numerical values are replaced by their ranks, the test is insensitive to outliers, whereas the t test is sensitive. It has been shown that even when the assumption of normality holds, the Mann-Whitney test is nearly as powerful as the t test and it is thus generally preferable, especially for small sample  sizes. 
 * Bootstrap: As before, suppose that $X_1, X_2,..., X_n$ and $Y_1, Y_2,..., Y_m$ are  two independent samples from distributions F and G, respectively, and that $pi=  P(X < Y )$ is estimated by $\hat{\pi}$. How can the standard error of $\hat{\pi}$ be estimated and how  can an approximate confidence interval for $\pi$ be constructed?
   * An approximation can be obtained by using the empirical distributions $F_n$ and $G_n$ in their places. This means that a bootstrap value of  $\hat{\pi}$ is generated by randomly selecting n values from $X_1, X_2,..., X_n$ with replacement,  m values from $Y_1, Y_2,..., Y_m$ with replacement and calculating the resulting value  of $\hat{\pi}$
 
@@ -237,12 +237,16 @@ date: 20191016
 #### Comparing Paired Samples
 
 * May match subjects with related characteristics, then assign one to the control and one to the experimental group.
+* A pair is $(X_i, Y_i)$ and these are not assumed to be independent (think left and right hand strength), but for $i \neq j$, $(X_i, X_j)$ can be indepedent, think left hand strength across a population.
+  * sampling two different people: $X_{i}-Y_{j} \sim N\left(\mu_{x}-\mu_{u}, \sigma_{x}^{2}+\sigma_{y}^{2}\right)$
+  * sampling one person: $X_{i}-Y_{i} \sim N\left(\mu_{x}-\mu_{u}, \sigma_{x}^{2}+\sigma_{y}^{2}-2 \rho \sigma_{x} \sigma_{y}\right)$
 * Pairs are $(X_i, Y_i), \, i=1,...,n$, different means and variances. Different pairs are independently distributed and $\operatorname{Cov}\left(X_{i}, Y_{i}\right)=\sigma_{X Y}$
 * For $D_{i}=X_{i}-Y_{i}$, independent with $E\left(D_{i}\right)=\mu_{X}-\mu_{Y}$, $\begin{aligned} \operatorname{Var}\left(D_{i}\right) &=\sigma_{X}^{2}+\sigma_{Y}^{2}-2 \sigma_{X Y} =\sigma_{X}^{2}+\sigma_{Y}^{2}-2 \rho \sigma_{X} \sigma_{Y} \end{aligned}$
 
 ##### Normal Methods
 
 * $\begin{aligned} E\left(D_{i}\right) &=\mu_{X}-\mu_{Y}=\mu_{D} , \, \operatorname{Var}\left(D_{i}\right) =\sigma_{D}^{2} \end{aligned}$
+* $D_i \sim N\left(\mu_{x}-\mu_{y}, \sigma_{x}^{2}+\sigma_{y}^{2}-2 \rho \sigma_{x} \sigma_{y}\right) = N\left(\mu_{D}, \sigma_{D}^{2}\right)$
 * Test stat: $t=\frac{\bar{D}-\mu_{D}}{s_{\bar{D}}}$, CI: $\bar{D} \pm t_{n-1}(\alpha / 2) s_{\bar{D}}$, Two sided RR: $|\bar{D}|>t_{n-1}(\alpha / 2) s_{\bar{D}}$
 
 ##### Nonparametric Method - Signed Rank Test
@@ -252,3 +256,33 @@ date: 20191016
   * Restore the signs of the differences to the ranks
   * Calculate $W_+$, the sum of ranks that have positive signs
 * If one condition produces larger values than the other, $W_+$ will take on extreme values. We test the null hypothesis that the distribution of $D_i$ is symmetric about zero.
+
+### Chapter 12 - ANOVA
+
+#### One Way Layout
+
+* An experimental design in which independent measurements  are made under each of several treatments.
+
+##### Normal Theory / F-Test
+
+* Wefirst discuss the analysis of variance and the F test in the case of I groups, each  containing J samples. The I groups will be referred to generically as treatments, or levels
+* Let $Y_{ij} = $ the jth observation of the ith treatment
+* $Y_{i j}=\mu+\alpha_{i}+\varepsilon_{i j}$ 
+  * observations are corrupted by random independent errors $\epsilon_{ij}$, normally distributed with mean zero and constant variance $\sigma^2$
+  * F test is approximately valid for large non-normal samples
+  * $\mu$ is the overall mean level
+  * $\alpha_i$ is the differential effect of the ith treatment normalized st $\sum_{i=1}^{l} \alpha_{i}=0$.
+* Expected response to ith treatment: $E\left(Y_{i j}\right)=\mu+\alpha_{i}$ 
+* The total sum of squares equals the sum of squares within groups plus the sum of square between groups: $S S_{T O T}=S S_{W}+S S_{B}$
+* Lemma A: For $X_i$ $\perp$ RVs with means $\mu_i$ and shared variance $\sigma^2$ then $E\left(X_{i}-\bar{X}\right)^{2}=\left(\mu_{i}-\bar{\mu}\right)^{2}+\frac{n-1}{n} \sigma^{2}$
+* Then Theorem A: $E\left(S S_{W}\right)=\sum_{i=1}^{I} \sum_{j=1}^{J} E\left(Y_{i j}-\bar{Y}_{i .}\right)^{2} =\sum_{i=1}^{I} \sum_{j=1}^{J} \frac{J-1}{J} \sigma^{2}=I(J-1) \sigma^{2}$. Can use for unbiased estimate of $\sigma^2: s_{p}^{2}=\frac{S S_{w}}{I(J-1)}$
+*  Theorem B: For independent, N(0, $\sigma^2$) errors, $S S_{W} / \sigma^{2} \sim \chi^2_{I(J-1)}$. If $\alpha_i = 0 \, \forall i$, $S S_{B} / \sigma^{2} \sim \chi^2_{I-1}$ and $SS_W \perp SS_B$
+* We use test statistic $F=\frac{S S_{B} /(I-1)}{S S_{W} /[I(J-1)]}$ to test $H_{0}: \alpha_{1}=\alpha_{2}=\cdots=\alpha_{l}=0$. The denominator of the F statistic has expected value equal to $\sigma^2$ ,  and the expectation of the numerator is $J (I−1)^{−1} \sum_{i=1}^I \alpha_i^2 + \sigma^2 2$ . Thus, if the null hypothesis is true, the F statistic should be close to 1, whereas if it is false, the statistic should be larger. Reject hypothesis for large values of F. 
+* Under normally distributed errors, null distribution of $F \sim F_{(I-1),(I(J-1))}$
+* For unequal number of observations under various treatments:
+  * $E\left(S S_{w}\right)=\sigma^{2} \sum_{i=1}^{I}\left(J_{i}-1\right)$, $E\left(S S_{B}\right)=(I-1) \sigma^{2}+\sum_{i=1}^{I} J_{i} \alpha_{i}^{2}$
+
+##### Problem of Multiple Comparisons
+
+* Real interest may be focused on  comparing pairs or groups of treatments and estimating the treatment means and  their differences - the F-test does not tell us how our treatment effects differ.
+* Tukey’s Method

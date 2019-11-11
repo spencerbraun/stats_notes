@@ -397,6 +397,24 @@ Table of Contents
   * Left with recursive formulation: $\mathrm{D}^{(k)}[\mathrm{u}, \mathrm{v}]=\min \left\{\mathrm{D}^{(k-1)}[\mathrm{u}, \mathrm{v}], \mathrm{D}^{(\mathrm{k}-1)}[\mathrm{u}, \mathrm{k}]+\mathrm{D}^{(\mathrm{k}-1)}[\mathrm{k}, \mathrm{v}]\right\}$
   * We have $n^3$ iterations, so $O(n^3)$. So we saved $\frac{m}{n}$ time from BF. Every vertex has at least one edge and at most $n^2$ so this is an improvement.
 
+## Greedy Algorithms
+
+* Construct solution iteratively with short term decisions, hoping it makes for an optimal solution in the end. It is often possible to construct multiple competing greedy aglortithms for a problem. The main issue is proving correctness - many greedy algorithms are not correct
+* Exchange Arguments - prove that every feasible solution can be improved by modiyfing it to look more like the output of the greedy algorithm. Given an optimal solution, how does flipping two adjacent orderings change the optimality of the algorithm?
+* Often can conceptualize a DP problem - but we might be able to solve without solving all subproblems first. Greedy algos typically have a top-down approach - make a choice then solve a subproblem
+* Approach:
+  * Cast the optimization problem as one in which we make a choice and are left with one subproblem to solve
+  * Prove that there is always an optimal solution to the original prlblem that makes the greedy choice
+  * Demonstrate optimal substructure - having made the greedy choice, what remains is a subproblem with the property that if we combine an optimal solution to the subproblem with the greedy choice we have made we arrive at an optimal solution to the original problem
+* Recall optimal substructure - an optimal solution to the problem contains within it optimal solutions to subproblems
+
+##### Huffman Codes
+
+* Variable length code - giving frequent characters short codewords and infrequent characters longer codes. 
+* Prefix code - no codeword is also a prefix of some other codeword. Create unambiguous codes for variable length codes
+* Can be represented in a binary tree in which only leaves are characters - non prefix would have other node characters
+* Set of C leaves, performs a sequence of C - 1 merging operations to create the final tree. Uses a min priority queue Q keyed on the frequency attribute, ie always merges the least frequent character first to be siblings in the tree.
+
 ## Probability Reference
 
 * Binomial - n trials of a Bernoulli. Expectation = np
