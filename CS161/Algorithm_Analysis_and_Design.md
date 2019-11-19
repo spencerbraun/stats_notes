@@ -162,7 +162,7 @@ Table of Contents
 ### Operations on Data
 
 * Given some data structures like sorted arrays or linked lists, want to insert, delete
-* In a sorted array, search is efficient in O(logn) but insert /delete mean moving things in memory, touching every element for O(n). In a linked list just replace the pointer for insert, but search / delete take a long time.
+* In a sorted array, search is efficient in O(logn) but insert / delete mean moving things in memory, touching every element for O(n). In a linked list just replace the pointer for insert, but search / delete take a long time.
 
 ### Binary Tree
 
@@ -289,7 +289,7 @@ Table of Contents
 ### Dijkstra’s Algorithm
 
 * Assume all weights are non-negative. In general making some assumptions about your input can make faster algorithm choices
-* SSSP $O(m+nlog(n))$, APSP $O(m+n^2log(n)$)
+* SSSP $O((m+n)log(n))$, APSP $O(n(m+n)log(n)$)
 * In BFS, when we put u in $L_i$, we know that u is exactly i away in the shortest possible path. For B-F, we loop over vertices more than once because we don’t know that we have the shortest path to u in the previous iteration.
 * Maintains a set S of vertices whose final shortest-path weights from the source s have already been determined. Repeated selects the vertex $u \in V -S$ with the min shortest-path estimate adds u to S, and relaxes all edges leaving u. Maintains the invariant Q = V  - S at the start of each while loop.
 * The algorithm only extracts vertices from Q and each vertex is added to S once, so loops exactly n times. once a vertex is in S, it is done and the paths leading from it can be considered (not just from the node last added to S). It always chooses the vertex in V-S closest to S. This is a greedy strategy
@@ -400,20 +400,165 @@ Table of Contents
 ## Greedy Algorithms
 
 * Construct solution iteratively with short term decisions, hoping it makes for an optimal solution in the end. It is often possible to construct multiple competing greedy aglortithms for a problem. The main issue is proving correctness - many greedy algorithms are not correct
-* Exchange Arguments - prove that every feasible solution can be improved by modiyfing it to look more like the output of the greedy algorithm. Given an optimal solution, how does flipping two adjacent orderings change the optimality of the algorithm?
+* Exchange Arguments - prove that every feasible solution can be improved by modifying it to look more like the output of the greedy algorithm. Given an optimal solution, how does flipping two adjacent orderings change the optimality of the algorithm?
 * Often can conceptualize a DP problem - but we might be able to solve without solving all subproblems first. Greedy algos typically have a top-down approach - make a choice then solve a subproblem
 * Approach:
   * Cast the optimization problem as one in which we make a choice and are left with one subproblem to solve
-  * Prove that there is always an optimal solution to the original prlblem that makes the greedy choice
+  * Prove that there is always an optimal solution to the original problem that makes the greedy choice
   * Demonstrate optimal substructure - having made the greedy choice, what remains is a subproblem with the property that if we combine an optimal solution to the subproblem with the greedy choice we have made we arrive at an optimal solution to the original problem
 * Recall optimal substructure - an optimal solution to the problem contains within it optimal solutions to subproblems
+* Hard to come up with the right algorithm, easier to write the pseudocode and analyze the run time. It often doesn’t work but it is worth trying because they tend to be simple and run quickly. Best for when we have especially nice substructure.
+* Why does it work? We never rule out an optimal solution when we make a choice.
+  * Claim: After t iterations there still exists an optimal solution optimal solution that extends what we have already selected.
+  * After 0 iterations, an optimal solution still exists as an option
+  * Then at the end of the algorithm, there cannot be another iteration, so the solution itself selected must be optimal
+  * Given optimal solution that includes $a_j$, if our greedy algorithm includes $a_k$, then we must show that an optimal solution exists with $a_k$. To show this we swap $a_k$ and $a_j$. Show that it is a feasible solution (doesn’t violate our rules) and that it is optimal
+* Optimal substructure is important and used - we need our initial choice to not affect the overall problem. We have just one sub-problem at each step instead of many like in DP.
+
+##### Activity Selection
+
+* Activities that have certain time spans, want to choose acvities that do not overlap. Activities $a_i$, starting times $s_i$, finish times $f_i$. Want to maximize the number of activities you can do
+* Shortest job? Could conflict with more jobs and prevent us from filling schedule. Fewest conflicts first? Could reduce the total number of activies we select. Earliest ending time first? Cannot come up with a counter example, should guide your intuition to try it.
+* Pick the activity with the smallest finish time, then continue picking earliest finish time that doesn’t conflict with already selected schedule.
+
+##### Job Scheduling
+
+* Jobs do not have specified time slots, but take certain amount of time to complete
+* n tasks, task i takes $t_i$ hours. For every hour that passes until task i is done pay $c_i$ - ie cost is cumulative up to the time when the task is complete.  
+* This problem breaks up nicely into subproblems - if ABCD is optimal, then BCD is the optimal when just considering jobs B, C, D
+  * $Cost(A,B,C,D) \\= C_At_A + C_B(t_A+t_B) + C_C(t_A+t_B+t_C) + C_D(t_A+t_B+t_C+t_D) \\= t_A(C_A+C_B+C_C+C_D) + t_B(C_B+C_C+C_D)+ t_C(C_C+C_D) + t_D(C_D)$
+  * Then $Cost(B,C,D) = t_B(C_B+C_C+C_D)+ t_C(C_C+C_D) + t_D(C_D)$
+* Take the best job first, then repeat for the subgroup without the first job. Notice above we could break out problem by costs or by time. We need to consider both cost and time - take a ratio to maximize - $\frac{\text{cost of delay}}{\text{time it takes}}$
+* Claim: After t iteration the optimal schedule extends the first t jobs we scheduled
+  * Swapping our chosen job with the next optimal job - need to simply show that our solution T is better than the optimal solution handed to us $T^*$. Want to swap adjacent terms only so we otherwise have the same order. Should be able to analyze the costs of two adjacent jobs and determine which is an optimal solution.
+  * Or could say assume by contradiction $T^*$ is optimal and doesn’t follow our criteria. Then swapping changes anything it can only make it better. If it doesn’t change anything then the ratios are the same of the swapped elements.
 
 ##### Huffman Codes
 
 * Variable length code - giving frequent characters short codewords and infrequent characters longer codes. 
 * Prefix code - no codeword is also a prefix of some other codeword. Create unambiguous codes for variable length codes
 * Can be represented in a binary tree in which only leaves are characters - non prefix would have other node characters
-* Set of C leaves, performs a sequence of C - 1 merging operations to create the final tree. Uses a min priority queue Q keyed on the frequency attribute, ie always merges the least frequent character first to be siblings in the tree.
+* Cost = p(x) d(x) - probability of character showing up times the depth of the character in the tree. Want to minimize the overall cost of the tree.
+* Set of C leaves, performs a sequence of C - 1 merging operations to create the final tree. Uses a min priority queue Q keyed on the frequency attribute, ie always merges the least frequent character first to be siblings in the tree. Treat the merged characters as a single character with the sum of their frequencies.
+
+### Minimum Spanning Trees
+
+* Given undirected connected graph in whcih each edge has a real-value cost. Goal: compute a spanning tree of the graph with the minimum possible sum of edge costs. 
+* Spanning tree is a subset $T \subset E$ of edges that satisfies: 1) T is acyclic (ie. a tree)  2) for every pair of vertices, T includes a path between v and w (spanning)
+
+##### Graph Cuts
+
+*  A cut is a partition of the vertices into two parts. Any partition, does not have to be a single connected component, can be disconnected and be in the same set.
+
+* A set of edges S in G. A cut respects set S if no edges in S cross the cut we chose.
+
+* Light edge - the smallest weight of any edge crossing the cut
+
+* Lemma - suppose there is an MST containing S, (u,v) is a light edge. Then there is an MST containing S U (u,v). Breaking this down:
+
+  1. Some cut that respects S
+  2. Edge (u,v) is the lightest edge that crosses the cut 
+  3. Some MST that extends S (or contains S)
+
+  * If all of those conditions are met, then there is an MST that extends S and also (u,v) (ie. the MST contains these edges)
+
+* Therefore if we are building an MST and we have a cut, we know we can add the lightest cut edge to the MST.
+
+* Essentially back into Prim - have a set S containing the nodes we have added to the MST and the cut crosses the boundary to in and out of the spanning tree. Then safely add the lightest edge across the cut, since it does not rule out future optimality. Show that at each choice we meet the conditions from the lemma - respects S, picked the lightest edge, MST extension is the inductive hypothesis
+
+##### Prim’s Algorithm
+
+* Very similar to Dijkstra
+* Start by choosing an arbitrary vetex. We will greedily construct a tree one edge at a time, adding the cheapest edge that extends the reach of the tree. We look over all available edges from the tree we have so far and pick the cheapest (even if from the original vertex)
+* Only considers edges that cross the frontier from X (already in the tree) to V-X (still outside the tree). After n-1 iterations, all edges are in X and the algorithm halts.
+* Runs in $O(nm)$ time - In each iteration searches over all edges to find the cheapest one with endpoints in X and V-X. Runs n-1 times with each iteration taking $O(m)$
+* If instead it is implemented with heap, since we are continuously doing a min search, runs in $O((n+m)log(n))$ time with Fib Heap. Have the key of each vertex $w \in V-X$ be the minimum cost of an edge (v,w) for $v \in X$, or $\infty$ if none exists. Essentially each vertex is storing the minimum distance to the current existing tree. This means we preprocess the minimum cost in creating the heap, then need to update the heap after extract min to recalculate the min for each vertex (direct neighbors to the tree are affected). Vertices connected to the vertex x added to X either maintain the cost they had previously to X or it needs to be updated to reflect the cost of that vertex to x. 
+* Minimum bottleneck property - For graph with real-valued edge costs, an edge $(v,w) \in E$ satisfied the MBP if it is a minimum bottleneck v-w path, ie iff there is no v-w path consisting solely of edges with cost less than the $c_{vw}$.
+* Every edge chosen by Prim satisfies MBP
+* MBP implies MST - if every edge of T satisfies the MBP then T is a MST.
+  * When we add an edge to a graph it either adds a cycle (Type C) or fuses two connected components to one (Type F)
+  * Spanning trees have exactly n-1 edges
+* Difference from Dijkstra - take the min previous distance to the tree and the edge weight to the tree - do not care about distance to the source anymore. So could pick different tree since we may not pick the shortest path from s to t to be in the MST if there are other edges connecting them with lower weights.
+
+##### Kruskal’s Algorithm
+
+* Also greedily constructs a spanning tree one edge at a time, but grows multiple trees in parallel. Chooses the cheapest edge over the whole graph that does not create a cycle
+* Total run time $O(mn)$. Sorts edge array of the graph with m entries - $O((m+n)logn)$, contains loop m times to check with edge can be added to the solution with creating a cycle, needs to check for cycles using BFS/DFS, which takes $O(m+n)$, leading to overall run time of $O(mn)$
+* We are making a forest of disjoint trees, each step merges two trees when we add an edge. Can use the same graph cutting lemma to show optimality.
+* Can be upgraded to $O(mlogn)$ using the union-find data structure.
+  * union-find maintains a partition of a static set of objects. Initialize $O(n)$ each object is its own set, and these merge over time. Running Find $O(log(n))$ - given a union-find data structure and an object x in it, return the name of the set that contains x. Union $O(log(n))$- given two objects in the structure, merge the set that contain x and y.
+  * Implemented as an array with one position for each object and a parent field that stores the array index of some other object - essentially a directed graph. We initialize with each vertex as its own parent. Find then travels down the parent relations until it cannot any further - WC RT is then the height of the tree. The depth of an object is the number of parent edge traversals performed by Find from x.
+  * Union then demotes one parent root and promotes the other. There are several ways to do this, but we add the promoted root as the parent of the demoted root to minimize the increase in depth to the demoted tree vertices to 1. Want to minimize the increase in depth so demote the smaller tree, meaning we need to store the size of the tree as well, updated at each merge. Performs two Finds and some constant work, keeping it $O(logn)$
+  * Checking for cycles when an edge is added is equivalent to checking whether the endpoints are already in the same CC - requires two Find operations
+
+## Min Cut / Max Flow
+
+### Maximum Flow
+
+* A directed graph can be seen as a flow network, with material moving from a source to a sink with each edge possessing a capacity
+* Flow conservation - the rate at which material enters a vertex must equal the rate at which it leaves the vertex - no accumulation
+* We wish to compute the greatest rate at which we can ship material from the source to the sink without violating any capacity constraints
+* Flow network - G = (V, E) is a directed graph in whcih each edge(u, v) $\in$ E has a nonnegative capacity c(u,v) $\geq 0$. If E contains edge (u,v) then there is no reverse edge (v, u).
+* For s source and t sink, a flow in G is a real valued function $f: V \times V \rightarrow \R$ satisfying
+  * Capacity constraint: For all u,v in V $0 \leq f(u,v) \leq c(u,v)$. The flow from one vertex to another must be nonnegative and must not exceed capacity
+  * Flow conservation: For all u in $V - \{s, t\}$, $\sum_{v \in V} f(v,u) = \sum_{v \in V} f(u,v)$. If (u,v) not in E, the f(u,v) = 0. Flow in equals flow out (except for sink and source).
+* The value of the flow $|f| = \sum_{v \in V} f(s,v) - \sum_{v \in V} f(v, s)$ - the total flow out of the source minus the flow in to the source. Typically flow into source is 0, but included for generalization
+* Graphs with antiparallel edges - violate our assumption that if $(v_1, v_2) \in E$ then $(v_2, v_1) \notin E$. Choose one of the two antiparallel edges, split it by adding a new vertex v’ and replacing edge $(v_1, v_2)$ with $(v_1, v’)$ and $(v’, v_2)$ with capacity for both new edges equal to the capacity of the original edge.
+* Multiple sources and sinks - can convert to a standard maximum flow problem. Add a supersource s and add directed edge $(s, s_i)$ with capacity $c(s, s_i) = \infty$ for all sources. Add a supersink t with directed edges $(t_i, t), \text{ capacity } c(t_i, t) = \infty$. Supersource provides as much flow as needed for the multiple sources and supersink consumes as much as needed.
+
+### Ford-Fulkerson Method
+
+* Iteratively increases the value of the flow. Starting with $f(u,v) = 0$ for all u,v giving an initial flow of 0. At each iteration increase the flow value in G by finding an augmenting path in an associated residual network $G_f$. The flow monotonically increases with each iteration but individual edges might increase or decrease. Repeats until no more augmenting paths can be found.
+
+* Residual network - given a flow network G and flow f, the residual network $G_f$ consists of edges with capacityies that represent how we can change the flow on edges of G. Each edge can admit the capacity - current flow. If that difference is positive then we place that edge in $G_f$  with residual capacity $c_f(u,v) = c(u,v) - f(u,v)$. 
+
+* Edges can be added to $G_f$ that are not in G. If we need to reduce the flow to an edge (u,v), we place an edge (v,u) in $G_f$ with residual capacity $c_f(v,u) = f(u,v)$ to cancel out the flow on (u,v). Therefore residual capacity is formally defined as $c_f(u,v) = \begin{cases} c(u,v) - f(u,v) & \text{ if } (u,v) \in E \\ f(v,u) & \text{ if } (v,u) \in E \\ 0 & \text{otherwise}\end{cases}$
+
+* Augmentation of flow f by f’ - $(f \uparrow f’)(u,v) = \begin{cases} f(u,v) + f’(u,v) - f’(v,u) & \text{ if } (u,v) \in E \\ 0 & \text{otherwise} \end{cases}$
+
+  * Pushing flow on the reverse edge in the residual network is called cancellation
+  * An augmenting path o is a simple path from s to t in the residual network. We may increase the flow on ad edge (u,v) of an augmenting path by up to $c_f(u,v)$ without violating the capacity constraint. The residual capacity of p is the maximum amount by which we can increase it - $c_f(p) = min(c_f(u,v): (u,v)\text{ is on }p)$ Then $f_p(u,v) = \begin{cases} c_f(p) & \text{if } (u,v) \text{ is on } p \\ 0 & \text{otherwise}\end{cases}$
+
+* The flow is maximum iff its residual network contains no augmenting path
+
+* A cut (S, T) of a flow network is a partition of V into S and T = V - S st s in S and t in T. If f is a flow the the net flow f(S, T) across the cut (S, T) is defined as $f(S, T) = \sum_{u \in S}\sum_{v \in T} f(u,v) - \sum_{u \in S}\sum_{v \in T} f(v,u)$. The capacity of the cut (S, T) is $c(S,T) = \sum_{u \in S}\sum_{v \in T} c(u,v)$
+
+* A minimum cut of a network is a cut whose capacity is minimum over all cuts of the network. For capacity we count only capacities of edges going from S to T, while flow nets against the reverse direction.
+
+* The value of any flow f in a flow network G is bounded from above by the capacity of any cut of G
+
+* Max flow min cut theorem
+
+  * If f is a flow in a flow network G = (V, E) with source s and sink t then the following conditions are equivalent:
+
+  1. f is a maximum flow in G
+  2. The residual network $G_f$ contains no augmenting paths
+  3. $|f| = c(S,T)$ for some cut (S,T) of G
+
+* Summarizing: in each iteration we find some augmenting path p and use p to modify the flow f. We replace f by $f \uparrow f_p$ and get new flow of value $|f| + |f_p|$. The run time depends on how we find the augmenting path p. Using BFS, the algorithm runs in polynomial time, $O(E|f^*|)$ for maximum flow in network transformed to have integer capacities $f^*$. Can be large for large capacity networks
+
+##### Edmonds Karp
+
+* Find the augmenting path with BFS - choose the augmenting path as a shortest path from s to t in the residual network where each edge has unit weight. Then for all vertices $v \in V - \{s,t\}$ the shortest path distance from s to v in the residual network increases monotonically with each augmentation.
+* The total number of flow augmentations is $O(VE)$, so the total running time is $O(VE^2)$
+
+### Maximum Bipartite Matching
+
+* Given an undirected graph a matching is a subset of edges M st for all vertices v in V at most one edge of M is incident on v. We say that a vertex v is matched by the matching M if some edge in M is incident on v. A maximum matching has the maximum amount of matched vertices.
+* We want to construct a flow network where flows correspond to matchings. The corresponding flow network $G’ = (V’, E’)$ for the bipartite graph G: let s and t be new vertices not in V and $V’ = V \cup \{s,t\}$. Since vertices are part of bipartite graph $V = L \cup R$, the directed edges of G’ are the edges of E directed from L to R along with |V| new directed edges from s to all in L and R to t. We assign unit capacity to each edge in E’.
+* Integer valued - f(u,v) is an integer for all (u,v) in V
+* If M is a matching in G then there is an integer valued flow f in G’ with value |f| = |M|. Conversely if f is an integer valued flow in G’ then there is a matching M in G with cardinality |M| = |f|.
+* If the capacity function c takes on only integral values then the max flow f produced by the F-F method has integral |f| and for all edges f(u,v) is integral. Therefore the cardinality of a max matching M in a bipartite graph G equals the value of a max flow f in its corresponding flow network G’.
+
+### Global Minimum Cuts - Karger
+
+* An s-t cut was defined to be a partition of V into sets A and B such that $s \in A$ and $t \in B$.
+* For a cut (A, B) in an undirected graph G, the size of (A, B) is the number of edges with one end in A and the other in B. A global minimum cut is a cut of minimum size. Thus the global min-cut is a natural “robustness” parameter; it is the smallest number of edges whose deletion disconnects the graph.
+* Karger / Contraction Algorithm - given multigraph, undirected graph allowed to have parallel edges, choose edge in G at random and contract it, ie combine u,v into new node w. Note that the new graph G’ could have parallel edges due to vertex contraction. Recurse, creating many supernodes in G’. The algorithm terminates when there are only two supernodes.
+* Each of these super-nodes $v_i$ has a corresponding subset $S(v_i) \subset V$ consisting of the nodes that have been contracted into it, and these two sets $S(v_1)$ and $S(v_2)$ form a partition of V. This split is the global min cut.
+* The success probability is only polynomially small. It will then follow that by running the algorithm a polynomial number of times and returning the best cut found in any run, we can actually produce a global min-cut with high probability of ${n \choose 2}^{-1}$.
+* If we run ${n \choose 2}$ times then the probability that we fail to find the global min cut = $\left(1-1 /\left(\begin{array}{l}{n} \\ {2}\end{array}\right)\right)^{\left(\begin{array}{l}{n} \\ {2}\end{array}\right)} \leq \frac{1}{e}$
+* An undirected graph G on n nodes has at most ${n \choose 2}$ global min cuts.
 
 ## Probability Reference
 

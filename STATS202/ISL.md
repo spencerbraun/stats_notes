@@ -275,7 +275,7 @@ Non-Linear Relationships - Polynomial Regression: Can add a higher order polynom
 * Lasso and Ridge are really constrained optimization using Lagrange multipliers - the penalty < constant s is the constraint for a fixed lambda. 
 * Best subset can be included here, minimization constrained by the L0 norm < s, ie $\sum_{j=1}^p1(B_j \neq 0) < s$
 * Visualizing lasso and ridge with 2 predictors
-  * Beta contour lines, each level curve defines a level of equal RSS. The constraints Ridge: $\sum_{j=1}^p B_j^2 < s$, Lasso:  $\sum_{j=1}^p |B_j| < s$ are expanding areas from the origin. The squared ridge constraint is a circle, and the point where it touches the level curves is the optimum. Since it is circular this is unlikely to occur at 0. The L1 ball is a diamond and the level curves are likely to intersect the diamond at 0. Think of in 100 dimensions, there are many vertices and likely to hit one when we intersect with the beta level curves. Note if the beta-hat were constained in the constraint space, then the beta is optimal and we have least squares.
+  * Beta contour lines, each level curve defines a level of equal RSS. The constraints Ridge: $\sum_{j=1}^p B_j^2 < s$, Lasso:  $\sum_{j=1}^p |B_j| < s$ are expanding areas from the origin. The squared ridge constraint is a circle, and the point where it touches the level curves is the optimum. Since it is circular this is unlikely to occur at 0. The L1 ball is a diamond and the level curves are likely to intersect the diamond at 0. Think of in 100 dimensions, there are many vertices and likely to hit one when we intersect with the beta level curves. Note if the beta-hat were constrained in the constraint space, then the beta is optimal and we have least squares.
 * Comparison in situations
   * $R^2$ of training data is used to plot both ridge and lasso together, since plotting against lambda is infeasible since the lambdas are actually different between the two models.
   * All coefficients are non-zero - then ridge is likely better, since the variance of the ridge is smaller, the bias is about the same, so the ridge MSE is smaller.
@@ -312,7 +312,7 @@ Non-Linear Relationships - Polynomial Regression: Can add a higher order polynom
 * Regress Y onto $X_j$, then our $\phi_{j1}$ is the coefficient from this regression. Define $Z_{1}=\sum_{j=1}^{p} \phi_{j 1} X_{j}$. 
 * Look at the direction that explains Y best, instead of the direction of greatest X variance. Gives more weight to the variables / residuals that are more correlated with the response.
 * Take the residuals of the simple linear regression, and repeat. Run a regression of Y against the residuals. Continue to define $Z_1, Z_2,...$ Then do a regression of Y onto the Z vectors.
-* To form each component, PLS give more weight to the variables / residuals that are more corrlated with the response. To form each residual, PLS removes the information explained by the previous components. 
+* To form each component, PLS give more weight to the variables / residuals that are more correlated with the response. To form each residual, PLS removes the information explained by the previous components. 
 * Compared to PCR, PLS has less bias, more variance ie. tendency to overfit. The Y responses have noise, and now we increase the chance of fitting to that noise as well.
 
 ##### High Dimensional Regression
@@ -350,7 +350,7 @@ Non-Linear Relationships - Polynomial Regression: Can add a higher order polynom
   * Can write f in terms of K+3 basis functions: $f(X)=\beta_{0}+\beta_{1} X+\beta_{2} X^{2}+\beta_{3} X^{3}+\beta_{4} h\left(X, \xi_{1}\right)+\cdots+\beta_{K+3} h\left(X, \xi_{K}\right)$ where $h(x, \xi)=\left\{\begin{array}{ll}{(x-\xi)^{3}} & {\text { if } x>\xi} \\ {0} & {\text { otherwise }}\end{array}\right.$. At each knot point can change the higher order terms while keeping the continuity conditions.
 * Linear spline - simple linear fits continuous at the break point.
 * Natural cubic splines - At the end points, use linear spline instead of cubic, use cubic on the rest. Helps control the SEs at the end points, since polynomials tend to become more erratic at their endpoints - Gibbs phenomenon. More stable for extreme values of X.
-* Choosing knots - back to bias-variance tradeoff, chosen through CV. Locations are typically at quantiles of X. Graph with DF vs MSE, usually MSE drops dramaticaly with added DF and then flattens.
+* Choosing knots - back to bias-variance tradeoff, chosen through CV. Locations are typically at quantiles of X. Graph with DF vs MSE, usually MSE drops dramatically with added DF and then flattens.
 * Splines can fit complex functions without the weird behavior of a very high degree polynomial.
 
 ##### Smoothing Splines
@@ -358,7 +358,7 @@ Non-Linear Relationships - Polynomial Regression: Can add a higher order polynom
 * Writes an optimization problem as the addition of the sum of squares differences and a penalty: $\sum_i^n(y_i - f(x_i))^2 + \lambda \int f’'(x)^2 dx$
 * The term $\sum_i^n(y_i - f(x_i))^2$ is a loss function (RSS) that encourages g to fit the data well, and the term  $\lambda \int f’'(x)^2 dx$ is a penalty term similar to ridge regression
 
-* The second derivative defines the curvature of the model - penalize flexability through the curvature of the function. A large second derivative is a more flexible model. Since all linear functions of $f’’(x) = 0$, they have no penalty. Integration over the whole line to capture the curvature over the whole domain.
+* The second derivative defines the curvature of the model - penalize flexibility through the curvature of the function. A large second derivative is a more flexible model. Since all linear functions of $f’’(x) = 0$, they have no penalty. Integration over the whole line to capture the curvature over the whole domain.
 * For large lambda, we force the second derivative to be small and we force the model towards least squares. Very small lambdas allow for very flexible models that could interpolate between every data point for an exact fit to the training data - overfitting.
 * The minimizer $\hat{f}$ of this function is a natural cubic spline with knots at each sample point $x_1,...,x_n$. Contrast that to piecewise knots where we had a fixed number of knots over the data set. Even though we have many knots, we are forcing them to be smooth so still has limited flexibility.
 * Choosing the regularization parameter $\lambda$ - chosen with CV. The tuning parameter $\lambda$ controls the roughness of the smoothing spline, and hence the effective degrees of freedom. Although a smoothing spline has n parameters and hence n nominal degrees of freedom, these n parameters are heavily constrained or shrunk down. Shortcut `in choosing $\lambda$ for LOOCV. Can often get a similar fit with smaller effective DF
@@ -379,7 +379,7 @@ Non-Linear Relationships - Polynomial Regression: Can add a higher order polynom
   * Iterate for each $f_i$, fixing the other functions and fitting on partial residuals.
   * Could start out say with the identity function, fit it, then refine on the partial residuals. This works for smoothing splines and local regression.
 * Somewhere between linear regression and a fully nonparametric method.
-* In practice we can exame each predictor against its $f$ output to see how the transformation performs.
+* In practice we can examine each predictor against its $f$ output to see how the transformation performs.
 
 ##### Text Mining
 
@@ -403,7 +403,7 @@ Non-Linear Relationships - Polynomial Regression: Can add a higher order polynom
 * This tends to overfit - so we grow a large tree and then prune it back. Cost complexity pruning: For each value of $\alpha$ there corresponds a subtree $T \subset T_0$ such that $\sum_{m=1}^{|T|} \sum_{i: x_{i} \in R_{m}}\left(y_{i}-\hat{y}_{R_{m}}\right)^{2}+\alpha|T|$ is as small as possible. |T| is the number of terminal nodes / leaves. When $\alpha = \infty$ we select the null tree. When $\alpha =0$, we select the full tree. $\alpha$ penalizes having many terminal nodes. Then can choose the optimal $\alpha$ by CV.
 * Alternative pruning approach starts with the full tree $T_0$ and replaces a subtree with a leaf node. Minimize $\frac{RSS(T_1) - RSS(T_0)}{|T_0| - |T_1|}$. Turns out you get the same sequence of trees from this procedure as the other pruning procedure. While $\alpha$ moves continuously and this procedure is discrete, since the trees are discrete they produce the same sequence. These methods are very similar to Lasso.
   * Wrong way to do CV: construct trees for range of values on full dataset, split the training points into 10 folds, for each tree use every fold except kth to estimate the averages in each region and calculate the RSS of the kth fold. We cannot build the trees on the full dataset before splitting - splitting into folds always comes first.
-  * Correct way: split into 10 folds, for k in 1 - 10, using every fold except the nth, construct a sequence of trees for range of alphas, calculate RSS on test set, then selec the alpha that minimizes the average test error across test folds.
+  * Correct way: split into 10 folds, for k in 1 - 10, using every fold except the nth, construct a sequence of trees for range of alphas, calculate RSS on test set, then select the alpha that minimizes the average test error across test folds.
 * Other ideas don’t work as well: CV across all trees still overfits due to too many possibilities. Also CV would select a tree that is best fit for the training data, but trees are not especially resilient to changing samples / data. Stopping the growth of the tree once we have diminishing returns to the decrease in RSS may prevent us from finding good cuts after bad ones.
 * For the baseball data - our model fit predicts if year below 4.5, we make a single prediction. Above this number of years, we split into two regions based on number of hits. Like KNN, we use the average response as the prediction for a region.
 
@@ -411,15 +411,15 @@ Non-Linear Relationships - Polynomial Regression: Can add a higher order polynom
 
 * We predict that each observation belongs to the most commonly occurring class of training observations in the region to which it belongs. We use the error function $E=1-\max _{k}\left(\hat{p}_{m k}\right)$. Here $\hat{p}_{m k}$ represents the proportion (on 0 to 1) of training observations in the mth region that are from the kth class. Misclassification error $\sum_{m=1}^{|T|} \sum_{x_{i} \in R_{m}} \mathbf{1}\left(y_{i} \neq \hat{y}_{R_{m}}\right)$
 * This is often not sensitive enough so can use the Gini index $G=\sum_{m=1}^{|T|} q_{m}\sum_{k=1}^{K} \hat{p}_{m k}\left(1-\hat{p}_{m k}\right)$, a measure of total variance across the K classes. $q_m$ is the proportion of samples in $R_m$ The Gini index is a measure of node purity - a small value indicates that a node contains predominantly observations from a single class. If instead of predicting the most likely class, we predict a random sample from the distribution, the Gini index is the expected misclassification rate. 
-* Entropy can also be used: $D=-\sum_{k=1}^{K} \hat{p}_{m k} \log \hat{p}_{m k}$. Similary measure of node purity. Cross entropy: $-\sum_{m=1}^{|T|} q_{m} \sum_{k=1}^{K} \hat{p}_{m k} \log \left(\hat{p}_{m k}\right)$
+* Entropy can also be used: $D=-\sum_{k=1}^{K} \hat{p}_{m k} \log \hat{p}_{m k}$. Similar measure of node purity. Cross entropy: $-\sum_{m=1}^{|T|} q_{m} \sum_{k=1}^{K} \hat{p}_{m k} \log \left(\hat{p}_{m k}\right)$
 * Typically use Gini / Entropy to evaluate the quality of a split due to their node purity sensitivity, but classification error rate is best for pruning when prediction accuracy is the goal.
-* Splits can yield the same predicted value, because it leads to increased node purity. This split does not reduce classfication error but improves node purity - ie. we are more certain of our predicted value along one of those split paths.
+* Splits can yield the same predicted value, because it leads to increased node purity. This split does not reduce classification error but improves node purity - ie. we are more certain of our predicted value along one of those split paths.
 
 ##### Evaluation of Trees
 
 * Tend to work better than linear regression when we have a highly non-linear, complex relationship (say a square boundary) between features the response. Also may be preferred simply for interpretability or visualization
 * However tend to not have the prediction accuracy of other approaches and are not robust - small changes in the data can cause a large change in the estimated tree. This can be improved through bagging, random forests, and boosting.
-* Missing data - can use 2nd or 3rd best response variable when we are missing the output for an observations. Can still propogate the observation down the tree using the 2nd best split - ie instead of deciding based on heart rate, then look at the second best split for a possible tree like resting beats per minute.
+* Missing data - can use 2nd or 3rd best response variable when we are missing the output for an observations. Can still propagate the observation down the tree using the 2nd best split - ie instead of deciding based on heart rate, then look at the second best split for a possible tree like resting beats per minute.
 
 ##### Bagging
 
@@ -433,7 +433,7 @@ Non-Linear Relationships - Polynomial Regression: Can add a higher order polynom
 
 ##### Random Forests
 
-* Random forests provide an improvement over bagged trees by way of a random small tweak that decorrelates the trees.
+* Random forests provide an improvement over bagged trees by way of a random small tweak that de-correlates the trees.
 * Uses similar procedure as bagging, but when building these decision trees, each time a split in a tree is considered, a random sample of m predictors is chosen as split candidates from the full set of p predictors.
 * A fresh sample of m predictors is taken at each split, and typically we choose $m \approx \sqrt{p}$ - that is, the number of predictors considered at each split is approximately equal to the square root of the total number of predictors
 * Bagged trees may be highly correlated if there is one big predictor, since almost every tree will use this as its top split. Averaging across correlated quantities does not reduce the variance as much. Random forests overcome this problem by forcing each split to consider only a subset of the predictors. Therefore, on average $(p − m)/p$ of the splits will not even consider the strong predictor, and so other predictors will have more of a chance. If we choose m = p, then the random forest is exactly the same as bagging.
@@ -442,7 +442,7 @@ Non-Linear Relationships - Polynomial Regression: Can add a higher order polynom
 
 ##### Boosting
 
-* Boosting works similarly to bagging, except that the trees are grown sequentially: each tree is grown using information from previously grown trees. Boosting does not involve bootstrap sampling; instead each tree is fit on a modified version of the original data set.
+* Boosting works similarly to bagging, except that the trees are grown sequentially: each tree is grown using information from previously grown trees. Boosting does not involve bootstrap sampling; instead each tree is fit on a modified version of the original data set. Like bagging, it can be applied to any learning method, not just trees.
 * Given the current model, we fit a decision tree to the residuals from the model. By fitting small trees to the residuals, we slowly improve $\hat{f}$ in areas where it does not perform well. The shrinkage parameter $\lambda$ slows the process down even further, allowing more and different shaped trees to attack the residuals.
 * 3 tuning parameters: 
   * B: # of trees. Can overfit if B is too large. B is selected through CV
@@ -451,7 +451,7 @@ Non-Linear Relationships - Polynomial Regression: Can add a higher order polynom
 * Procedure
   * Set $\hat{f}(x)=0 \text { and } r_{i}=y_{i}$ for all i
   * Looping over 1 to B:
-    * Fit a tree with d splits to the training data.
+    * Fit a tree with d splits to the training residual data.
     * Update model $\hat{f}(x) \leftarrow \hat{f}(x)+\lambda \hat{f}^{b}(x)$
     * Update the residuals $r_{i} \leftarrow r_{i}-\lambda \hat{f}^{b}\left(x_{i}\right)$
   * Total model: $\hat{f}(x)=\sum_{b=1}^{B} \lambda \hat{f}^{b}(x)$
@@ -461,12 +461,14 @@ Non-Linear Relationships - Polynomial Regression: Can add a higher order polynom
 ##### Maximal Marginal Classifier
 
 * In a p-dimensional space, a hyperplane is a flat affine subspace of dimensions p − 1, defined as $\beta_{0}+\beta_{1} X_{1}+\beta_{2} X_{2}+\ldots+\beta_{p} X_{p}=0$. It divides a $p-$dimensional space into two halves.
+* Normal vector $\beta = (\beta_1,...,\beta_p)$ is a unit vector ($\sum_{j=1}^{p} \beta_{j}^{2}=1$) $\perp$ to hyperplane. If the hyperplane goes through the origin, the signed distance between a point and the hyperplane is the dot product. The sign of the dot product tells us which side of the hyperplane on which the point lies. Recall the dot product could be thought of as the projection of X onto the $\beta$ vector.
 * Suppose that we have a $n×p$ data matrix X that consists of n training observations in $p-$dimensional space, and that these observations fall into two classes—that is, $y_1,...,y_n \in \{−1, 1\}$ where −1 represents one class and 1 the other class. We also have a test observation, a p-vector of observed features
 * A separating hyperplane has the property $\beta_{0}+\beta_{1} x_{i 1}+\beta_{2} x_{i 2}+\ldots+\beta_{p} x_{i p}>0 \text { if } y_{i}=1$ and $\beta_{0}+\beta_{1} x_{i 1}+\beta_{2} x_{i 2}+\ldots+\beta_{p} x_{i p}<0 \text { if } y_{i}=-1$, ie. $y_{i}\left(\beta_{0}+\beta_{1} x_{i 1}+\beta_{2} x_{i 2}+\ldots+\beta_{p} x_{i p}\right)>0$
 * Then we can classify a test observation based on the sign of where it lies relative to the hyperplane. The magnitude of the distance from the hyperplane tells us something about the confidence of the prediction.
 * If a separating hyperplane exists, there are infinitely many choices. A natural choice is the maximal margin hyperplane (also known as the optimal separating hyperplane), which is the separating hyperplane that is farthest from the training observations. The margin is the minimal distance from the observations to the hyperplane. In a sense, the maximal margin hyperplane represents the mid-line of the widest “slab” that we can insert between the two classes.
 * Support vectors are the observation(s) that have minimal distance to the margin hyperplane - they determine the plane used. Interestingly, the maximal margin hyperplane depends directly on the support vectors, but not on the other observations
-* Construction of MMH: $\underset{\beta_{0}, \beta_{1}, \ldots, \beta_{p}, M}{\operatorname{maximize}} M$ subject to $\sum_{j=1}^{p} \beta_{j}^{2}=1$ and $y_{i}\left(\beta_{0}+\beta_{1} x_{i 1}+\beta_{2} x_{i 2}+\ldots+\beta_{p} x_{i p}\right) \geq M \forall i=1, \ldots, n$. The constraints ensure that each observation is on the correct side of the hyperplane and at least a distance M from the hyperplane. Hence, M represents the margin of our hyperplane, and the optimization problem chooses $\beta_0, \beta_1,...,\beta_p$ to maximize M.
+* Construction of MMH: $\underset{\beta_{0}, \beta_{1}, \ldots, \beta_{p}, M}{\operatorname{maximize}} M$ subject to $\sum_{j=1}^{p} \beta_{j}^{2}=1$ and $y_{i}\left(\beta_{0}+\beta_{1} x_{i 1}+\beta_{2} x_{i 2}+\ldots+\beta_{p} x_{i p}\right) \geq M \, \forall i=1, \ldots, n$. The constraints ensure that each observation is on the correct side of the hyperplane and at least a distance M from the hyperplane. Hence, M represents the margin of our hyperplane, and the optimization problem chooses $\beta_0, \beta_1,...,\beta_p$ to maximize M. Since $y_i = \pm1$ we get a positive distance greater than M since the dot product of x and beta is also signed. 
+* This can be reformulated into a quadratic optimization problem that is simpler to solve. Could also use KKT multipliers similar to lagrange multipliers - can take the partial derivatives set to 0. The optimal normal vector is a linear combination of the training points on the margin.
 
 ##### Support Vector Classifiers
 
@@ -475,8 +477,8 @@ Non-Linear Relationships - Polynomial Regression: Can add a higher order polynom
 * An observation can be not only on the wrong side of the margin, but also on the wrong side of the hyperplane. In fact, when there is no separating hyperplane, such a situation is inevitable.
 * Construction: $\underset{\beta_{0}, \beta_{1}, \ldots, \beta_{p}, \epsilon_{1}, \ldots, \epsilon_{n}, M}{\operatorname{maximize}} M$ subject to $\sum_{j=1}^{p} \beta_{j}^{2}=1$ and $y_{i}\left(\beta_{0}+\beta_{1} x_{i 1}+\beta_{2} x_{i 2}+\ldots+\beta_{p} x_{i p}\right) \geq M\left(1-\epsilon_{i}\right)$ and $\epsilon_{i} \geq 0, \sum_{i=1}^{n} \epsilon_{i} \leq C$
 * C is a nonnegative tuning parameter. M is the width of the margin; we seek to make this quantity as large as possible. $\epsilon_1,...,\epsilon_n$ are slack variables that allow individual observations to be on slack the wrong side of the margin or the hyperplane.
-* The slack variable tells us where the ith observation is located, relative to the hyperplane and relative to the margin. If $\epsilon_i > 0$ then the ith observation is on the wrong side of the margin, and we say that the ith observation has violated the margin. If $\epsilon_i > 1$  then it is on the wrong side of the hyperplane. C bounds the sum of the i’s, and so it determines the number and severity of the violations to the margin (and to the hyperplane) that we will tolerate. We can think of C as a budget for the amount that the margin can be violated by the n observations. In practice, C is treated as a tuning parameter that is generally chosen via cross-validation.
-* When the tuning parameter C is large, then the margin is wide, many observations violate the margin, and so there are many support vectors that determine the hyperplane. This classifier has low variance but higher bias.
+* The slack variable tells us where the ith observation is located, relative to the hyperplane and relative to the margin. If $\epsilon_i > 0$ then the ith observation is on the wrong side of the margin, and we say that the ith observation has violated the margin. If $\epsilon_i > 1$  then it is on the wrong side of the hyperplane (since then $1 - \epsilon_i$ becomes negative). C bounds the sum of the i’s, and so it determines the number and severity of the violations to the margin (and to the hyperplane) that we will tolerate. We can think of C as a budget for the amount that the margin can be violated by the n observations. In practice, C is treated as a tuning parameter that is generally chosen via cross-validation.
+* When the tuning parameter C is large, then the margin is wide, many observations violate the margin, and so there are many support vectors that determine the hyperplane. This classifier has low variance but higher bias. The more points that fall into the margin, the more points that contribute to the budget and reduce the variance across samples. Perfect separation (C=0) has high variation, since the addition of a single data point could shift the boundary significantly. 
 
 
 ##### Support Vector Machines
@@ -485,20 +487,34 @@ Non-Linear Relationships - Polynomial Regression: Can add a higher order polynom
 * We could address the problem of possibly non-linear boundaries between classes by enlarging the feature space using quadratic, cubic, and even higher-order polynomial functions of the predictors. In the enlarged feature space, the decision boundary that results is in fact linear. But in the original feature space, the decision boundary is of the form $q(x) = 0$, where q is a quadratic polynomial, and its solutions are generally non-linear.
 * The inner product of two r-vectors a and b is defined as $\langle a, b\rangle=\sum_{i=1}^{r} a_{i} b_{i}$. The inner product of two observations is $\left\langle x_{i}, x_{i^{\prime}}\right\rangle=\sum_{j=1}^{p} x_{i j} x_{i^{\prime} j}$ and the linear support vector classifier can be represented as $f(x)=\beta_{0}+\sum_{i=1}^{n} \alpha_{i}\left\langle x, x_{i}\right\rangle$. 
 * It turns out that $\alpha_i$ is nonzero only for the support vectors in the solution—that is, if a training observation is not a support vector, then its $\alpha_i$ equals zero. So we just need to calculate inner products for the support points
-* Define K some kernel - a function that quantifies the similarity of two observations. The SVC uses kernel $K\left(x_{i}, x_{i^{\prime}}\right)=\sum_{j=1}^{p} x_{i j} x_{i^{\prime} j}$, but we could instead choose a nonlinear kernel, like this polynomial kernel: $K\left(x_{i}, x_{i^{\prime}}\right)=\left(1+\sum_{j=1}^{p} x_{i j} x_{i^{\prime} j}\right)^{d}$. Another popular choice is a radial kernel $K\left(x_{i}, x_{i^{\prime}}\right)=\exp \left(-\gamma \sum_{j=1}^{p}\left(x_{i j}-x_{i^{\prime} j}\right)^{2}\right)$ which takes a more circular shape.
+* Define K some kernel - a function that quantifies the similarity of two observations. The SVC uses kernel $K\left(x_{i}, x_{i^{\prime}}\right)=\sum_{j=1}^{p} x_{i j} x_{i^{\prime} j}$, but we could instead choose a nonlinear kernel, like this polynomial kernel: $K\left(x_{i}, x_{i^{\prime}}\right)=\left(1+\sum_{j=1}^{p} x_{i j} x_{i^{\prime} j}\right)^{d}$. Another popular choice is a radial kernel $K\left(x_{i}, x_{i^{\prime}}\right)=\exp \left(-\gamma \sum_{j=1}^{p}\left(x_{i j}-x_{i^{\prime} j}\right)^{2}\right)$ which takes a more circular shape, notice it is minimizing a euclidean distance.
+* Then can take $\beta_0 + \beta_1X_1 + \beta_2X_2 = 0$ to $\beta_0 + \beta_1X_1 + \beta_2X_2 + \beta_3X_1^2 + B_4X_2^2= 0$. This is a linear boundary in the augmented variable set $(X_1, X_2, X_1^2, X_2^2)$ but a quadratic boundary in $(X_1, X_2)$. Now are fitting a hyperplane in a shifted space. Basically fitting a more complex model in the same space is equivalent to keeping a linear boundary in a higher dimensional space.
 * Kernels have a computational advantage, important since SVMs often work with very large enlarged feature spaces. 
+* The kernel matrix contains all of the inner products computed, always positive, semi-definite. Can make new kernels from sums and products of kernel matrices we know to be positive, sd. Not every similarity function is a valid kernel - must meet those matrix properties with their inner products. 
+* The bottom line of kernels - since our optimization comes down to inner products, we can use complicated kernels to make SVMs more useful. Inner products replaced with kernels now applied to many other learning methods like PCA. Take $\langle x_i, x_j \rangle \rightarrow k(x_i, x_j)$
+* A kernel defines a similarity between the samples $x_i$ and $x_k$. Define families of kernels which capture similarity between non-standard types of data - text, images, molecules, graphs, histograms. The expansion $\Phi$ can be infinite dimensional but the kernel is still computable. 
+* String dot kernel - count number of times word u occurs a string and kernel computed in $O(Lp)$ time
+* Gap weight kernel - for each word u of length p we look for the subsequences that create the word in a string - count the number of gaps splitting the word. Computed in $O(L^2p)$
 
 ##### Support Vector Machines with > 2 Classes
 
 * One-vs-one or all pairs approach: construct ${k \choose 2}$ SVMs, comparing all pairs of classes. Classify as test observation using each of the classifiers and tally the number of times that the test observation is assigned to each of K classes - take the winning vote.
-* One-vs-all: fit K SVMs, comparing one of K classes to the remaining K-1 classes. Assign test observation for which linear combination of parameters is highest.
+* One-vs-all: fit K SVMs, comparing one of K classes to the remaining K-1 classes. Assign test observation for which linear combination of parameters is highest - hyperplane where we have most confidence of separation.
 
 ##### Relationship to Logistic Regression
 
-* We can reqrite the criterion for fitting the SVC as $\underset{\beta_{0}, \beta_{1}, \ldots, \beta_{p}}{\operatorname{minimize}}\left\{\sum_{i=1}^{n} \max \left[0,1-y_{i} f\left(x_{i}\right)\right]+\lambda \sum_{j=1}^{p} \beta_{j}^{2}\right\}$
+* We can rewrite the criterion for fitting the SVC as $\underset{\beta_{0}, \beta_{1}, \ldots, \beta_{p}}{\operatorname{minimize}}\left\{\sum_{i=1}^{n} \max \left[0,1-y_{i} f\left(x_{i}\right)\right]+\lambda \sum_{j=1}^{p} \beta_{j}^{2}\right\}$
+* In logistic regression we minimize the loss $min_{\beta_o, \beta}\sum_{i=1}^n log[1+e^{y_i}f(x_i)]$. Recall we fit logistic regression using MLE, but this loss function is equivalent.
+* Comparing the losses - SVM has a kink due to its maximization, but the shape is quite similar - declining loss in $y_i(\beta_0 +...+\beta_px_{ip})$
 * When $\lambda$ is large then $\beta_1,...,\beta_p$ are small, more violations to the margin are tolerated, and a low-variance but high-bias classifier will result. When $\lambda$ is small then few violations to the margin will occur; this amounts to a high-variance but low-bias classifier.
 * Uses a similar penalty term as ridge regression - we have set up a similar loss minimizing procedure. Here we are using hinge loss: $L(\mathbf{X}, \mathbf{y}, \beta)=\sum_{i=1}^{n} \max \left[0,1-y_{i}\left(\beta_{0}+\beta_{1} x_{i 1}+\ldots+\beta_{p} x_{i p}\right)\right]$
 * When the classes are well separated, SVMs tend to behave better than logistic regression; in more overlapping regimes, logistic regression is often preferred. There is in fact an extension of the SVM for regression (i.e. for a quantitative rather than a qualitative response), called support vector regression.
+
+##### Generalizing Kernels
+
+* Perform PCA with an expanded set of predictors defined by the mapping $\Phi$ - replacing the data vectors with mapped data
+* Normal PCA only accounts for linear variability. Kernel PCA allows for nonlinear curves that best explain data variability. 
+* Can expand kernels to many other learning methods - anytime a procedure depends on inner products it can be generalized with the kernel trick.
 
 ### Chapter 10 - Unsupervised Learning
 
@@ -557,12 +573,37 @@ Non-Linear Relationships - Polynomial Regression: Can add a higher order polynom
 * Correlation-based distance considers two observations to be similar if their features are highly correlated, even though the observed values may be far apart in terms of Euclidean distance. Might use correlation based distance for two shoppers with similar tastes / spending patterns on very different scales, while euclidean distance would cluster shoppers by amount spent without regard to items.
 * Scaling - might want to scale to SD 1 if on different units.
 
-### ESL Chapter 14 - Non-linear Dimensionality Reduction
+### ESL Chapter 14 - Non-Linear Dimensionality Reduction
+
+* Non linear dimensionality reduction methods are useful for datasets with high signal to noise ratios - the structure is pronounced, like the swiss roll example. If noise around the manifold increases, it is increasingly hard to see the structure of the lower dimensions.
+* Suppose the data are clustered on a low dimensional manifold embedded in higher dimension space - may want the geodesic distance, the shortest distance on the manifold instead of in the higher dimensional space.
+* Ambient dimensionality is the dim of the whole set of parameters. But the data may fall on a lower dimension - its intrinsic dimensionality.
 
 ##### Kernel Principal Components
 
-* Kernel PCA expand the  scope of PCA, minicking what we would obtain if we were to expand the features by non-linear transformations and then apply PCA in this transformed space.
+* Kernel PCA expand the scope of PCA, mimicking what we would obtain if we were to expand the features by non-linear transformations and then apply PCA in this transformed space.
+* Example - shells, concentric circles of classes. PCA wouldn’t capture the circular patterns since all directions have equal variance. Throw in quadratic / some non-linear terms - it is the usual PCA algorithm applied to a new set of features remapped using a kernel $\langle \Phi(x_i), \Phi(x_k)\rangle$. Each circle is essentially a one dimensional space in two dimensions, but if noise increases too much then the distinct groups will be harder to see.
+* Plug in the radial basis function and PCA can separate the circles into separate components in two dimensional space. Dependent on the tuning parameter $c = \frac{1}{\gamma}$ - captures the distance from the center. 
+* Choosing a kernel is not easy, but there are newer methods trying to learn the structure of the kernel. Other methods like LLE, Isomap reduce to kernel PCA with a certain kernel.
+
+##### Locally Linear Embeddings (LLE)
+
+* Take a higher dimensional space to a lower such that all of the relevant features are kept intact. Think of linearizing curves in calculus to work with a line around a certain point - assumption holds locally.
+* Represent each sample as a linear combination of its neighbors - $x_i \approx \sum_{k=1}^n x_kW_{ik}$, then $W_{ik} \neq 0 \iff x_i, x_k$ are neighbors.
+* Map each sample $x_i$ to a point $z_i$ in a low dimensional space st the local linear representation holds approximately, ie. $z_i \approx \sum_{k=1}^nz_kW_{ik}$. Maintain the relationships while mapping to a lower dimension.
+* Find the weights W, fix W and find the optimal low dimensional embedding (solved by eigendecomposition). Number of weights is a hyperparameter
+* Used for images of faces for example. Image is a matrix of pixels with grayscale values. Create 2D projection with LLE with 16 neighbors. While there are 560 features, they are all faces and should have lower dimensionality, certain regularity should be expected. 
 
 ##### Multidimensional Scaling
 
-* 
+* Project data onto a low-dimensional space, approx preserving the distance between every pair of samples.
+* $d(i, j)$ is the distance between x’s, then find $z_i$ of every sample minimizing $\sum_{i,j} (d(i,j) - ||z_i - z_j||)^2$. Simply a least squares problem, but have to minimize over different mappings onto lower dimensions (say a 2D manifold parametrized somehow). The distance can be any distance, not just euclidean.
+
+##### Isomap
+
+* Modern version of multidimensional scaling
+* Data clustered in low dimension manifold in higher dimensional space - swiss roll eg.
+* Take the geodesic distance between samples as our $d(i,j)$. 
+* We don’t know the manifold a priori, but the nearest neighbor graph approximates the shortest path. We can use this as a proxy for geodesic distance and apply multidimensional scaling
+* Hands dataset - large dimensionality n x n pixels per image but all are visualizing very similar things. The images have data in similar locations.
+* Signal to noise is good for many probles in computer vision, where components are distinct.
