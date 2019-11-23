@@ -493,12 +493,22 @@ Table of Contents
 
 ## Min Cut / Max Flow
 
+### s-t Cuts
+
+* Source vertex s, sink vertex t
+* Edges only count towards a cut if it goes from s side to t side - cost of a cut if the sum of the capacities of the edges that cross the cut
+* Minimum s-t cut - separates with the minimum capacity
+* In addition to a capacity, each edge has a flow, constrained by its capacity. At each vertex the incoming flows equal the outgoing flows except for s and t
+* The amount of flow = amount flowing out of s = amount flowing into t
+
 ### Maximum Flow
 
 * A directed graph can be seen as a flow network, with material moving from a source to a sink with each edge possessing a capacity
 * Flow conservation - the rate at which material enters a vertex must equal the rate at which it leaves the vertex - no accumulation
 * We wish to compute the greatest rate at which we can ship material from the source to the sink without violating any capacity constraints
-* Flow network - G = (V, E) is a directed graph in whcih each edge(u, v) $\in$ E has a nonnegative capacity c(u,v) $\geq 0$. If E contains edge (u,v) then there is no reverse edge (v, u).
+* **Max-Flow Min-Cut theorem**: The max flow from s to t is equal to the cost of a min s-t cut
+  * Lemma 1: For any s-t flow and any s-t cut, the value of the flow is at most the cost of the cut max flow $\leq$ min cut. Cannot have flow that is more that the capacity bridging two areas since all material must bridge the cut divide
+* Flow network - G = (V, E) is a directed graph in which each edge(u, v) $\in$ E has a nonnegative capacity c(u,v) $\geq 0$. If E contains edge (u,v) then there is no reverse edge (v, u).
 * For s source and t sink, a flow in G is a real valued function $f: V \times V \rightarrow \R$ satisfying
   * Capacity constraint: For all u,v in V $0 \leq f(u,v) \leq c(u,v)$. The flow from one vertex to another must be nonnegative and must not exceed capacity
   * Flow conservation: For all u in $V - \{s, t\}$, $\sum_{v \in V} f(v,u) = \sum_{v \in V} f(u,v)$. If (u,v) not in E, the f(u,v) = 0. Flow in equals flow out (except for sink and source).
@@ -510,16 +520,22 @@ Table of Contents
 
 * Iteratively increases the value of the flow. Starting with $f(u,v) = 0$ for all u,v giving an initial flow of 0. At each iteration increase the flow value in G by finding an augmenting path in an associated residual network $G_f$. The flow monotonically increases with each iteration but individual edges might increase or decrease. Repeats until no more augmenting paths can be found.
 
-* Residual network - given a flow network G and flow f, the residual network $G_f$ consists of edges with capacityies that represent how we can change the flow on edges of G. Each edge can admit the capacity - current flow. If that difference is positive then we place that edge in $G_f$  with residual capacity $c_f(u,v) = c(u,v) - f(u,v)$. 
+* Residual network - given a flow network G and flow f, the residual network $G_f$ consists of edges with capacities that represent how we can change the flow on edges of G. Each edge can admit the capacity - current flow. If that difference is positive then we place that edge in $G_f$  with residual capacity $c_f(u,v) = c(u,v) - f(u,v)$. 
 
-* Edges can be added to $G_f$ that are not in G. If we need to reduce the flow to an edge (u,v), we place an edge (v,u) in $G_f$ with residual capacity $c_f(v,u) = f(u,v)$ to cancel out the flow on (u,v). Therefore residual capacity is formally defined as $c_f(u,v) = \begin{cases} c(u,v) - f(u,v) & \text{ if } (u,v) \in E \\ f(v,u) & \text{ if } (v,u) \in E \\ 0 & \text{otherwise}\end{cases}$
+* Edges can be added to $G_f$ that are not in G. If we need to reduce the flow to an edge (u,v), we place an edge (v,u) in $G_f$ with residual capacity $c_f(v,u) = f(u,v)$ to cancel out the flow on (u,v). Therefore residual capacity is formally defined as $c_f(u,v) = \begin{cases} c(u,v) - f(u,v) & \text{ if } (u,v) \in E \\ f(v,u) & \text{ if } (v,u) \in E \\ 0 & \text{otherwise}\end{cases}$ 
+
+* Say we have a directed edge from A to B, with 1 unit of flow and 6 capacity. If we want to route 1 unit of flow from B to A, this is the same as routing -1 from A to B, ie. reducing our flow of A to B to 0. In the residual network, we add the 1 unit of pseudoflow from B to A as well as the residual flow from A to B of 5. The flow from B to A corresponds to $f(v,u)$, ie we can only reverse flow that is already flowing from A to B. (Condition if $(v,u) \in E$ really the same as testing if (u,v) in E). Notice the residual + reverse residual edge is equal to the capacity.
+
+* **In the residual network, t is not reachable from s in $G_f$ iff f is a max flow.** Then need to augment the flow in the original graph. This should cause some residual edges to drop to 0, deleting that edge. At some point we remove a viable path from s to t and we are left with a max flow.
 
 * Augmentation of flow f by f’ - $(f \uparrow f’)(u,v) = \begin{cases} f(u,v) + f’(u,v) - f’(v,u) & \text{ if } (u,v) \in E \\ 0 & \text{otherwise} \end{cases}$
 
   * Pushing flow on the reverse edge in the residual network is called cancellation
-  * An augmenting path o is a simple path from s to t in the residual network. We may increase the flow on ad edge (u,v) of an augmenting path by up to $c_f(u,v)$ without violating the capacity constraint. The residual capacity of p is the maximum amount by which we can increase it - $c_f(p) = min(c_f(u,v): (u,v)\text{ is on }p)$ Then $f_p(u,v) = \begin{cases} c_f(p) & \text{if } (u,v) \text{ is on } p \\ 0 & \text{otherwise}\end{cases}$
+  * An augmenting path p is a simple path from s to t in the residual network. We may increase the flow on an edge (u,v) of an augmenting path by up to $c_f(u,v)$ without violating the capacity constraint. The residual capacity of p is the maximum amount by which we can increase it - $c_f(p) = min(c_f(u,v): (u,v)\text{ is on }p)$ Then $f_p(u,v) = \begin{cases} c_f(p) & \text{if } (u,v) \text{ is on } p \\ 0 & \text{otherwise}\end{cases}$
 
-* The flow is maximum iff its residual network contains no augmenting path
+* Augmenting - if we use a forward edge we increase its flow, if we have a backward edge, we decrease its flow. 
+
+* **The flow is maximum iff its residual network contains no augmenting path**
 
 * A cut (S, T) of a flow network is a partition of V into S and T = V - S st s in S and t in T. If f is a flow the the net flow f(S, T) across the cut (S, T) is defined as $f(S, T) = \sum_{u \in S}\sum_{v \in T} f(u,v) - \sum_{u \in S}\sum_{v \in T} f(v,u)$. The capacity of the cut (S, T) is $c(S,T) = \sum_{u \in S}\sum_{v \in T} c(u,v)$
 
@@ -527,7 +543,7 @@ Table of Contents
 
 * The value of any flow f in a flow network G is bounded from above by the capacity of any cut of G
 
-* Max flow min cut theorem
+* **Max flow min cut theorem**: The max flow from s to t is equal to the cost of a min s-t cut
 
   * If f is a flow in a flow network G = (V, E) with source s and sink t then the following conditions are equivalent:
 
@@ -540,7 +556,8 @@ Table of Contents
 ##### Edmonds Karp
 
 * Find the augmenting path with BFS - choose the augmenting path as a shortest path from s to t in the residual network where each edge has unit weight. Then for all vertices $v \in V - \{s,t\}$ the shortest path distance from s to v in the residual network increases monotonically with each augmentation.
-* The total number of flow augmentations is $O(VE)$, so the total running time is $O(VE^2)$
+* Not E-K: Fattest path algorithm - pick the path with the biggest capacity. Use F-F with the fattest path rule, finishes in time $O(m^2log(f))$ for f max flow. Can do binary search over the edge capacities to find the fattest path, then run BFS on the fattest path.
+* E-K: Use the shortest path with F-F. Runs in time $O(nm^2)$
 
 ### Maximum Bipartite Matching
 
@@ -549,16 +566,32 @@ Table of Contents
 * Integer valued - f(u,v) is an integer for all (u,v) in V
 * If M is a matching in G then there is an integer valued flow f in G’ with value |f| = |M|. Conversely if f is an integer valued flow in G’ then there is a matching M in G with cardinality |M| = |f|.
 * If the capacity function c takes on only integral values then the max flow f produced by the F-F method has integral |f| and for all edges f(u,v) is integral. Therefore the cardinality of a max matching M in a bipartite graph G equals the value of a max flow f in its corresponding flow network G’.
+* Given each edge with capacity 1, then each L is matched with 1 R. 
+* Great for assigment problems
 
 ### Global Minimum Cuts - Karger
 
 * An s-t cut was defined to be a partition of V into sets A and B such that $s \in A$ and $t \in B$.
 * For a cut (A, B) in an undirected graph G, the size of (A, B) is the number of edges with one end in A and the other in B. A global minimum cut is a cut of minimum size. Thus the global min-cut is a natural “robustness” parameter; it is the smallest number of edges whose deletion disconnects the graph.
-* Karger / Contraction Algorithm - given multigraph, undirected graph allowed to have parallel edges, choose edge in G at random and contract it, ie combine u,v into new node w. Note that the new graph G’ could have parallel edges due to vertex contraction. Recurse, creating many supernodes in G’. The algorithm terminates when there are only two supernodes.
-* Each of these super-nodes $v_i$ has a corresponding subset $S(v_i) \subset V$ consisting of the nodes that have been contracted into it, and these two sets $S(v_1)$ and $S(v_2)$ form a partition of V. This split is the global min cut.
-* The success probability is only polynomially small. It will then follow that by running the algorithm a polynomial number of times and returning the best cut found in any run, we can actually produce a global min-cut with high probability of ${n \choose 2}^{-1}$.
-* If we run ${n \choose 2}$ times then the probability that we fail to find the global min cut = $\left(1-1 /\left(\begin{array}{l}{n} \\ {2}\end{array}\right)\right)^{\left(\begin{array}{l}{n} \\ {2}\end{array}\right)} \leq \frac{1}{e}$
+* Naive: Over n vertices, we have roughly two choices of cuts per vertex, we have $2^n$ possible cuts to looks for. Another option: look at all pairs of vertices, assigning s and t to each pair, trying s-t min cut; then we have running time $n^2 * t(F-F)$
+* Global min cuts useful for clustering, seeing where there are denser connections. 
+* Karger / Contraction Algorithm - given multigraph, undirected graph allowed to have parallel edges, choose edge in G at random and contract it, ie combine u,v into new node w. Note that the new graph G’ could have parallel edges due to vertex contraction. Recurse, creating many supernodes in G’. The algorithm terminates when there are only two supernodes - this is the minimum cut.
+* Note in our implementation we use an unweighted, undirected graph, though the algorithm can be extended to include other graph types. Parallel edges become superedges / or remain parallel edges.
+* Running time - we contract n-2 edges, naively each contraction takes $O(n)$, since there may be n nodes in the supernodes we are merging. We just have two lists of edges that connect some super nodes, we need to remove those edges when we contract. So the total running time is $O(n^2)$
+* Karger is not always correct, unlike QuickSort - QuickSort is a Las Vegas Randomized Algo, always right but sometimes slow. Karger is a Monte Carlo randomized algorithm, it is always fast but sometimes wrong. 
+* It is wrong iff we choose any of the edges that cross the min-cut, then we will never find the min-cut. Probabilistically, Karger is skewed towards selecting smaller cuts compared to the uniformly random cut. The smaller the cut, the lower the probability that we ever ruin it - Karger is more likely to choose cuts that have many edges. Can run Karger multiple times to get a high probability of finding the global minimum.
+* We can actually produce a global min-cut with high probability of ${n \choose 2}^{-1}$. Define p as the probability of success in one trial. P(T trials fail ) $= (1-P)^T$. If we want failure probability at most $\delta$, choose $T={n \choose 2}ln(1/\delta)$. (P(Fail in T trials) = $(1-P)^T \leq e^{-pT} = e^{-ln(1/\delta)}=\delta$ )
+* Theorem: Probability that we ever ruin the minimum cut is at most $\frac{1}{{n \choose 2}}$
+* From book: If we run ${n \choose 2}$ times then the probability that we fail to find the global min cut = $\left(1-1 /\left(\begin{array}{l}{n} \\ {2}\end{array}\right)\right)^{\left(\begin{array}{l}{n} \\ {2}\end{array}\right)} \leq \frac{1}{e}$
 * An undirected graph G on n nodes has at most ${n \choose 2}$ global min cuts.
+
+##### Karger-Stein
+
+* Repeating Karger is expensive - $O(n^4)$. K-S will also get us success probability 0.99 in $O(n^2log^2(n))$. We pretty much always use K-S since it is always faster but Karger gives us the intuition
+* As Karger progresses, the probability of picking an edge on the min cut increases - our choices get riskier. But this means if we are repeating the Karger algorithm, we can skip repeating the early iterations since they were very likely to make good choices.
+* After a number of iterations, fork our graph and have branches run Karger in parallel. We will run Karger until there are $\frac{n}{\sqrt{2}}$ supernodes left, split into two independent copies $G_1, G_2$, recurse running K-S on first and second copies and return the better cut of the two. Karger draws a tree from 1 node of n to 1 leaf and we do this $n^2$ times. K-S draws 1 tree, starting from n down to $n^2$ leaves of 1. We save nothing at the bottom with K-S, but we save a lot at the top, just a single root node instead of repeating the linear tree from top to bottom.
+* Depth of recursion tree is $log_{\sqrt{2}}n = 2logn$, number of leaves is $2^{2logn} = n^2$. Still need to see at least $n^2$ cuts like Karger to ensure we see the best one, but we save on computation by skipping the earlier iterations.
+* The probability of success is $p = \frac{1}{depth+1}$ for depth of tree. 
 
 ## Probability Reference
 

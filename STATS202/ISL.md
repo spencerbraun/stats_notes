@@ -269,6 +269,7 @@ Non-Linear Relationships - Polynomial Regression: Can add a higher order polynom
 * Here the penalty term is the L1 norm of beta - $||B||_1 = \sum_{j=1}^p |B_j|$
 * Lasso shrinks some coefficients all the way to zero - alternative to best subset selection or stepwise. We can focus on a smaller subset of predictors and obtain a simpler model. Not only simple but performs well in predictions.
 * As you increase lambda, more predictors drop out of the model entirely. For large enough lambda you can eliminate all of the predictors. No guarantee that the shrinkage is monotone as a function of lambda but most often is monotone.
+* Can think of Lasso as a relaxation of best subset, since best subset is equivalent to an L0 norm penalty. We have seen that method can be quite computational taxing, so Lasso is next best solution that is actually feasible and gives good results.
 
 ###### Comparing Ridge and Lasso
 
@@ -607,3 +608,43 @@ Non-Linear Relationships - Polynomial Regression: Can add a higher order polynom
 * We don’t know the manifold a priori, but the nearest neighbor graph approximates the shortest path. We can use this as a proxy for geodesic distance and apply multidimensional scaling
 * Hands dataset - large dimensionality n x n pixels per image but all are visualizing very similar things. The images have data in similar locations.
 * Signal to noise is good for many probles in computer vision, where components are distinct.
+
+### ESL - Missing Data
+
+* We have missing data everywhere - from surveys, recommendation systems. Yelp has a skewed sample of reviewers. Dropout from longitudinal studies. Netflix prize - filling in the ratings of people without any.
+* Missing completely at random
+  * Pattern of missingness is independent of missing values and the values of any measured variables. 
+  * Eg. rate only 4 out of 20 drinks, but the 4 rated were chosen at random from the 20
+* Missing at Random
+  * Depends on other predictors but conditional on observed variables missingness is independent of missing value
+  * Poor subjects less likely to answer question about drug use than the wealthy ones. Conditioning on income, whether they answer are not is independent of actual drug use.
+* Missing not at random
+  * Related to the missing variable even after correcting for measured variables. 
+  * Higher earners are less likely to report their income - we are interested in income and we are less likely to have data on it for high earners.
+  * Censoring - follow people over time to see time until an event, but at some time point the study ends or there is dropout. We no longer observe the result after a time period.
+
+##### Methods for Adjustments
+
+* Categorical - treat missing as another category
+* Surrogate - use other variables to account for missing variables. CART methods can have backup variables when data is missing for the original best split. We can also do this for other methods.
+* Delete the observations missing values, but reduces the dataset size, add bias.
+* Variable deletion - delete whole variables with missing values. Again can bias the feature space, may be a valuable variables with large differentiation.
+* Single imputation - try to replace the missing value with a single number. Obviously in the hard sciences, this is not an acceptable solution, but depending on application this may work. 
+  * Replace with the mean or median of the column
+  * Replace with a random sample from the non-missing values
+  * Replace missing values in $X_j$ with regression estimate from other predictors $X_{-j}$. Sort of the most logical imputation of a variable when we have other data.
+  * However, 1 and 2 might introduce bias if the missing values are not completely random. Also the inference uncertainty parameters do not account for this additional uncertainty. Good application for bootstrap, the imputation step becomes part of the bootstrap function, then incorporates the imputation into the confidence intervals.
+* Multiple Imputation - Assume the data follows a distribution. Generate many imputed datasets and sample from them
+* Missing data in multiple variables
+  * Iterative multiple imputation - start with a simple imputation, the iterate imputing the first variable given everything else, impute the 2nd given everything else... Think similar to backfitting using a regression of a variable against all others
+  * Model based - posit a joint model for all variables, but rarely worth the trouble
+  * Low rank matrix completion
+    * $\hat{y}$ can be understood as a projection of y onto the space spanned by the columns of X in multiple regression. The columns space matters more than the X
+    * If the predictor matrix is roughly low rank (ie. points lie near a lower dimensional subspace) then one can approximately recover X and its col space even if many entries are missing.
+    * If sparse matrix of 1000 x 100, but the matrix is roughly rank 5, then it is reasonable to fill in the missing values using a similar matrix of rank 5. 
+    * Find a matrix $X’$ which is similar to X in its non-missing values and has a low dimensional col space: $min_{st\, rank(X’)=k}||X’ -X||$ where $||X’ -X||$  is the sum of squared diffs of the non-missing entries. The rank is unknown ahead of time and could be a tuning parameter.
+    * Can relax to a convex optimization: $min ||X’ -X|| + \lambda \sum_{1}^p \sigma_p$ where $\sigma_1,...\sigma_p$ are the singular values of X’. Now this is solvable. Lambda is inversely proportional to the rank and can be a tuning parameter.
+* Practical considerations
+  * Plotting the data to see a pattern in missingness is worthwhile - say a doctor’s office may have systematic errors. A histogram even might show a tight distribution of values, followed by some weird systematic issues. Could actually be informative and used as a dummy variable.
+  * Weight variables by amount of missingness - weighted least squares. More error variance can be accounted for in weighting that down weights those variables.
+

@@ -374,13 +374,14 @@ date: 20191016
 
 ##### Fisher’s Exact Test
 
-* According to the null hypothesis, the margins of the table are fixes - ie the overall counts for each category. The randomization determines the counts in the interior of the table (capital letters) subject to the margin constraints, leaving us with one degree of freedom. 
+* According to the null hypothesis, the margins of the table are fixed - ie the overall counts for each category. The randomization determines the counts in the interior of the table (capital letters) subject to the margin constraints, leaving us with one degree of freedom. 
 * Under the null $N_{11}$ is distributed as the number of successes in 24 draws without replacement from a population of 35 successes and 13 failures - hypergeometric. The probability $N_{11} = n_{11} = p\left(n_{11}\right)=\frac{\left(\begin{array}{l}{n_{1 .}} \\ {n_{11}}\end{array}\right)\left(\begin{array}{l}{n_{2 .}} \\ {n_{21}}\end{array}\right)}{\left(\begin{array}{l}{n_{. .}} \\ {n .1}\end{array}\right)}$
 * We use $N_{11}$ as the test statistic to test the null.
 
 ##### Chi-Square Test of Homogeneity
 
 * Suppose that we have independent observations from J multinomial distributions,  each of which has I cells, and that we want to test whether the cell probabilities  of the multinomials are equal—that is, to test the homogeneity of the multinomial  distributions. 
+* The set up here is we are testing I cells (the words in Austen’s books) against a number of samples (the different books). J is simply a count of the books, so we do not treat the tests as having two moving parameters. We look at a given i (word) across the distributions (the books) to see if they have the same frequency of appearing.
 * Example: how close is an admirer to matching Jane Austen’s style using word counts in their works
 * The six word counts for Sense and Sensibility will  be modeled as a realization of a multinomial random variable with unknown cell  probabilities and total count 375; the counts for the other works will be similarly  modeled as independent multinomial random variables. 
 * Thus, we must consider comparing J multinomial distributions each having I categories. If the probability of the ith category of the jth multinomial is denoted $\pi_{ij}$ ,  the null hypothesis to be tested is: $H_{0}: \pi_{i 1}=\pi_{i 2}=\cdots=\pi_{i J}, \quad i=1, \ldots, I$. This is essentially a goodness of fit test
@@ -390,14 +391,16 @@ date: 20191016
 ##### Chi-Square Test of Independence
 
 * Education vs marital status - is there a relationship?
+* Here we are looking to see if our rows and columns are independent. Are marriage and education independent of each other, so we set up the null that the probability in a given cell is the overall i probability times the overall j probability, ie the number of observations in the i group (over all j’s) times the number of observations of in the j group (across all i’s). Calculated over all i and j. We treat the whole table as coming from a single multinomial distribution.
 * We will discuss statistical analysis of a sample of size n cross-classified in a  table with I rows and J columns. Such a configuration is called a **contingency table**.  The joint distribution of the counts $n_{i j}$ , where i = 1,..., I and j = 1,..., J , is  multinomial with cell probabilities denoted as $\pi_{i }j$ . Let $\begin{array}{l}{\pi_{i .}=\sum_{j=1}^{J} \pi_{i j}},\; {\pi_{. j}=\sum_{i=1}^{I} \pi_{i j}}\end{array}$, denote the marginal probabilities that an observation will fall in the ith row and  jth column, respectively.
 * If rows and columns are independent of each other, then $\pi_{ij} = \pi_{i.}\pi_{.j}$. Therefore the null hypoth is $H_) = \pi_{ij} = \pi_{i.}\pi_{.j}$ for all i,j versus the alternative that the $\pi_{ij}$ are free. Under null, mle is $\begin{aligned} \hat{\pi}_{i j} &=\hat{\pi}_{i .} \hat{\pi}_{. j} =\frac{n_{i .}}{n} \times \frac{n . j}{n} \end{aligned}$. Under the alternative, mle is $\tilde{\pi}_{i j}=\frac{n_{i j}}{n}$. 
 * Turning to Pearson test, $E_{i j}=n \hat{\pi}_{i j}=\frac{n_{i .} n_{. j}}{n}$, so $X^{2}=\sum_{i=1}^{I} \sum_{j=1}^{J} \frac{\left(n_{i j}-n_{i .} n_{. j} / n\right)^{2}}{n_{i .} n_{. j} / n}$, df = (I-1)(J-1)
 * The chi-square statistic used here to test independence is identical in form and  degrees of freedom to that used in the preceding section to test homogeneity; however, the hypotheses are different and the sampling schemes are different. The test  of homogeneity was derived under the assumption that the column (or row) margins  were fixed, and the test of independence was derived under the assumption that only  the grand total was fixed. Independence can be thought of as  homogeneity of conditional distributions; for example, if education level and marital  status are independent, then the conditional probabilities of marital status given educational level are homogeneous
+* The more items we treat as unknown in the model, the degrees of freedom increase. This will lower the power we will achieve and increase our p-values - our estimation will be more uncertain because we allow more to vary. 
 
 ##### Matched-Pairs Designs
 
-* The assumption behind the chi-square test of homogeneity  is that independent multinomial samples are compared, and sibling  samples are not independent, because siblings are paired.
+* The assumption behind the chi-square test of homogeneity  is that independent multinomial samples are compared, and sibling  samples are not independent, because siblings are paired. With positive covariance $\sigma_{XY} > 0$ between pairs in the sample, we get more power.
 * The null hypothesis is that probabilities of outcomes are the same for the X component and Y component of the pair in each sample, ie $\pi_{1 .}=\pi_{.1}$ and $\pi_{2.}=\pi_{.2}$ The null can be written as $H_{0}: \pi_{12}=\pi_{21}$. The off diagonal probabilities are equal and under the alternative they are not.
 * McNemer’s Test: Under null MLEs of cell probabilities are $\begin{aligned} \hat{\pi}_{11} &=\frac{n_{11}}{n} ,\; \hat{\pi}_{22} =\frac{n_{22}}{n},\; \hat{\pi}_{12}=\hat{\pi}_{21} =\frac{n_{12}+n_{21}}{2 n} \end{aligned}$
 * The $n_{11},\;n_{22}$ contributions to chi square test are 0 - we do not care about the diagonals
