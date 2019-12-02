@@ -375,12 +375,14 @@ date: 20191016
 ##### Fisher’s Exact Test
 
 * According to the null hypothesis, the margins of the table are fixed - ie the overall counts for each category. The randomization determines the counts in the interior of the table (capital letters) subject to the margin constraints, leaving us with one degree of freedom. 
+* The row and columns totals are fixed by the experimental design and are not treated as random. Only the entries are are treated as random. Since the rows and columns are fixed, the entries all rely on a single random variable and have 1 degree of freedom.
 * Under the null $N_{11}$ is distributed as the number of successes in 24 draws without replacement from a population of 35 successes and 13 failures - hypergeometric. The probability $N_{11} = n_{11} = p\left(n_{11}\right)=\frac{\left(\begin{array}{l}{n_{1 .}} \\ {n_{11}}\end{array}\right)\left(\begin{array}{l}{n_{2 .}} \\ {n_{21}}\end{array}\right)}{\left(\begin{array}{l}{n_{. .}} \\ {n .1}\end{array}\right)}$
 * We use $N_{11}$ as the test statistic to test the null.
 
 ##### Chi-Square Test of Homogeneity
 
 * Suppose that we have independent observations from J multinomial distributions,  each of which has I cells, and that we want to test whether the cell probabilities  of the multinomials are equal—that is, to test the homogeneity of the multinomial  distributions. 
+* We fix the column totals and treat each column as its own multinomial distribution. The question is whether those column distributions are the same.
 * The set up here is we are testing I cells (the words in Austen’s books) against a number of samples (the different books). J is simply a count of the books, so we do not treat the tests as having two moving parameters. We look at a given i (word) across the distributions (the books) to see if they have the same frequency of appearing.
 * Example: how close is an admirer to matching Jane Austen’s style using word counts in their works
 * The six word counts for Sense and Sensibility will  be modeled as a realization of a multinomial random variable with unknown cell  probabilities and total count 375; the counts for the other works will be similarly  modeled as independent multinomial random variables. 
@@ -391,6 +393,7 @@ date: 20191016
 ##### Chi-Square Test of Independence
 
 * Education vs marital status - is there a relationship?
+* We fix the overall n - we have a fixed sample size. We drop balls from the sky and they land in an I by J grid. We have a single multinomial distribution with IJ levels and probability $\pi_{ij}$ on the (i,j) bin.
 * Here we are looking to see if our rows and columns are independent. Are marriage and education independent of each other, so we set up the null that the probability in a given cell is the overall i probability times the overall j probability, ie the number of observations in the i group (over all j’s) times the number of observations of in the j group (across all i’s). Calculated over all i and j. We treat the whole table as coming from a single multinomial distribution.
 * We will discuss statistical analysis of a sample of size n cross-classified in a  table with I rows and J columns. Such a configuration is called a **contingency table**.  The joint distribution of the counts $n_{i j}$ , where i = 1,..., I and j = 1,..., J , is  multinomial with cell probabilities denoted as $\pi_{i }j$ . Let $\begin{array}{l}{\pi_{i .}=\sum_{j=1}^{J} \pi_{i j}},\; {\pi_{. j}=\sum_{i=1}^{I} \pi_{i j}}\end{array}$, denote the marginal probabilities that an observation will fall in the ith row and  jth column, respectively.
 * If rows and columns are independent of each other, then $\pi_{ij} = \pi_{i.}\pi_{.j}$. Therefore the null hypoth is $H_) = \pi_{ij} = \pi_{i.}\pi_{.j}$ for all i,j versus the alternative that the $\pi_{ij}$ are free. Under null, mle is $\begin{aligned} \hat{\pi}_{i j} &=\hat{\pi}_{i .} \hat{\pi}_{. j} =\frac{n_{i .}}{n} \times \frac{n . j}{n} \end{aligned}$. Under the alternative, mle is $\tilde{\pi}_{i j}=\frac{n_{i j}}{n}$. 
@@ -415,3 +418,39 @@ date: 20191016
 * Odds ratio can be the product of diagonal probabilities in the table divided by the product of the off diagonal probabilities: $\Delta=\frac{\pi_{11} \pi_{00}}{\pi_{01} \pi_{10}}$
 * Prospective study: a fixed number of  exposed and nonexposed individuals are sampled, and the incidences of disease in  those two groups are compared. We can calculate the odds ratio but not the individual probabilities $\pi_{ij}$ since the marginal counts have been fixed by the sample design
 * Retrospective study:  a fixed  number of diseased and undiseased individuals are sampled and the incidences of exposure in the two groups are compared. The joint / conditional probabilities cannot be calculated, but we can say $\operatorname{odds}(X | D)=\frac{\pi_{11}}{\pi_{01}}$, $\operatorname{odds}(X | \bar{D})=\frac{\pi_{10}}{\pi_{00}}$ leading to estimated odds ratio $\hat{\Delta}=\frac{n_{00} n_{11}}{n_{01} n_{10}}$
+
+### Chapter 14 - Linear Least Squares
+
+* Minimizing $S(\beta_0, \beta_1) = \sum_{i=1}^n(y_i - \beta_0 - \beta_1x_i)^2$ with betas chosen to minimize the sum of squared vertical deviations
+* To find betas, take partial derivatives of S wrt beta (eg. $\frac{\partial S}{ \partial \beta_1}=-2\sum_1^n x_i(y_i-\beta_0 -\beta_1x_i)$), set to 0, solve for beta
+* If the  function to be fit is not linear in the unknown parameters, a system of nonlinear  equations must be solved to find the coefficients. Typically, the solution cannot be  found in closed form, so an iterative procedure must be used. 
+
+##### Simple Linear Regression
+
+* The least squares estimates are unbiased: $E(\hat{\beta}_j) = \beta_j$. Only depends on the errors being additive with 0 mean. Does not depend on errors having same variance and independent.
+* From Theorem B, we see that the variances of the slope and intercept depend on the xi and on the error variance. The xi are known; therefore, to estimate  the variance of the slope and intercept, we need to estimate only $\sigma^2$.
+* Estimate variance through RSS: $\sum_1^n (y_i - \hat{\beta_0} - \hat{\beta_1}x_i)^2$, and $s^2 = \frac{RSS}{n-2}$ is an unbiased estimate of sigma squared
+* For large n and independent errors, estimated betas are approximately normally distributed $\frac{\hat{\beta}_i - \beta_i}{s_{\hat{\beta}_i}} \sim t_{n-2}$, which allows us to use the t distribution to be used for CIs
+* Residuals $\hat{e}_i = y_i - \hat{\beta}_0 - \hat{\beta}_1x_i$
+* The model assumes homoskedastic errors - otherwise standard errors and CIs based on $s^2$ will underestimate. Can transform via log or squareroot to stabilize the variance.
+* For $s_{xx} = \frac{1}{n}\sum_1^n(x_i - \bar{x})^2$, $s_{xy}= \frac{1}{n}\sum_1^n(y_i - \bar{y})^2$, $s_{xy} = \frac{1}{n}\sum_1^n(x_i - \bar{x})(y_i - \bar{y})$, the correlation coefficient between x and y is $r = \frac{s_{xy}}{\sqrt{s_{xx}s_{yy}}}$, $\hat{\beta}_1 = \frac{s_{xy}}{s_{xx}} \rightarrow r = \hat{\beta}_1\sqrt{\frac{s_{xx}}{s_{yy}}}$. 
+* $\frac{\hat{y} - \bar{y}}{\sqrt{s_{yy}}} = r \frac{\hat{x} - \bar{x}}{\sqrt{s_{xx}}}$ - for r greater than 0 and x is 1 SD avove its mean, then the predicted value of y is r SDs bigger than its average. The predicted value deviates from its average by fewer SDs r < 1 than the predictor. 
+
+##### Statistical Properties of Least Squares Estimates
+
+* Under the assumption that the errors have mean zero, the least squares estimates are unbiased
+* Under the assumption that the errors have mean zero and are uncorrelated with constant variance $\sigma^2$, the covariance matrix of the least squares estimate $\hat{\beta} = \Sigma_{\hat{\beta}\hat{\beta}} = \sigma^2(X^TX)^{-1}$
+* Under the assumption that the errors are uncorrelated with constant variance, an unbiased estimate of $\sigma^2$ is $s^2 = \frac{||Y- \hat{Y}||^2}{n-p}$
+* CI for beta - $\hat{\beta}_i \pm t_{n-p}(\alpha/2)s_{\hat{\beta}_i}$
+
+##### Multiple Regression
+
+* Squared multiple correlation coefficient / coefficient of determination $R^2 = \frac{s_y^2 - s_{\hat{e}}^2}{s_y^2}$
+
+##### CIs, Inference, Bootstrap
+
+* Develop model in which X and Y are random, whereas before the X’s were fixed with randomness only from errors.
+* Design matrix = random matrix $\Xi$ and a particular realization of it is X. Each $\xi_i$ is a row in $\Xi$ and rows in X are xi. Then the model is $E(Y|\xi=x) = x\beta\,,\,Var(Y|\xi=x)=\sigma^2$
+* The previous model is a conditional model of this generalized model. 
+* The beta estimates are still unbiased but their variances are $Var(\hat{\beta}_i) = \sigma^2E(\Xi^T\Xi)^{-1}_{ii}$ which is a nonlinear function of random $\xi_i$ vectors. However the CIs still hold their nominal level of coverage.
+* We can estimate parameters via bootstrap if we know distribution of random vector $(Y, \xi)$, but since we do not use the estimated vector $(Y, X)$

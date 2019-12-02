@@ -598,3 +598,25 @@ Table of Contents
 * Binomial - n trials of a Bernoulli. Expectation = np
 * Bernoulli - indicator with x=1 with probability p, x=0 with probability 1-p. Expectation = p.
 * Geometric - number of trials until you see a success, where probability of success in each trial is p. Expectation = $\frac{1}{p}$
+
+
+
+
+
+Question 1b 
+
+Let M be a maximum bipartite matching in G. Define an edge (u,v) not in M. There are two possibilities: either one of u or v is in M, meaning it has a match with another vertex, or neither u or v is in M. First consider the case where neither u or v is in M; we will use contradiction to show this case does not exist. To have an edge, the vertices u and v must lie in different independent sets by the construct of the bipartite graph. Since neither u or v is involved in a match, they could form a new match and be added to M. However, M was defined to be the maximum matching, so this is a direct contradiction. Therefore we are left to conclude one of u or v is a member of M.
+
+Since the algorithm finds the maximum matching, it also finds a min-cut which divides vertices is a set reachable by S and a set reachable by T. Define L as the independent set receiving flow from the source s and define R as the indendent set delivering flow to the sink t. The algorithm adds to the vertex cover every vertex in R on the S side of the min cut. It then adds every vertex in the L indepedent set on the T side of the cut. The remaining vertices in L and S either have edges to R and S or R and T. If they have edges to R and S, they are covered by the first additions to the vertex cover. If they only have edges to R and T, they are not yet covered. Similarly the vertices in the intersection of the vertices in R and T either have edges to L and S and L and T. Those edges are covered if they have an edge to L and T but not if they only have edges to L and S. Therefore the algorithm’s last step adds an endpoint from all edges from L and S to R and T. Since vertices only have edges between L and R, this ensures there is a cover neighboring every vertex in the graph.
+
+Question 1c
+
+The minimum cut is equal to the cardinality of the maximum flow by the Min-Cut Max-Flow Theorem. 
+
+
+
+Question 3d
+
+Yes they are correct. Suppose after j-1 iterations, the min cut $S^*$ is still alive. Also suppose there are k edges crossing the min cut. So far the logic is the same as under Karger, so we also have a total of $\frac{(n-j+1)k}{2}$ edges. Additionally, every vertex must have minimum degree of k, otherwise there would be a cut that crossed fewer edges than k, contradicting our definition of the minimum cut. 
+
+From step c, we saw that the probability of choosing an edge crossing $S^*$ on the original graph was $\frac{1}{n}(\frac{1}{d_{v1}}+ \frac{1}{d_{v2}})$ for $v1, v2$ endpoints of edge E and $d_{v1}, d_{v2}$ their respective degrees. Then after j-1 iterations of the algorithm, the probability of choosing an edge in the min cut is $\sum_{u,v \in k \text{ endpoints}} \frac{1}{n-j+1}(\frac{1}{d_{u}}+ \frac{1}{d_{v}})$. Given that the minimum degree of any vertex is k, we can bound the sum $\frac{1}{d_{u}}+ \frac{1}{d_{v}} \leq \frac{1}{k} + \frac{1}{k} = \frac{2}{k}$. This implies the probability of choosing a min edge is bounded above by $\sum_{u,v \in k \text{ endpoints}} \frac{1}{n-j+1}\frac{2}{k} = \frac{2k}{(n-j+1)k} = \frac{2}{(n-j+1)}$. Note this is the same probability we calculated of choosing one of the k edges crossing $S^*$ under Karger, implying the probability keeping $S^*$ alive is $1 - \frac{2}{n-j+1} = \frac{n-j-1}{n-j+1}$, and for all j $\prod_{j=1}^{n-1}\frac{n-j-1}{n-j+1}=\frac{1}{{n \choose 2}}$ .
