@@ -7,7 +7,6 @@ date: 20191016
 [TOC]
 
 <style type="text/css">@page { size: letter; margin: 0.25in; font-size: 20px; }</style>
-
 ### Chapter 9 - Testing Hypotheses and Goodness of Fit
 
 ##### Neyman-Pearson Paradigm
@@ -44,11 +43,10 @@ date: 20191016
 *  UMP: If the alternative $H_1$ is composite, a test that is most powerful for every simple alternative  in $H_1$ is said to be uniformly most powerful. 
 
    * In typical composite situations, there is no uniformly most powerful test. 
-
-* The alternatives $H_1 : \mu < \mu_0$ and $H_1 : \mu> \mu_0$ are called one-sided alternatives. The  alternative $H_1 : \mu = \mu_0$ is a two-sided alternative. 
-
-* Confidence Intervals: $\mu_0$ lies in the confidence interval for $\mu$ if and only if the hypothesis test accepts. In  other words, the confidence interval consists precisely of all those values of $\mu_0$ for  which the null hypothesis $H_0: \mu= \mu_0$ is accepted.
-
+   * Cannot by UMP against two sided alternative
+*  The alternatives $H_1 : \mu < \mu_0$ and $H_1 : \mu> \mu_0$ are called one-sided alternatives. The  alternative $H_1 : \mu = \mu_0$ is a two-sided alternative. 
+* Confidence Intervals: <u>$\mu_0$ lies in the confidence interval for $\mu$ if and only if the hypothesis test accepts.</u> In  other words, the confidence interval consists precisely of all those values of $\mu_0$ for  which the null hypothesis $H_0: \mu= \mu_0$ is accepted.
+*  To construct CI, want test statistic < CV instead of greater than since creating bounds of accepting null
 * Hypothesis testing with samples:
 
   * $\operatorname{Pr}\left(\bar{X}-\frac{s t_{(n-1)}^{1-\alpha / 2}}{\sqrt{n}} \leqslant \mu \leqslant \bar{X}+\frac{s t_{(n-1)}^{1-\alpha / 2}}{\sqrt{n}}\right)=1-\alpha$
@@ -76,10 +74,11 @@ date: 20191016
 
 * $\Lambda=\frac{\max _{\theta \in \omega_0 }[\operatorname{lik}(\theta)]}{\max _{\theta \in \Omega}[\operatorname{lik}(\theta)]} \leq \lambda_0$ - Testing the parameter space for observations against some cutoff value. $\Lambda \leq 1$ since numerator is a subset of the denominator
 * We have to work out the distribution of $\Lambda$ under $H_0$ to get a significance level. This can be quite hard, so for iid data, we approximate using $-2log(\Lambda) \approx \chi^2_{(d)}$ under $H_0$ as $n \rightarrow \infty$. 
+  * DoF = dim $\Omega$ - dim $\omega_0$ - if $\omega_0 \sim N(\mu, \sigma^2)$ specified then dim $\omega_0 = 0$ and dim $\Omega$ = number of free parameters
   * DoF d = # free parameters in H1 - # free parameters in H0. Example: N(2, 1) has 0 free parameters, $N(\sigma^2 + 1, \sigma^2)$ has 1, and $N(\mu, \sigma^2)$ has 2.
   * Intuition: the more free parameters you allow, the more the alternative can fit to the data and explain it. Therefore $-2log(\Lambda)$ must be larger to provide evidence against the null.
 * For $H_0: \mu = \mu_0,\,H_1:\mu \neq \mu_0$, the numerator of the likelihood ratio is the density function at point $\mu_0$ and the denominator we plug in the mle of the parameter $\mu$, (so here for example, $\bar{X}$). This follows from the definition, since the maximum of the likelihood function over the parameter space is the MLE.
-* Knowing the null distribution of the test statistic makes possible the construction of a rejection region for any significance level $\alpha$. Using the chi-square, RR is given by $\left|\bar{X}-\mu_{0}\right| \geq \frac{\sigma}{\sqrt{n}} z(\alpha / 2)$
+* Knowing the null distribution of the test statistic makes possible the construction of a rejection region for any significance level $\alpha$. Using the chi-square, RR is given by $\left|\bar{X}-\mu_{0}\right| \geq \frac{\sigma}{\sqrt{n}} z(\alpha / 2)$ for $\chi_1^2$, otherwise use chi square tables for more Df.
 
 * Under smoothness conditions on the probability density or frequency functions  involved, the null distribution of $−2 log \Lambda$ tends to a chi-square distribution  with degrees of freedom equal to  $dim\,\Omega−dim\,ω_0$ as the sample size tends to  infinity.
 * Generally - set up the distributions, compose the likelihood ratio, often take the log of both sides, try to determine how the likelihood changes for different observed values.
@@ -138,6 +137,7 @@ date: 20191016
 * empirical CDF: $F_{n}(x)=\frac{1}{n}\left(\# x_{i} \leq x\right)=\frac{1}{n} \sum_{i=1}^{n} I_{(-\infty, x]}\left(X_{i}\right)$ for a batch of numbers X, then just a count of numbers less than a specified value over the total batch size. Note indicators are Bernoullis: $I_{(-\infty, x]}\left(X_{i}\right)=\left\{\begin{array}{ll}{1,} & {\text { with probability } F(x)} \\ {0,} & {\text { with probability } 1-F(x)}\end{array}\right.$
   * $n F_{n}(x)$ is a binomial RV - n trials with F(x) probability of success
   * $\begin{aligned} E\left[F_{n}(x)\right] &=F(x) \\ \operatorname{Var}\left[F_{n}(x)\right] &=\frac{1}{n} F(x)[1-F(x)] \end{aligned}$
+  * Right continuous
 * Survival Function: $S(t)=P(T>t)=1-F(t)$
   * Simply a reversal of the CDF for data consist of time until death or failure, chance of surviving past t.
 
@@ -176,7 +176,7 @@ date: 20191016
 * Robust measures  - insensitive to outliers, such as the median.
 * When the data are a sample from a continuous probability law, the sample median can be viewed as an estimate of the population median. The distribution of the number of observations greater than the median is binomial  with n trials and probability 1/2 of success on each trial.
 * Trimmed mean - The $100\alpha\%$  trimmed mean is easy to calculate: Order the data, discard the lowest $100\alpha\%$  and the highest $100\alpha\%$, and take the arithmetic mean of the remaining data: $\bar{x}_{\alpha}=\frac{x_{([n \alpha]+1)}+\cdots+x_{(n-[n \alpha])}}{n-2[n \alpha]}$
-* M Estimates - minimizers of $\sum_{i=1}^{n} \Psi\left(\frac{X_{i}-\mu}{\sigma}\right)$. where the weight function is a compromise between the weight functions for the  mean and the median.
+* M Estimates - minimizers of $\sum_{i=1}^{n} \Psi\left(\frac{X_{i}-\mu}{\sigma}\right)$. where the weight function is a compromise between the weight functions for the  mean and the median. Can be piecewise so say cutoff point of k, quadratic near zero and linaer beyond k reducing the influence of points beyond a certain bound.
 * Estimating variability of location estimates by bootstrap:
   * Suppose we denote the location estimate as $\hat{\theta}$; it is important to keep in  mind that $\hat{\theta}$ is a function of the random variables $X_1, X_2,..., X_n$ and hence has a probability distribution, its sampling distribution, which is determined by n and F. We don’t know F and $\hat{\theta}$ may be complicated.
   * We generate many samples from F (if we knew it) and calculate the value of $\hat{\theta}$, then could find measures on the samples like SD. Use empirical CDF instead as an approximation of F. 
@@ -200,14 +200,15 @@ date: 20191016
 
 #### Independent Samples
 
+* For independent samples - think individuals assigned to treatment vs control.
 * Two sample shift model: $X_{1}, X_{2}, \ldots, X_{n_{1}}$ is a random sample from distribution F(X) and $Y_{1}, Y_{2}, \ldots, Y_{n_{2}}$ is a random sample from $G(y)=F(y-\theta)$ for an unknown $\theta$. The null is that the distributions are equal, ie $\theta = 0$
 
 ##### Normal Methods
 
 * The observations from the control group are modeled as independent random  variables with a common distribution, F, and the observations from the treatment  group are modeled as being independent of each other and of the controls and as  having their own common distribution function, G.
 * We will assume that a sample, $X_1,...,X_n$, is drawn from a normal distribution that has mean  $\mu_X$ and variance $\sigma^2$ , and that an independent sample,  $Y_1,...,Y_m$, is drawn from another normal distribution that has mean $\mu_Y$ and the same  variance, $\sigma^2$
-* Estimate difference in means: $\bar{X}-\bar{Y} \sim N\left[\mu_{X}-\mu_{Y}, \sigma^{2}\left(\frac{1}{n}+\frac{1}{m}\right)\right]$, with CI for known variance: $(\bar{X}-\bar{Y}) \pm z(\alpha / 2) \sigma \sqrt{\frac{1}{n}+\frac{1}{m}}$
-* Usually do not know variance, use pooled sample variance; $s_{p}^{2}=\frac{(n-1) s_{X}^{2}+(m-1) s_{Y}^{2}}{m+n-2}$
+* For known population variance: estimate difference in means: $\bar{X}-\bar{Y} \sim N\left[\mu_{X}-\mu_{Y}, \sigma^{2}\left(\frac{1}{n}+\frac{1}{m}\right)\right]$, with CI for known variance: $(\bar{X}-\bar{Y}) \pm z(\alpha / 2) \sigma \sqrt{\frac{1}{n}+\frac{1}{m}}$. Simply the statistic plus minus a multiple of its standard deviation
+* Usually do not know variance, use pooled sample variance; $s_{p}^{2}=\frac{(n-1) s_{X}^{2}+(m-1) s_{Y}^{2}}{m+n-2}$ for $s_{X}^{2}=\frac{1}{(n-1)} \sum_{i=1}^{n}\left(X_{i}-\bar{X}\right)^{2}$
 * Test statistic: $t=\frac{(\bar{X}-\bar{Y})-\left(\mu_{X}-\mu_{Y}\right)}{s_{p} \sqrt{\frac{1}{n}+\frac{1}{m}}} \sim t_{m+n-2}$. Standard error of $\bar{X} - \bar{Y}$: $s_{\bar{X}-\bar{Y}}=s_{p} \sqrt{\frac{1}{n}+\frac{1}{m}}$. Confidence interval: $(\bar{X}-\bar{Y}) \pm t_{m+n-2}(\alpha / 2) s_{\bar{X}-\bar{Y}}$
 * Hypothesis testing: $H_{0}: \mu_{X}=\mu_{Y}, \,H_{1}: \mu_{X} \neq \mu_{Y}$. Uses test stat: $t=\frac{\bar{X}-\bar{Y}}{s_{\bar{X}-\bar{Y}}}$ since essentially testing if the difference has zero mean. If we wanted to test against a non-zero difference, might look something like $\mu_X - (\mu_Y + 5) = 0$ This test can be derived from the GLRT - rejects for large values.
 * Without assumption of equal variances, estimate of $\operatorname{Var}(\bar{X}-\bar{Y}) = \frac{s_{X}^{2}}{n}+\frac{s_{Y}^{2}}{m}$  and we use the t-distribution with $\mathrm{df}=\frac{\left[\left(s_{X}^{2} / n\right)+\left(s_{Y}^{2} / m\right)\right]^{2}}{\frac{\left(s_{X}^{2} / n\right)^{2}}{n-1}+\frac{\left(s_{Y}^{2} / m\right)^{2}}{m-1}}$ 
@@ -215,7 +216,10 @@ date: 20191016
   * Determine distribution of $\bar{X}-\bar{Y}$ and build normalized test statistic Z. 
   * If $\sigma$ is unknown, calculate $s_p$ and build test statistic t ($t=\frac{\bar{X}-\bar{Y}}{s \bar{x}-\bar{Y}}$ for $H_0 = 0$). If variances are unequal, $\operatorname{Var}(\bar{X}-\bar{Y}) = \frac{s_{X}^{2}}{n}+\frac{s_{Y}^{2}}{m}$ and modify t distribution degrees of freedom
   * Hypothesis test against null or $(\bar{X}-\bar{Y}) \pm t_{m+n-2}(\alpha / 2) s_{\bar{X}-\bar{Y}}$
-  * Power: For alternative hypothesis $H_{1}: \mu_{X}-\mu_{Y}=\Delta$, calculate power using the normal distribution (since special noncentral t tables would be need otherwise). Then RHS power is given by $1-\Phi\left[z(\alpha / 2)-\frac{\Delta}{\sigma} \sqrt{\frac{n}{2}}\right]$ ie. the (z stat used for the RR) -  (mean difference)/(pooled SE). Total two tailed power: $1-\Phi\left[z(\alpha / 2)-\frac{\Delta}{\sigma} \sqrt{\frac{n}{2}}\right]+\Phi\left[-z(\alpha / 2)-\frac{\Delta}{\sigma} \sqrt{\frac{n}{2}}\right]$
+  * Power: 
+    * For alternative hypothesis $H_{1}: \mu_{X}-\mu_{Y}=\Delta$, calculate power using the normal distribution (since special noncentral t tables would be need otherwise). 
+    * Then RHS power is given by $1-\Phi\left[z(\alpha / 2)-\frac{\Delta}{\sigma} \sqrt{\frac{n}{2}}\right]$ ie. the (z stat used for the RR) -  (mean difference)/(pooled SE). 
+    * Total two tailed power: $1-\Phi\left[z(\alpha / 2)-\frac{\Delta}{\sigma} \sqrt{\frac{n}{2}}\right]+\Phi\left[-z(\alpha / 2)-\frac{\Delta}{\sigma} \sqrt{\frac{n}{2}}\right]$
 * It is sometimes advocated that skewed data be transformed to a more symmetric  shape before normal theory is applied. Transformations such as taking the log or the square root can be effective in symmetrizing skewed distributions because they  spread out small values and compress large ones.
 * The ratio of the  standard deviation of a distribution to the mean is called the coefficient of variation (CV); it expresses the standard deviation as a fraction of the mean.
 * The power of the two-sample t test  depends on four factors: 
@@ -237,15 +241,15 @@ date: 20191016
 * Bootstrap: As before, suppose that $X_1, X_2,..., X_n$ and $Y_1, Y_2,..., Y_m$ are  two independent samples from distributions F and G, respectively, and that $pi=  P(X < Y )$ is estimated by $\hat{\pi}$. How can the standard error of $\hat{\pi}$ be estimated and how  can an approximate confidence interval for $\pi$ be constructed?
   * An approximation can be obtained by using the empirical distributions $F_n$ and $G_n$ in their places. This means that a bootstrap value of  $\hat{\pi}$ is generated by randomly selecting n values from $X_1, X_2,..., X_n$ with replacement,  m values from $Y_1, Y_2,..., Y_m$ with replacement and calculating the resulting value  of $\hat{\pi}$
 * Procedure
-  * Group all m + n  observations together and rank them in order of increasing size
-  * Calculate the sum of the ranks of those observations. Take the smaller rank sum
-  * Under the null, every assignment of m+n ranks to observations is equally likely, hence each of the ${m+n \choose m }$ assignments to the control group is equally likely. 
-  * Look up the smaller rank sum in a table to determine if we reject.
+  * No assumed distribution:
+    * Group all m + n  observations together and rank them in order of increasing size
+    * Calculate the sum of the ranks of those observations. If $R_1$ sum of one sample, then the other sample has rank sum $R_2 = n_1(m+n+1)-R_1$ where $n_1$ is the smaller sample size. Then use the smaller statistic
+    * Under the null, every assignment of m+n ranks to observations is equally likely, hence each of the ${m+n \choose m }$ assignments to the control group is equally likely. 
+    * For large m,n rank sums are approx normal: $\frac{R_{1}-\mathbb{E} R_{1}}{\sigma_{1}} \sim \Phi$ for $\mathbb{E} \mathcal{R}_{1}=\frac{m(m+n+1)}{2}$ and $\mathbb{V} \mathcal{R}_{1}=\frac{m n(m+n+1)}{12}$
+  * Test statistic: $U_{1}=R_{1}-\frac{n_{1}\left(n_{1}+1\right)}{2}$ for $n_1$ sample size of of sample 1 and $R_1$ sum of ranks in sample 1
   * When we assume a distribution for control variables $X \ sim F$ and experimental variables $Y \sim G$, M-W is a test of null $H_0: F = G$
   * We can for larger samples normalize the test stat sum of ranks T $\frac{T-E(T)}{\sigma_{T}}$ to use normal distribution
 * CI’s in a Shift Model $G(x)=F(x-\Delta)$
-  * Confidence interval for $\Delta$
-  * 
 
 ##### Bayesian Approach
 
@@ -255,8 +259,8 @@ date: 20191016
 
 #### Comparing Paired Samples
 
-* May match subjects with related characteristics, then assign one to the control and one to the experimental group.
-* A pair is $(X_i, Y_i)$ and these are not assumed to be independent (think left and right hand strength), but for $i \neq j$, $(X_i, X_j)$ can be indepedent, think left hand strength across a population.
+* May match subjects with related characteristics, then assign one to the control and one to the experimental group. The variance of a paired sample will be smaller due to the correlation term.
+* A pair is $(X_i, Y_i)$ and these are not assumed to be independent (think left and right hand strength), but for $i \neq j$, $(X_i, X_j)$ can be independent, think left hand strength across a population.
   * sampling two different people: $X_{i}-Y_{j} \sim N\left(\mu_{x}-\mu_{u}, \sigma_{x}^{2}+\sigma_{y}^{2}\right)$
   * sampling one person: $X_{i}-Y_{i} \sim N\left(\mu_{x}-\mu_{u}, \sigma_{x}^{2}+\sigma_{y}^{2}-2 \rho \sigma_{x} \sigma_{y}\right)$
 * Pairs are $(X_i, Y_i), \, i=1,...,n$, different means and variances. Different pairs are independently distributed and $\operatorname{Cov}\left(X_{i}, Y_{i}\right)=\sigma_{X Y}$
@@ -286,6 +290,7 @@ date: 20191016
 ##### Nonparametric Method - Wilcoxon Signed Rank Test
 
 * Under the null of equal distributions, if we were to order the differences according to their absolute values and rank them from smallest to largest, the expected rank sums for the negative and positive differences would be equal.
+* Non parametric version of the paired sample t test and does not depend on normality. Also insensitive to outliers since uses ranks. Preferable for small samples since nearly has the power of the t-test with normal samples too.
 * Procedure
   * Calculate differences $D_i$, removing differences equal to 0. Under the null D is symmetric about 0
   * Rank by absolute values of the diffs, averaging the ranks for tied differences
@@ -293,17 +298,18 @@ date: 20191016
   * Calculate $W_+$, the sum of ranks that have positive signs. Use the smaller sum as our test statistic - the smaller the value of the statistic, the greater the weight of evidence favoring rejection. Use W- to detect shifts of Y to the left of X; W+ to detect shifts of Y to the right of X
   * For two tailed test $T=\min \left(T^{+}, T^{-}\right)$. Reject null $H_{0} \text { if } T \leq T_{0}$ for CV of two tailed test.
   * For larger samples, a normal approximation of the null distribution can be used, using the expectation and variance below.
-* If one condition produces larger values than the other, $W_+$ will take on extreme values. We test the null hypothesis that the distribution of $D_i$ is symmetric about zero. Equivalent then to Bern(0.5). $E(W_+) = \frac{n(n+1)}{4},\, Var(W_+) = \frac{n(n+1)(2n+1)}{24}$. For large samples $z=\frac{T^{+}-E\left(T^{+}\right)}{\sqrt{V\left(T^{+}\right)}}=\frac{T^{+}-[n(n+1) / 4]}{\sqrt{n(n+1)(2 n+1) / 24}}$
+* If one condition produces larger values than the other, $W_+$ will take on extreme values. We test the null hypothesis that the distribution of $D_i$ is symmetric about zero. Equivalent then to Bern(0.5). 
+* For normal approximation with sample size greater than 20: $E(W_+) = \frac{n(n+1)}{4},\, Var(W_+) = \frac{n(n+1)(2n+1)}{24}$. For large samples $z=\frac{T^{+}-E\left(T^{+}\right)}{\sqrt{V\left(T^{+}\right)}}=\frac{T^{+}-[n(n+1) / 4]}{\sqrt{n(n+1)(2 n+1) / 24}}$
 
 ### Chapter 12 - ANOVA
 
 #### One Way Layout
 
-* An experimental design in which independent measurements  are made under each of several treatments. Analogous to the two independent samples tests in chapter 11.
+* An experimental design in which independent measurements are made under each of several treatments. Analogous to the two independent samples tests in chapter 11. Extending Chapter 11 to many samples
 
 ##### Normal Theory / F-Test
 
-* We first discuss the analysis of variance and the F test in the case of I groups, each containing J samples. The I groups will be referred to generically as treatments, or levels
+* We first discuss the analysis of variance and the F test in the case of **I groups, each containing J samples**. The I groups will be referred to generically as treatments, or levels
 * Let $Y_{ij} = $ the jth observation of the ith treatment
 * $Y_{i j}=\mu+\alpha_{i}+\varepsilon_{i j}$ 
   * observations are corrupted by random <u>independent</u> errors $\epsilon_{ij}$, <u>normally distributed</u> with mean zero and <u>constant variance</u> $\sigma^2$
@@ -320,19 +326,29 @@ date: 20191016
 * Procedure
   * We use test statistic $F=\frac{S S_{B} /(I-1)}{S S_{W} /[I(J-1)]}$ to test $H_{0}: \alpha_{1}=\alpha_{2}=\cdots=\alpha_{l}=0$. The denominator of the F statistic has expected value equal to $\sigma^2$ ,  and the expectation of the numerator is $J (I−1)^{−1} \sum_{i=1}^I \alpha_i^2 + \sigma^2 2$ . Thus, if the null hypothesis is true, the F statistic should be close to 1, whereas if it is false, the statistic should be larger. Reject hypothesis for large values of F. 
   * Under normally distributed errors, null distribution of $F \sim F_{(I-1),(I(J-1))}$
+* In ANOVA table, 
+  * SS due to Labs = SSb
+  * SS due to error = SSw 
+  * Mean square is the sum of squares divided by the Df (I-1 or I(J-1))
 * For unequal number of observations under various treatments:
   * $E\left(S S_{w}\right)=\sigma^{2} \sum_{i=1}^{I}\left(J_{i}-1\right)$, $E\left(S S_{B}\right)=(I-1) \sigma^{2}+\sum_{i=1}^{I} J_{i} \alpha_{i}^{2}$
 
 ##### Kruskal-Wallis Test
 
+* Generalization of Mann-Whitney test for independent observations with no assumed distributions
 * We assume that independent random samples have been drawn from k populations that differ only in location. The samples sizes may be unequal, and $n_i$ is the sample size drawn from the ith population. Combine all samples into n observations and rank them from smallest to largest. Tied ranks are averaged.
 * $R_i$ = sum of ranks for observations from population i, $\bar{R}_{i}=R_{i} / n_{i}$ is the average of the ranks. If the null hypothesis is true and the populations do not differ in location, we would expect the $\bar{R}_i$ values to be approximately equal and $V=\sum_{i=1}^{k} n_{i}\left(\bar{R}_{i}-\bar{R}\right)^{2} =\sum_{i=1}^{k} n_{i}\left(\bar{R}_{i}-\frac{n+1}{2}\right)^{2}$ should be small. 
 * K-W use test statistic $H=\frac{12}{n(n+1)} \sum_{i=1}^{k} \frac{R_{i}^{2}}{n_{i}}-3(n+1)$. Then $P[H>h(\alpha)]=\alpha$. For large enough $n_i$ (say 5), $H \sim \chi^2_{k-1}$. Then we reject $H_0$ if  $H>\chi_{\alpha}^{2} \text { with }(k-1) \text { df. }$ 
 * Using Rice notation:
   * $R_{i j}=$ = the rank of $Y_{ij}$ in the combined sample 
-  * $\bar{R}_{i .}=\frac{1}{J_{i}} \sum_{j=1}^{J_{i}} R_{i j}$, $\bar{R}_{..} = \frac{N+1}{2}$
+  * $\bar{R}_{i .}=\frac{1}{J_{i}} \sum_{j=1}^{J_{i}} R_{i j}$, 
+  * $\bar{R}_{..} = \frac{N+1}{2}$
   * $S S_{B}=\sum_{i=1}^{I} J_{i}\left(\bar{R}_{i .}-\bar{R}_{. .}\right)^{2}$
   * $K=\frac{12}{N(N+1)}\left(\sum_{i=1}^{I} J_{i} \bar{R}_{i .}^{2}\right)-3(N+1)$
+* Procedure
+  * Pool observations and rank, letting $R_{i j}=$  the rank of $Y_{ij}$ in the combined sample 
+  * $SS_B$ is a measure of dispersion of the $\bar{R}_{i.}$ - used to test the null that the distributions generating the observations under the treatments are identical.
+  * For hand computation: test statistic $K=\frac{12}{N(N+1)}\left(\sum_{i=1}^{I} J_{i} \bar{R}_{i .}^{2}\right)-3(N+1) \sim \chi^2_{I-1}$
 
 ##### Problem of Multiple Comparisons
 
@@ -340,12 +356,13 @@ date: 20191016
 * Tukey’s Method - to construct confidence intervals for the differences of all pairs of means in such a way that the intervals simultaneously have a set coverage probability, then rely on the duality of tests and CIs
   * $\max _{i_{1}, i_{2}} \frac{\left|\left(\bar{Y}_{i_{1} .}-\mu_{i_{1}}\right)-\left(\bar{Y}_{i_{2} .}-\mu_{i_{2}}\right)\right|}{s_{p} / \sqrt{J}}$ random variable where max is taken over all pairs. Called the studentized range distribution with parameters I (number of samples being compared) and I(J-1) (df of $s_p$). 
   * CI constructed as $\left(\bar{Y}_{i_{1} .}-\bar{Y}_{i_{2} .}\right) \pm q_{I, I(J-1)}(\alpha) \frac{s_{p}}{\sqrt{J}}$, reject if $\left|\bar{Y}_{i_{1} .}-\bar{Y}_{i_{2} .}\right|>q_{I, I(J-1)}(\alpha) \frac{s_{p}}{\sqrt{J}}$
-  * Essentially calculate $q_{I, I(J-1)}(\alpha) \frac{s_{p}}{\sqrt{J}}$ and see if there are differences in means of different labs that exceed this value 
-* Bonferroni Method: Desired error rate $\alpha$ can be obtained over k null hypotheses by testing each null hypothesis at level $\alpha/k$. Advantage of not needing the sample sizes for each treatment
+  * Essentially calculate $q_{I, I(J-1)}(\alpha) \frac{s_{p}}{\sqrt{J}}$ and see if there are differences in means of different labs that exceed this value. q is a percentile of the studentized range and $s_p$ is the square root of the mean square for error in the anova table - $\sqrt{SS_W/I(J-1)}$
+* Bonferroni Method: Desired error rate $\alpha$ can be obtained over k null hypotheses by testing each null hypothesis at level $\alpha/k$. Advantage of not needing the sample sizes for each treatment. 
+  * k is the number of pairwise comparisons ${I \choose 2}$
 
 #### Two Way Layout
 
-* A two-way layout is an experimental design involving two factors, each at two or more levels. The levels of one factor might be various drugs, for example, and the levels of the other factor might be genders. If there are I levels of one factor and  J of the other, there are I × J combinations. Assume K independent observations are taken for each of these combinations
+* A two-way layout is an experimental design involving two factors, each at two or more levels. The levels of one factor might be various drugs, for example, and the levels of the other factor might be genders. If there are **I levels of one factor and  J of the other**, there are I × J combinations. Assume **K independent observations** are taken for each of these combinations
 * Think of 3 electric ranges cooking over 3 menus - 9 total means to compare
 
 ##### Additive Parametrization
@@ -367,6 +384,10 @@ date: 20191016
 * Under null $H_{B}: \beta_{j}=0, \quad j=1, \ldots, J$, $S S_{B} / \sigma^{2} \sim \chi^2_{J-1}$
 * Under null $H_{A B}: \delta_{i j}=0, i=1, \ldots, I, j=1, \ldots, J$, $S S_{A B} / \sigma^{2} \sim \chi^2_{(I-1)(J-1)}$
 * F tests of these null hypotheses are conducted by comparing the appropriate SS to the sum of squares for error.
+* ![Screen Shot 2019-12-03 at 7.20.41 PM](/Users/spencerbraun/Documents/Notes/Stanford/STATS200/Screen Shot 2019-12-03 at 7.20.41 PM-5429683.png)
+
+* In the following analysis of variance table, SS A is the sum of squares due to the form of iron, SS B is the sum of squares due to dosage, and SS AB is the sum of squares due to interaction. The F statistics were found by dividing the appropriate mean square by the mean square for error. 
+* Eg. to test effect of form of iron, $H_{A}: \alpha_{1}=\alpha_{2}=0, F=\frac{S S_{I R O N} / 1}{S S_{E} / 102}=5.99$
 
 ### Chapter 13 - Analysis of Categorical Data
 
@@ -376,28 +397,30 @@ date: 20191016
 
 * According to the null hypothesis, the margins of the table are fixed - ie the overall counts for each category. The randomization determines the counts in the interior of the table (capital letters) subject to the margin constraints, leaving us with one degree of freedom. 
 * The row and columns totals are fixed by the experimental design and are not treated as random. Only the entries are are treated as random. Since the rows and columns are fixed, the entries all rely on a single random variable and have 1 degree of freedom.
+* ![Screen Shot 2019-12-03 at 7.39.18 PM](/Users/spencerbraun/Documents/Notes/Stanford/STATS200/Screen Shot 2019-12-03 at 7.39.18 PM.png)
 * Under the null $N_{11}$ is distributed as the number of successes in 24 draws without replacement from a population of 35 successes and 13 failures - hypergeometric. The probability $N_{11} = n_{11} = p\left(n_{11}\right)=\frac{\left(\begin{array}{l}{n_{1 .}} \\ {n_{11}}\end{array}\right)\left(\begin{array}{l}{n_{2 .}} \\ {n_{21}}\end{array}\right)}{\left(\begin{array}{l}{n_{. .}} \\ {n .1}\end{array}\right)}$
 * We use $N_{11}$ as the test statistic to test the null.
 
 ##### Chi-Square Test of Homogeneity
 
-* Suppose that we have independent observations from J multinomial distributions,  each of which has I cells, and that we want to test whether the cell probabilities  of the multinomials are equal—that is, to test the homogeneity of the multinomial  distributions. 
-* We fix the column totals and treat each column as its own multinomial distribution. The question is whether those column distributions are the same.
+* Suppose that we have independent observations from **J multinomial distributions**,  **each of which has I cells**, and that we want to test whether the cell probabilities  of the multinomials are equal—that is, to test the homogeneity of the multinomial  distributions. 
+* We fix the J column totals and treat each column as its own multinomial distribution. The question is whether those column distributions are the same.
 * The set up here is we are testing I cells (the words in Austen’s books) against a number of samples (the different books). J is simply a count of the books, so we do not treat the tests as having two moving parameters. We look at a given i (word) across the distributions (the books) to see if they have the same frequency of appearing.
 * Example: how close is an admirer to matching Jane Austen’s style using word counts in their works
 * The six word counts for Sense and Sensibility will  be modeled as a realization of a multinomial random variable with unknown cell  probabilities and total count 375; the counts for the other works will be similarly  modeled as independent multinomial random variables. 
 * Thus, we must consider comparing J multinomial distributions each having I categories. If the probability of the ith category of the jth multinomial is denoted $\pi_{ij}$ ,  the null hypothesis to be tested is: $H_{0}: \pi_{i 1}=\pi_{i 2}=\cdots=\pi_{i J}, \quad i=1, \ldots, I$. This is essentially a goodness of fit test
 * Under H0, each of the J multinomials has the same probability for the ith category, say $\pi_i$ . The following theorem shows that the mle of $\pi_i$ is simply $ni. /n..$. Here, $n_{i.}$ is the total count in the ith category, $n_{..}$ is the grand  total count, $n_{.j}$ is the total count for the jth multinomial. 
 * $E_{i j}=\frac{n_{. j} n_{i .}}{n ..}$ for the jth multinomial the expected count in the ith category is the estimated probability of that cell times the total number of observation for the jth multinomial. Can use Pearson Chi-Square: $X^2 =\sum_{i=1}^{I} \sum_{j=1}^{J} \frac{\left(n_{i j}-n_{i .} n_{. j} / n_{. .}\right)^{2}}{n_{i . }n_{ . j} / n_{. .}}$ with $d f=(I-1)(J-1)$
+* Calculate the expected count for each cell using the chi square distribution. Plug into Pearson test for all cells
 
 ##### Chi-Square Test of Independence
 
-* Education vs marital status - is there a relationship?
-* We fix the overall n - we have a fixed sample size. We drop balls from the sky and they land in an I by J grid. We have a single multinomial distribution with IJ levels and probability $\pi_{ij}$ on the (i,j) bin.
+* Education vs marital status - is there a relationship? College / No College vs Married Once / Married more than once
+* We <u>fix the overall n</u> - we have a fixed sample size. We drop balls from the sky and they land in an I by J grid. We have a single multinomial distribution with IJ levels and probability $\pi_{ij}$ on the (i,j) bin.
 * Here we are looking to see if our rows and columns are independent. Are marriage and education independent of each other, so we set up the null that the probability in a given cell is the overall i probability times the overall j probability, ie the number of observations in the i group (over all j’s) times the number of observations of in the j group (across all i’s). Calculated over all i and j. We treat the whole table as coming from a single multinomial distribution.
 * We will discuss statistical analysis of a sample of size n cross-classified in a  table with I rows and J columns. Such a configuration is called a **contingency table**.  The joint distribution of the counts $n_{i j}$ , where i = 1,..., I and j = 1,..., J , is  multinomial with cell probabilities denoted as $\pi_{i }j$ . Let $\begin{array}{l}{\pi_{i .}=\sum_{j=1}^{J} \pi_{i j}},\; {\pi_{. j}=\sum_{i=1}^{I} \pi_{i j}}\end{array}$, denote the marginal probabilities that an observation will fall in the ith row and  jth column, respectively.
 * If rows and columns are independent of each other, then $\pi_{ij} = \pi_{i.}\pi_{.j}$. Therefore the null hypoth is $H_) = \pi_{ij} = \pi_{i.}\pi_{.j}$ for all i,j versus the alternative that the $\pi_{ij}$ are free. Under null, mle is $\begin{aligned} \hat{\pi}_{i j} &=\hat{\pi}_{i .} \hat{\pi}_{. j} =\frac{n_{i .}}{n} \times \frac{n . j}{n} \end{aligned}$. Under the alternative, mle is $\tilde{\pi}_{i j}=\frac{n_{i j}}{n}$. 
-* Turning to Pearson test, $E_{i j}=n \hat{\pi}_{i j}=\frac{n_{i .} n_{. j}}{n}$, so $X^{2}=\sum_{i=1}^{I} \sum_{j=1}^{J} \frac{\left(n_{i j}-n_{i .} n_{. j} / n\right)^{2}}{n_{i .} n_{. j} / n}$, df = (I-1)(J-1)
+* Turning to Pearson test, $E_{i j}=n \hat{\pi}_{i j}=\frac{n_{i .} n_{. j}}{n}$, so $X^{2}=\sum_{i=1}^{I} \sum_{j=1}^{J} \frac{\left(n_{i j}-n_{i .} n_{. j} / n\right)^{2}}{n_{i .} n_{. j} / n}$, $df = (I-1)(J-1)$
 * The chi-square statistic used here to test independence is identical in form and  degrees of freedom to that used in the preceding section to test homogeneity; however, the hypotheses are different and the sampling schemes are different. The test  of homogeneity was derived under the assumption that the column (or row) margins  were fixed, and the test of independence was derived under the assumption that only  the grand total was fixed. Independence can be thought of as  homogeneity of conditional distributions; for example, if education level and marital  status are independent, then the conditional probabilities of marital status given educational level are homogeneous
 * The more items we treat as unknown in the model, the degrees of freedom increase. This will lower the power we will achieve and increase our p-values - our estimation will be more uncertain because we allow more to vary. 
 
@@ -405,6 +428,7 @@ date: 20191016
 
 * The assumption behind the chi-square test of homogeneity  is that independent multinomial samples are compared, and sibling  samples are not independent, because siblings are paired. With positive covariance $\sigma_{XY} > 0$ between pairs in the sample, we get more power.
 * The null hypothesis is that probabilities of outcomes are the same for the X component and Y component of the pair in each sample, ie $\pi_{1 .}=\pi_{.1}$ and $\pi_{2.}=\pi_{.2}$ The null can be written as $H_{0}: \pi_{12}=\pi_{21}$. The off diagonal probabilities are equal and under the alternative they are not.
+* ![Screen Shot 2019-12-03 at 7.49.23 PM](/Users/spencerbraun/Documents/Notes/Stanford/STATS200/Screen Shot 2019-12-03 at 7.49.23 PM.png)
 * McNemer’s Test: Under null MLEs of cell probabilities are $\begin{aligned} \hat{\pi}_{11} &=\frac{n_{11}}{n} ,\; \hat{\pi}_{22} =\frac{n_{22}}{n},\; \hat{\pi}_{12}=\hat{\pi}_{21} =\frac{n_{12}+n_{21}}{2 n} \end{aligned}$
 * The $n_{11},\;n_{22}$ contributions to chi square test are 0 - we do not care about the diagonals
 * $\begin{aligned} X^{2} &=\frac{\left[n_{12}-\left(n_{12}+n_{21}\right) / 2\right]^{2}}{\left(n_{12}+n_{21} / 2\right.}+\frac{\left[n_{21}-\left(n_{12}+n_{21}\right) / 2\right]^{2}}{\left(n_{12}+n_{21}\right) / 2} =\frac{\left(n_{12}-n_{21}\right)^{2}}{n_{12}+n_{21}} \end{aligned}$ with 1 degree of freedom
@@ -412,17 +436,22 @@ date: 20191016
 ##### Odds Ratios
 
 * $\operatorname{odds}(A)=\frac{P(A)}{1-P(A)}$ implying $P(A)=\frac{\operatorname{odds}(A)}{1+\operatorname{odds}(A)}$
-* Now suppose that X denotes the event that an individual is exposed to a potentially  harmful agent and that D denotes the event that the individual becomes diseased. We  denote the complementary events as $\bar{X}$ and $\bar{D}$.
+* Now suppose that X denotes the event that an individual is exposed to a potentially harmful agent and that D denotes the event that the individual becomes diseased. We  denote the complementary events as $\bar{X}$ and $\bar{D}$.
   * $\operatorname{odds}(D | X)=\frac{P(D | X)}{1-P(D | X)}$ and $\operatorname{odds}(D | \bar{X})=\frac{P(D | \bar{X})}{1-P(D | \bar{X})}$
   * The odds ratio is then $\Delta=\frac{\operatorname{odds}(D | X)}{\operatorname{odds}(D | \bar{X})}$ and measures the influence of exposure on subsequent disease
 * Odds ratio can be the product of diagonal probabilities in the table divided by the product of the off diagonal probabilities: $\Delta=\frac{\pi_{11} \pi_{00}}{\pi_{01} \pi_{10}}$
+* ![Screen Shot 2019-12-03 at 7.54.38 PM](/Users/spencerbraun/Documents/Notes/Stanford/STATS200/Screen Shot 2019-12-03 at 7.54.38 PM.png)
 * Prospective study: a fixed number of  exposed and nonexposed individuals are sampled, and the incidences of disease in  those two groups are compared. We can calculate the odds ratio but not the individual probabilities $\pi_{ij}$ since the marginal counts have been fixed by the sample design
-* Retrospective study:  a fixed  number of diseased and undiseased individuals are sampled and the incidences of exposure in the two groups are compared. The joint / conditional probabilities cannot be calculated, but we can say $\operatorname{odds}(X | D)=\frac{\pi_{11}}{\pi_{01}}$, $\operatorname{odds}(X | \bar{D})=\frac{\pi_{10}}{\pi_{00}}$ leading to estimated odds ratio $\hat{\Delta}=\frac{n_{00} n_{11}}{n_{01} n_{10}}$
+* Retrospective study:  a fixed  number of diseased and undiseased individuals are sampled and the incidences of exposure in the two groups are compared. The joint / conditional probabilities cannot be calculated, but we can say $\operatorname{odds}(X | D)=\frac{\pi_{11}}{\pi_{01}}$, $\operatorname{odds}(X | \bar{D})=\frac{\pi_{10}}{\pi_{00}}$ leading to estimated odds ratio $\hat{\Delta}=\frac{n_{00} n_{11}}{n_{01} n_{10}}$ - essentially by what factor does exposure increase odds of disease
+* Analytical derivation of standard error is difficult, often use bootstrap using a binomial model for $N_{11}$ with n = $n_{00} + n_{01}$ and $p=\pi_{11}$. 
 
 ### Chapter 14 - Linear Least Squares
 
-* Minimizing $S(\beta_0, \beta_1) = \sum_{i=1}^n(y_i - \beta_0 - \beta_1x_i)^2$ with betas chosen to minimize the sum of squared vertical deviations
-* To find betas, take partial derivatives of S wrt beta (eg. $\frac{\partial S}{ \partial \beta_1}=-2\sum_1^n x_i(y_i-\beta_0 -\beta_1x_i)$), set to 0, solve for beta
+* Minimizing $S(\beta_0, \beta_1) = \sum_{i=1}^n(y_i - \beta_0 - \beta_1x_i)^2$ with betas chosen to minimize the sum of squared vertical deviations. Procedure is not symmetric is x and y since using vertical distance.
+* To find betas
+  * take partial derivatives of S wrt beta  $\frac{\partial S}{ \partial \beta_1}=-2\sum_1^n x_i(y_i-\beta_0 -\beta_1x_i)=0$, $\frac{\partial S}{\partial \beta_{0}}=-2 \sum_{i=1}^{n}\left(y_{i}-\beta_{0}-\beta_{1} x_{i}\right)=0$
+  * $\sum_{i=1}^{n} y_{i}=n \hat{\beta}_{0}+\hat{\beta}_{1} \sum_{i=1}^{n} x_{i}$ and $\sum_{i=1}^{n} x_{i} y_{i}=\hat{\beta}_{0} \sum_{i=1}^{n} x_{i}+\hat{\beta}_{1} \sum_{i=1}^{n} x_{i}^{2}$
+  * Set derivatives to zero, collect terms, divide by n
 * If the  function to be fit is not linear in the unknown parameters, a system of nonlinear  equations must be solved to find the coefficients. Typically, the solution cannot be  found in closed form, so an iterative procedure must be used. 
 
 ##### Simple Linear Regression
@@ -433,7 +462,11 @@ date: 20191016
 * For large n and independent errors, estimated betas are approximately normally distributed $\frac{\hat{\beta}_i - \beta_i}{s_{\hat{\beta}_i}} \sim t_{n-2}$, which allows us to use the t distribution to be used for CIs
 * Residuals $\hat{e}_i = y_i - \hat{\beta}_0 - \hat{\beta}_1x_i$
 * The model assumes homoskedastic errors - otherwise standard errors and CIs based on $s^2$ will underestimate. Can transform via log or squareroot to stabilize the variance.
-* For $s_{xx} = \frac{1}{n}\sum_1^n(x_i - \bar{x})^2$, $s_{xy}= \frac{1}{n}\sum_1^n(y_i - \bar{y})^2$, $s_{xy} = \frac{1}{n}\sum_1^n(x_i - \bar{x})(y_i - \bar{y})$, the correlation coefficient between x and y is $r = \frac{s_{xy}}{\sqrt{s_{xx}s_{yy}}}$, $\hat{\beta}_1 = \frac{s_{xy}}{s_{xx}} \rightarrow r = \hat{\beta}_1\sqrt{\frac{s_{xx}}{s_{yy}}}$. 
+* For $s_{xx} = \frac{1}{n}\sum_1^n(x_i - \bar{x})^2$, $s_{xy}= \frac{1}{n}\sum_1^n(y_i - \bar{y})^2$, $s_{xy} = \frac{1}{n}\sum_1^n(x_i - \bar{x})(y_i - \bar{y})$
+  * the correlation coefficient between x and y is $r = \frac{s_{xy}}{\sqrt{s_{xx}s_{yy}}}$, 
+  * $\hat{\beta}_1 = \frac{s_{xy}}{s_{xx}} \rightarrow r = \hat{\beta}_1\sqrt{\frac{s_{xx}}{s_{yy}}}$. 
+  * Therefore correlation is zero iff slope is zero
+* Standard equations for coefficients: $\hat{\beta_{0}}=\bar{y}-\hat{\beta_{1}} \bar{x}$ and $\hat{\beta}_{1}=\frac{\sum_{i=1}^{n}\left(x_{i}-\bar{x}\right)\left(y_{i}-\bar{y}\right)}{\sum_{i=1}^{n}\left(x_{i}-\bar{x}\right)^{2}}$
 * $\frac{\hat{y} - \bar{y}}{\sqrt{s_{yy}}} = r \frac{\hat{x} - \bar{x}}{\sqrt{s_{xx}}}$ - for r greater than 0 and x is 1 SD avove its mean, then the predicted value of y is r SDs bigger than its average. The predicted value deviates from its average by fewer SDs r < 1 than the predictor. 
 
 ##### Statistical Properties of Least Squares Estimates

@@ -577,46 +577,79 @@ Table of Contents
 * Global min cuts useful for clustering, seeing where there are denser connections. 
 * Karger / Contraction Algorithm - given multigraph, undirected graph allowed to have parallel edges, choose edge in G at random and contract it, ie combine u,v into new node w. Note that the new graph G’ could have parallel edges due to vertex contraction. Recurse, creating many supernodes in G’. The algorithm terminates when there are only two supernodes - this is the minimum cut.
 * Note in our implementation we use an unweighted, undirected graph, though the algorithm can be extended to include other graph types. Parallel edges become superedges / or remain parallel edges.
-* Running time - we contract n-2 edges, naively each contraction takes $O(n)$, since there may be n nodes in the supernodes we are merging. We just have two lists of edges that connect some super nodes, we need to remove those edges when we contract. So the total running time is $O(n^2)$
+* Running time - we contract n-2 edges, naively each contraction takes $O(n)$, since there may be n nodes in the supernodes we are merging. We just have two lists of edges that connect some super nodes, we need to remove those edges when we contract. So the total running time is $O(n^2)$. We could get a better runtime using a union-find data structure - generate a random assortment of edges in $O(m)$ so the whole thing takes $O(m\alpha(n))$
 * Karger is not always correct, unlike QuickSort - QuickSort is a Las Vegas Randomized Algo, always right but sometimes slow. Karger is a Monte Carlo randomized algorithm, it is always fast but sometimes wrong. 
 * It is wrong iff we choose any of the edges that cross the min-cut, then we will never find the min-cut. Probabilistically, Karger is skewed towards selecting smaller cuts compared to the uniformly random cut. The smaller the cut, the lower the probability that we ever ruin it - Karger is more likely to choose cuts that have many edges. Can run Karger multiple times to get a high probability of finding the global minimum.
 * We can actually produce a global min-cut with high probability of ${n \choose 2}^{-1}$. Define p as the probability of success in one trial. P(T trials fail ) $= (1-P)^T$. If we want failure probability at most $\delta$, choose $T={n \choose 2}ln(1/\delta)$. (P(Fail in T trials) = $(1-P)^T \leq e^{-pT} = e^{-ln(1/\delta)}=\delta$ )
+* So to succeed with probability $1- \delta$, need to run Karger ${n \choose 2}ln(\frac{1}{\delta})$ times 
 * Theorem: Probability that we ever ruin the minimum cut is at most $\frac{1}{{n \choose 2}}$
-* From book: If we run ${n \choose 2}$ times then the probability that we fail to find the global min cut = $\left(1-1 /\left(\begin{array}{l}{n} \\ {2}\end{array}\right)\right)^{\left(\begin{array}{l}{n} \\ {2}\end{array}\right)} \leq \frac{1}{e}$
+  * Suppose min cut is of size k - then all vertices must have degree at least k. This means graph has at least $\frac{nk}{2}$ edges
+  * After i-1 merges, at least $\frac{(n-i+1)k}{2}$ edges are alive. So probability the k min edges are alive is at least $1-\frac{k}{(n-i+1)k/2} = \frac{n-i-1}{n-i+1}$
+  * Over all iterations i, get $\frac{n-2}{n}\frac{n-3}{n-1}...\frac{1}{3} = \frac{2}{n(n-1)} = \frac{1}{{n \choose 2}}$
 * An undirected graph G on n nodes has at most ${n \choose 2}$ global min cuts.
 
 ##### Karger-Stein
 
 * Repeating Karger is expensive - $O(n^4)$. K-S will also get us success probability 0.99 in $O(n^2log^2(n))$. We pretty much always use K-S since it is always faster but Karger gives us the intuition
 * As Karger progresses, the probability of picking an edge on the min cut increases - our choices get riskier. But this means if we are repeating the Karger algorithm, we can skip repeating the early iterations since they were very likely to make good choices.
-* After a number of iterations, fork our graph and have branches run Karger in parallel. We will run Karger until there are $\frac{n}{\sqrt{2}}$ supernodes left, split into two independent copies $G_1, G_2$, recurse running K-S on first and second copies and return the better cut of the two. Karger draws a tree from 1 node of n to 1 leaf and we do this $n^2$ times. K-S draws 1 tree, starting from n down to $n^2$ leaves of 1. We save nothing at the bottom with K-S, but we save a lot at the top, just a single root node instead of repeating the linear tree from top to bottom.
+* After a number of iterations, fork our graph and have branches run Karger in parallel. We will run Karger until there are $\frac{n}{\sqrt{2}}$ supernodes left, which is where there is roughly a 1/2 probability of the min cut still alive.
+* Split into two independent copies $G_1, G_2$, recurse running K-S on first and second copies and return the better cut of the two. Keep splitting at $\frac{\frac{n}{\sqrt{2}}}{\sqrt{2}}=\frac{n}{2}$ for each iteration.
+* Karger draws a tree from 1 node of n to 1 leaf and we do this $n^2$ times. K-S draws 1 tree, starting from n down to $n^2$ leaves of 1. We save nothing at the bottom with K-S, but we save a lot at the top, just a single root node instead of repeating the linear tree from top to bottom.
 * Depth of recursion tree is $log_{\sqrt{2}}n = 2logn$, number of leaves is $2^{2logn} = n^2$. Still need to see at least $n^2$ cuts like Karger to ensure we see the best one, but we save on computation by skipping the earlier iterations.
+* Recurrence relation: $\mathrm{T}(\mathrm{n})=2 \mathrm{T}(\mathrm{n} / \sqrt{2})+\mathrm{O}\left(\mathrm{n}^{2}\right)$ for a single run. For $\delta = 0.01$, get $O(n^2log^2(n))$
 * The probability of success is $p = \frac{1}{depth+1}$ for depth of tree. 
+
+### Stable Matchings
+
+* How should we match doctors to residencies? Both have preferences for each other. For simplicity, assume each hospital has 1 slot, n hospitals and n doctors.
+* With a bipartite graph with weights expressing preferences for doctors, could look for the maximum weight bipartite matching. Hungarian algorithm solves this max weight matching problem once we have the preferences. Some doctors might misreport their preferences, some matchings made outside of algorithm, etc.
+* Blocking pair - given matching M, (i, j) are a blocking pair if they prefer each other to their assignment M. Imagine a doctor and hospital matching outside of the algorithm
+* Stable matching - a matching M without blocking pairs
+  * For every unmatched (i, j), either doctor i prefers hospital M(i) over hospital j and/or 
+  * Hospital j prefers doctor j over doctor i
+* Resolves the problem of doctors matching outside of algorithm - ie. there is no pair that would prefer to subvert the outcome of the algorithm and match themselves
+* Input: a list of preferences, ie. a permutation of {1,...,n} from each doctor / hospital
+
+##### Deferred Acceptance / Gale-Shapley
+
+* Looks like a greedy algorithm with one exception - the decisions are revocable since we are possibly ruling out an optimal solution at each step.
+* Try to match each doctor to top choice as first iteration matching
+* If blocking pair discovered, just switch the matching to get rid of blocking pairs
+* While an unmatching doctor exsists, try to match i to next favorite hospital in the list.
+* Running time - worst case we run the while loop n times, going through the doctor’s full preference list. There are n doctors so total $O(n^2)$
+* The matching is doctor-optimal, every doctor is matched to favorite hospital possible in any stable matching. No incentive to misreport their preferences. However, the matching is hospital-worst and hospitals can gain from gaming their preferences.
+* The doctor optimal matching is always the hospital worst matching and vice versa.
+* Rural hospital theorem - If a hospital doesn’t fill all its positions in some stable matching, then it is matched to exactly the same set of doctors in every stable matching.
+
+## Review
+
+* B-F, F-W handles negative edge weights - should really only be considering using these algos when this limiting condition holds
+* Remember Dijkstra is SSSP meaning from a single node the shortest paths to every other node
+* DC, DP, Greedy - consider the substructure of the problems, are they overlapping like in DP? Single like in Greedy? Non-overlapping and multiple like in DC?
+* MST - think if you have some network and need a minimum cost. MST often useful a primitive as part of another algorithm
+* Kruskal vs. Prim - consider sparsity of graph - double check when to use each
+* Be specific about the type of min cut problem - global, s-t
+* F-F updating flow is like adding the new values of flow sent through residual to the current flow - with reverse edges being negative
+* Fattest path = $O(m^2log(n)log(|f|))$ E-K $O(nm^2)$. Use how these values compare to each other - if log f is huge. But would have to know the flow to know the run time of fattest path
+* Should be able to make a residual graph
+* Global min cut is completely separate from s-t. Here we have an undirected graph, find a min cut S, partition of the nodes into two groups st the cut value is minimized. 
+  * When you have a group of things are need to split into two groups somehow. 
+* Stable matching - some notion of stability and a blocking pair - maybe expect as a short answer
+  * Doctors proposing then hospitals either tentatively accepting or rejecting forever
+  * Bipartite settings have preference constraints that make this work well, otherwise cannot assume no cycles etc
+* Greedy Example - difference from hotels is there is no cost / reward associated with each hole. 
+  * Walking to farthest hole doesn’t rule out stopping at another hole between current position and the end
+* Transportation example - create an air node and draw edges with ai costs, run mst with roads only and with airports.
+* Thief example - s-t cut, cutting off resources from source to a sink. But we need directed edges with weights. Making them bidirectional edges, turn multi-edges into weights.
+  * when the thief can move, then the source is essentially changing
+  * create DP cache to hold the mincuts for each vertex
+  * F-F to get each min cut
+  * If can’t blow up some edges, make them weight infinity or collapse to supernodes
+  * The tweak of dynamic source node means its somewhat in between all of our algorithms
+  * Remember DP, since graph things very often have overlapping subproblems
 
 ## Probability Reference
 
 * Binomial - n trials of a Bernoulli. Expectation = np
 * Bernoulli - indicator with x=1 with probability p, x=0 with probability 1-p. Expectation = p.
 * Geometric - number of trials until you see a success, where probability of success in each trial is p. Expectation = $\frac{1}{p}$
-
-
-
-
-
-Question 1b 
-
-Let M be a maximum bipartite matching in G. Define an edge (u,v) not in M. There are two possibilities: either one of u or v is in M, meaning it has a match with another vertex, or neither u or v is in M. First consider the case where neither u or v is in M; we will use contradiction to show this case does not exist. To have an edge, the vertices u and v must lie in different independent sets by the construct of the bipartite graph. Since neither u or v is involved in a match, they could form a new match and be added to M. However, M was defined to be the maximum matching, so this is a direct contradiction. Therefore we are left to conclude one of u or v is a member of M.
-
-Since the algorithm finds the maximum matching, it also finds a min-cut which divides vertices is a set reachable by S and a set reachable by T. Define L as the independent set receiving flow from the source s and define R as the indendent set delivering flow to the sink t. The algorithm adds to the vertex cover every vertex in R on the S side of the min cut. It then adds every vertex in the L indepedent set on the T side of the cut. The remaining vertices in L and S either have edges to R and S or R and T. If they have edges to R and S, they are covered by the first additions to the vertex cover. If they only have edges to R and T, they are not yet covered. Similarly the vertices in the intersection of the vertices in R and T either have edges to L and S and L and T. Those edges are covered if they have an edge to L and T but not if they only have edges to L and S. Therefore the algorithm’s last step adds an endpoint from all edges from L and S to R and T. Since vertices only have edges between L and R, this ensures there is a cover neighboring every vertex in the graph.
-
-Question 1c
-
-The minimum cut is equal to the cardinality of the maximum flow by the Min-Cut Max-Flow Theorem. 
-
-
-
-Question 3d
-
-Yes they are correct. Suppose after j-1 iterations, the min cut $S^*$ is still alive. Also suppose there are k edges crossing the min cut. So far the logic is the same as under Karger, so we also have a total of $\frac{(n-j+1)k}{2}$ edges. Additionally, every vertex must have minimum degree of k, otherwise there would be a cut that crossed fewer edges than k, contradicting our definition of the minimum cut. 
-
-From step c, we saw that the probability of choosing an edge crossing $S^*$ on the original graph was $\frac{1}{n}(\frac{1}{d_{v1}}+ \frac{1}{d_{v2}})$ for $v1, v2$ endpoints of edge E and $d_{v1}, d_{v2}$ their respective degrees. Then after j-1 iterations of the algorithm, the probability of choosing an edge in the min cut is $\sum_{u,v \in k \text{ endpoints}} \frac{1}{n-j+1}(\frac{1}{d_{u}}+ \frac{1}{d_{v}})$. Given that the minimum degree of any vertex is k, we can bound the sum $\frac{1}{d_{u}}+ \frac{1}{d_{v}} \leq \frac{1}{k} + \frac{1}{k} = \frac{2}{k}$. This implies the probability of choosing a min edge is bounded above by $\sum_{u,v \in k \text{ endpoints}} \frac{1}{n-j+1}\frac{2}{k} = \frac{2k}{(n-j+1)k} = \frac{2}{(n-j+1)}$. Note this is the same probability we calculated of choosing one of the k edges crossing $S^*$ under Karger, implying the probability keeping $S^*$ alive is $1 - \frac{2}{n-j+1} = \frac{n-j-1}{n-j+1}$, and for all j $\prod_{j=1}^{n-1}\frac{n-j-1}{n-j+1}=\frac{1}{{n \choose 2}}$ .

@@ -63,7 +63,7 @@ author: Spencer Braun
 * Check that it is a maximum using 2nd derivative test, but plugging in our MLE for $\theta$: $l’’(\hat{\theta}) < 0$
 * Check bounds if multiple roots 
 * To find asymptotic variance
-  * calculate $I(\hat{\theta})$ and the AV = $\frac{1}{nI(\hat{\theta})}$
+  * calculate $I(\theta)$ and the AV = $\frac{1}{nI(\theta)}$
   * If I just for single variable, then multiple by n variables. If n accounted for in expectation, do not multiply by another n, since $nI(\theta) = I_n(\theta)$
   * To compare to MLE, take $Var(\hat{\theta}) = Var(\theta(X))$ and use the distribution of X to find the variance of the estimator.
 * Showing it is unbiased - if MLE is $\bar{X}$, place back into its summation for and apply linearity of expectation to E(X)
@@ -111,6 +111,9 @@ author: Spencer Braun
 * Determine how movements in X affect the LRT - ie. if X increases does the GLRT increase or decrease. Null is rejected for small values of GLRT. This will determine which direction we set up our probability test.
 * To find the CV or signficance for given values, use the distribution under H0. If we have the exact distribution, set up P(X < CV ) = alpha (or P(X > CV ) depending on results from previous step).
 * We often use the approximation $-2log(\Lambda) \approx \chi^2_d$ under H0. Then RR $-2 \ln (\lambda)>\chi_{\alpha}^{2}, \quad \text { where } \chi_{\alpha}^{2} \text { is based on } r_{0}-r \text { df. }$
+  * Used for 2 sided tests
+  * Find chi square quantile needed for significance level $\alpha$
+  * Calculate $-2log(\Lambda)$ and reject if $-2log(\Lambda) > \chi^2$ quantile found
 * Instead can use a normal approximation. Set up probability as before, then normalize, use z-table.
 
 **Power of a Test**
@@ -148,6 +151,53 @@ author: Spencer Braun
 * Density function of expectation $E(X|Y)$ -> change of variables with $\mathbb{E}(X | Y=y)$, plug into marginal density function of Y. Why? This is a function of y, g(Y).
 * When confronted with convergence, perhaps directly plug into Chebyshev, CLT, WLLN, other theorems dealing with convergence in probability.
 * When p is a proportion of a binary outcome in a finite population size: $Var(\hat{p}) = s_{\hat{p}}^{2}=\frac{\hat{p}(1-\hat{p})}{n}$
+
+**MGF Derivations**
+
+Poisson
+
+* $\boldsymbol{M}_{X}(t)=\mathrm{E}\left(e^{t X}\right) = \sum_{k=0}^{\infty} \frac{\lambda^{k} }{k !} e^{-\lambda}e^{t k}$
+* $= e^{-\lambda}\sum_{n=0}^{\infty} \frac{(\lambda e^{t})^{k} }{k !} $   power series expansion
+* $= e^{-\lambda} e^{\lambda e^{t}} = e^{\lambda(e^t -1)}$
+
+Normal
+
+* For standard normal $M(t) = \frac{1}{\sqrt{2\pi}} \int_{-\infty}^\infty e^{tx} e^{-\frac{x^2}{2}} dx$
+* Using $\frac{x^{2}}{2}-t x = \frac{1}{2}(x-t)^{2}-\frac{t^{2}}{2}$
+* $M(t)=\frac{e^{t^{2} / 2}}{\sqrt{2 \pi}} \int_{-\infty}^{\infty} e^{-(x-t)^{2} / 2} d x $ substituting $u = x-t$
+* $= e^{t^2/2}$
+* For $N(\mu, \sigma)$, $M(t) = e^{\mu t}M(\sigma t) = e^{\mu t}e^{\sigma^2 t^2 /2}$
+
+Geometric
+
+* $M(t) = \sum_{k=0}^\infty e^{tk} p(1-p)^{k-1}$
+* $=p e^t \sum e^{t(k-1)}(1-p)^{k-1}$
+* $=p e^t \sum (e^t(1-p))^{k-1}$ and since $(1-p)e^t < 1$, use geometric series formula
+* $= \frac{pe^t}{1-e^t(1-p)}$
+
+Exponential
+
+* $M(t) = \int_{-\infty}^\infty e^{tx} \lambda e^{-\lambda x} dx$
+* $=\lambda \int_0^\infty e^{x(t-\lambda)} dx$
+* $=\frac{\lambda}{t-\lambda}e^{x(t-\lambda)} \Big|_0^\infty = \frac{\lambda}{\lambda -t}$
+
+Binomial
+
+* $M(t) = \sum_{k=0}^\infty {n \choose k} e^{tk} p^k (1-p)^{n-k}$
+* $ = \sum_{k=0}^\infty {n \choose k} (e^t p)^k (1-p)^{n-k}$ apply binomial theorem
+* $= (1-p + pe^t)^n$
+
+Gamma
+
+* $M(t)=\int_{0}^{\infty} e^{t x} \frac{\lambda^{\alpha}}{\Gamma(\alpha)} x^{\alpha-1} e^{-\lambda x} d x$
+* $=\frac{\lambda^{\alpha}}{\Gamma(\alpha)} \int_{0}^{\infty} x^{\alpha-1} e^{x(t-\lambda)} d x$, where $\int_{0}^{\infty} x^{\alpha-1} e^{x(t-\lambda)} d x$ is a gamma density $g(\alpha, \lambda -t)$
+* $M(t)=\frac{\lambda^{\alpha}}{\Gamma(\alpha)}\left(\frac{\Gamma(\alpha)}{(\lambda-t)^{\alpha}}\right)=\left(\frac{\lambda}{\lambda-t}\right)^{\alpha}$
+
+Uniform
+
+* $M(t) = \int_a^b e^{tx} \frac{1}{b-a} dx$
+* $=\frac{1}{b-a} \frac{1}{t}e^{tx}\Big|_a^b$
+* $ = \begin{cases}\frac{e^{bt} - e^{at}}{t(b-a)} & t>0 \\ 1 & t=0 \end{cases}$
 
 **Good Problems to Review**
 

@@ -76,6 +76,25 @@ author: Spencer Braun
 2. Return subarray with an element comprising n/2 of the subarray. By top level, with have majority element
 3. log(n) levels, $O(n)$ comparisons at each level. Total $O(nlogn), \,T(n) = 2T(\frac{n}{2}) + O(n)$
 
+### Integer Multiplication - Exam 1
+
+* Idea: n positive integers of k digits each, want to compute their product
+* Key Idea: Karatsuba computes products between two integers, divide and conquer karatsuba 
+
+1. Partition the array into two sub arrays with n/2 integers each.
+2. As the combine step, multiply the sub-products using Karatsuba
+3. Run time for Karatsuba is $O(n^{log(3)})$. Product of two k-digit integers has ~2k digits. Product of n k-digit numbers has O(nk) digits. Recursion $T(n,k) = 2T(n/2,k) + O((nk)^{log(3)})$. By Master method get $O((nk)^{log(3)})$ total run time
+
+### Batch Statistics - Exam 1
+
+* Idea: input n large numbers and k distinct ranks for k < n. Output the $r_jth$ smallest of the n integers for j in {1,...,k}
+* Key Idea: This is the lightbulb problem - making pivot comparisons between two groups.
+
+1. Find median integer using select algorithm. Split integers relative to pivot. 
+2. Split ranks based on comparison to rank of median.
+3. Recurse separately on ranks and integers greater than pivot and those less than pivot.
+4. Runs in $O(nlog(k))$. Log(k) depth to recursion since we halve the size of R at each iteration. Work at each level is O(n + k) = O(n). 
+
 ## Randomized
 
 ### Collinear Lines on a Plane
@@ -139,7 +158,7 @@ author: Spencer Braun
 ### Source Vertices
 
 * Idea: A source vertex in a graph G = (V,E) is a vertex v such that all other vertices in G can be reached by a path from v. Say we have a directed, connected graph that has at least one source vertex. Find an algorithm to find a source vertex in $O(V + E)$
-* Key Idea: If we run DFS, a source vertex must be last finished. 
+* Key Idea: If we run DFS, a source vertex must be last finished. Run DFS forest, find last finished. Check that it is a source by running BFS/DFS to ensure it reaches all other nodes
 
 ### Bipartite Graphs
 
@@ -167,6 +186,39 @@ author: Spencer Braun
 2. For edge (v, w), $v \in X$ and $w \notin X$, choose an edge minimizing score $len(v) + l_{vw}$, ie. the length it took to get to v plus the weight between v and w. 
 3. At each step, looks into X and compares the vertices to the next step of the graph, choosing the path the minimizes the score
 4. Runs in $O(mn)$ time
+
+### Free Flights / Pretzels - Exam 2
+
+* Idea: Input of a list of n airports, m flights from airport A to B, number of pretzels on each flight. Goal is to maximize the number of pretzels on any route.
+* Key Idea: This is russian boxes mixed with DP. 
+
+1. Create graph with airport vertices and directed edges as flights.
+2. Run DFS to find any cycles - return infinity if cycles
+3. Otherwise have a DAG. Run Toposort and reverse to get source flights.
+4. Use DP to compute the max number of pretzels for a route ending at each airport - pretzels to A = $max_{B\text{ with flight to }A}$ (Pretzels to B) + (pretzels on B to A flight) or $P_i = i + max_{\text{over edges}} P_j$ for i current node and all incoming flights j.
+5. Loop over i sorted airports. Set max neighbor to - infinity. For j in edges of i if pretzels bigger than max neighbor reassign. For each i store max pretzels in array.
+6. DFS takes $O(n+m)$, DP outer loops n times, inner loop m times. Total $O(n+m)$
+
+### Predicting Ties - Exam 2
+
+* Idea: Given grid with weights, determine if two vertices could get to origin using same sum of weights. Can only move west and south, not north and east
+* Key Idea: Since movement is restricted, we have optimal substructure. Use DP to compute shortest path to origin. Like BF, subset of shortest path is a shortest path.
+
+1. Define optimal substructure. Let i,j define row and column in grid. For W list of west edges and S list of south edges, $d(i,j) = min[d(i-1,j) + W(i,j), d(i, j-1) + S(i,j-1)]$
+2. Initialize hash table and DP distance table. Add base cases to the hash and DP table
+3. For i, for j use DP table to calculate current shortest path. If that value is in the hash table, return the matching pair. Otherwise add the distance to the hash table. 
+4. Return null if no match found.
+5. Loops through for rows * columns in grid, here k x k. Total runtime $O(k^2)$
+
+### Johnson’s Algorithm (APSP with Dijkstra)
+
+* Idea: Given a graph with negative weights but no negative cycles, can use Dijkstra to find APSP
+* Key Idea: Can transform negative weights to positive weights
+
+1. Add a dummy vertex q, connected to every vertex with 0 cost edges, compute shortest path from q to other vertices
+2. Use weights $w^{\prime}(u, v):=w(u, v)+h(u)-h(v)$ where h is the distance from q
+3. For each vertex, run Dijkstra to get its SSSP
+4. Run time is $nmlog(n)$ due to n calls to Dijkstra. 
 
 ## Dynamic Programming
 
@@ -248,3 +300,145 @@ author: Spencer Braun
 * Notice that we do not need to consider cutting off a length of 1 since that will never yield the optimal product, and also do not need to try cuts any larger than ⌊k/2⌋ since those will already have been explored due to the symmetry of the cutting. 
 * Base case is 1. For i in range 2 to k, the value to beat is no cuts. For cuts from 2 to i mod 2, the length remaining is i - c
 * Compare no cutting to max prods[cut] x max prods[remaining] and take the max for either case. Fill in array for length of k the best product from the cuts.
+
+## Greedy
+
+### Activity Selection
+
+* Idea: You can do one activity at a time and want to maximize the number of activies, Each activity a has a start time s and finish time f
+* Order predetermined but activies to be performed can be chosen - need criterion for choosing
+* Key Idea: Picking the activity with the smallest end time rules out the smallest number of additional activities.
+
+1. At each step pick activity you can add with the smallest finish time
+2. Runs in $O(n)$ if already sorted or $O(nlog(n))$
+3. Suppose we have chosen $a_i$ and there is still an optimal solution $T^*$ that extends our choices. Consider next choice $a_k$ - if $a_k$ is not in $T^*$, imagine swapping $a_k / a_j$. Since $a_k$ has smallest ending time it ends before $a_j$, so it must not conflict with anything after $a_j$ in $T^*$. Then there must be an optimal schedule that also contains our choice $a_k$. 
+
+### Job Scheduling
+
+* Idea: n tasks, task i takes $t_i$ hours, for every hour until task i is done pay $c_i$ - includes time from earlier tasks. Find schedule that minimizes the cost
+* All activities preselect but order can be chosen - need criterion for ordering
+* Key Idea: This has nice optimal substructure where removing the next job leaves an optimal arrangement for the remaining. Cannot sort just by time or cost - need to take cost of delay / time it takes
+
+1. Choose the job with biggest cost of delay / time it takes ratio
+2. Suppose already chosen some jobs and optimal solution still alive. Say job B is the next best ratio job but not in the optimal solution. Switch A and B for A < B. Nothing else will change so cost of solution will not increase. Repeat until B is first - now we have the optimal schedule where B is first.
+
+### Huffman Codes
+
+* Idea: Prefix-free coding, no encoded string is a prefix of any other. Given frequency of letters in a population, whats the encoding that minimizes cost - the length of the encoding of that letter = frequency of letter times depth in tree. 
+* Key Idea: Greedily build subtrees starting with infrequent letters to keep them at the bottom.
+
+1. Create node for each letter / frequency, eg D: 16. 
+2. While there are still nodes not in the tree, take the two nodes with the smallest keys 
+3. Create a new node Z with key = X.key + Y.key
+4. Assign X and Y as children to Z and now repeat with Z as a node to be considered instead of X and Y
+5. Lemma1: Suppose x and y are two least frequent letters. Then there is an optimal tree where x and y are siblings
+6. Lemma2: Can imagine that any Z is a leaf even though it has children
+
+### Predicting Ties Revisited
+
+* Idea: Now no restrictions on travel direction. Still want to predict ties to the origin
+* Key Idea: We no longer have substructure if any direction can be considered. We need a single source shortest path from the origin
+
+1. Run Dijkstra on the graph with origin as its source - the output is the shortest path from each vertex to the origin
+2. Insert path lengths into hash table iteratively, if duplicate found there is a tie otherwise no ties.
+3. Graph has $O(k^2)$ vertices and edges, so Dijkstra runs in $O(|E| + |V|log(|V|)) = O(k^2log(k))$. Hashing is constant time so duplicate check is $O(k^2)$. Overall run time is $O(k^2log(k))$
+
+### Pareto Optimal
+
+* Idea: Given a set of 2d points, Pareto optimal is a point (x, y) st for all (x’, y’) either x > x’ or y > y’. Find all Pareto optimal points.
+* Key Idea: Sorting the array by x and using a greedy approach won’t keep optimal points ahead of us. Greedy often requires a certain ordering
+
+1. Sort input points largest first by x, tiebreaking by y.
+2. Initialize Pareto points with first point in the sorted list
+3. Set Y to y coord of first point
+4. For point in the remaining sorted array, if y > Y, then add that point to Pareto array and update Y to new y
+
+### Cutting Ropes
+
+* Idea: Given n ropes of different lengths and want to tie in to a single rope. Cost to connect two ropes is equal to the sum of their lengths. Want to connect all ropes with minimum cost.
+* Key Idea: This is similar to job scheduling with cost = 1. Also like Huffman coding taking the min frequency.
+
+1. Always combine smallest ropes available until there is one long rope.
+2. Can use job scheduling with cost = 1 analogy and notice we only have a time parameter imposing a constant cost. Then obvious to sort by shortest time
+3. Huffman: the frequency of letters is like a cost - higher frequency means we pay higher cost for more depth. Here the frequency is replaced by length of rope, but the cost analogy is the same. Use Huffman lemmas - if x and y are ropes with shortest length then there is an optimal tree where they are siblings. If we treat nodes at a given level as leaves can apply the lemma.
+
+### Mice to Holes
+
+* Idea: n mice and n holes along a line, stepping 1 unit left or right takes 1 minute. Assign mice to holes to minimize last mouse travel time.
+* Key Idea: Try progressing from left to right
+
+1. Sort the mice locations and hole locations. Have ith mouse go to ith hole. Max time will be max distance between all mice and their holes.
+2. Lemma: $max(dist(a,c), dist(b,d)) \leq max(dist(a,d), dist(b,c))$ for mice $a < b$ and holes $c < d$
+3. IH: By sending ith sorted mouse to the ith sorted hole, there is a minimal solution that extends the current solution
+4. BC: If we have sent to mice to holes, the ideal solution has not been eliminated
+5. IS: Suppose we have sent first k-1 mice to the first k-1 holes. Now imagine there is an optimal solution where kth mouse goes to $p_0th$ hole for k < $p_0$. Then each mouse is shifted aftert than until the $p_dth$ for some d mouse is sent ot the kth hole. We could then swap the kth and dth mice and result would not be worse than optimal.
+
+## Min Cut / Max Flow
+
+### Expense Settling
+
+* Idea: k friends, fried i paid $c_i$. Want to develop algorithm to have everyone paid back where each person either pays or receives money but not both
+* Key Idea: Money is like flow, where those that owe need to send and those owed receive. We have a bipartite graph
+
+1. Calculate the per person average cost $\frac{\sum c_i}{k}$
+2. Create a source s and sink t. Draw edges from s to those who owe and edges from owed to t with weights $c-c_i$ or $c_j -c$. 
+3. Connect all nodes between the independent sets with weights infinity and run FF. 
+
+### Project Selection with Prereqs
+
+* Idea: set of k tasks $t_1,...,t_k$. Certain tasks such that $t_i$ is a prerequisite of $t_j$. Each task has reward $r_i$ which may be negative. Find optimal subset of tasks to maximize reward.
+* Key Idea: A min cut will cut edges with the lowest weights and not cut edges with infinite weights. We want edges going from tasks to their prereqs due to the s-t cut.
+* Suppose we have a task X with positive reward, and we have a task Y with a penalty (negative reward), I would recommend considering these three  cases to build intuition about what's going on: X is a prerequisite of  Y, Y is a prerequisite of X, or X and Y are unrelated. Case 1, our cut keeps x and discards Y, which works because we only have an edge from t to s side of cut. Case 2, XY on S side if reward for x outweighs penalty for Y or on t side if not - the cut chooses the s-x, y-t edge that is lighter. If unrelated, our cut keeps x and excludes Y (holding all else equal).
+
+1. Draw edges from prereqs to tasks with edge weights infinity
+2. Add source and sink, s and t
+3. Draw edge from s to vertex with weight r if r > 0
+4. Draw edge from vertex to t with weight r if r < 0
+5. Draw min s-t cut and take tasks on the s side of the cut.
+
+### Tiling Partial Checkerboard
+
+* Idea: n x n checkerboard with some squares deleted. Each domino can cover two squares. Determine whether one can tile the board completely.
+* Key Idea: Can we separate into bipartite groups? Perhaps black and white squares with edges for adjacency. Now just check for a perfect matching
+
+1. Make G bipartite with black and white ind. sets with adjacency edges. $O(n^2)$ edges and vertices
+2. Compute maximum matching. If perfect we can cover else cannot
+3. FF runs in $O(|f|E) = O(n^4)$, which dominates the run time
+
+### Ice Cream Matching
+
+* Idea: People and ice cream tubs. Each person can only eat c(x) scoops. Each tub of ice cream only has c(y) scoops in it. Each pair can only be matched c(x,y) times - ie. student x only wants 3 scoops of flavor y. Assign as many matches as possible
+* Key Idea: Desired scoops are the edges between sets. c(x) weights from s to people, c(y) weights from ice cream to t.
+
+1. Design graph as above and run F-F to find max bipartite matching
+2. Flows correspond to assignments and max flows correspond to max assignments 
+
+## Section 8 Problems
+
+### Investing
+
+* Idea: Want to buy low and sell high, array A of integers of future prices and can make one buy followed by one sell. What is the max profit? Design one divide and conquer and one O(n) algorithm.
+* D&C: Need minimum price before the maximum price. Divide down to single prices, base case is profit = 0. Recurse finding max profit in L and max profit in R. Max profit across is max R  - min L. Total max profit in max(Max L, Max R, Max Across) and returns max profit. $T(n) = 2T(n/2) + O(n)$
+* O(n) algorithm: Initialize min value and max profit variables. Loop through array, for each element calculate profit and set equal to max profit if bigger, calculate min value and set it to min value if smaller. Constant work, one loop through prices. Since min value only reset after profit calculations, always have a buy followed by a sell.
+
+### Quicksand
+
+* Idea: M x N grid, some vertices are quicksand and adjacent vertices are also unsafe. At each time can travel to any adjacent location. Design algorithm that returns a shortest safe path from one side on left to any location on right side of grid.
+* Key Idea: Construct undirected unweighted grid with adjacency edges. Remove quicksand vertices, neighbors, and associated edges - 5 vertices per pit and 4 + 3*4 = 16 edges per pit. Treated as constant time per pit. Add source and sink with source connected to leftmost column and sink connected to rightmost. Run BFS from S.
+* Graph construction $O(MN)$ time since order of vertices plus edges. Pit removal O(V) = O(MN) since constant work. O(M) to add source and sink since edges just to number of rows. Running BFS takes O(MN)
+
+### Graph Coloring
+
+* Idea: Using greedy algorithms to color a graph with adjacent edges with different colors - use d+1 colors where d is max degree of a vertex.
+* Algorithm: Pick vertex with highest degree and color. For each iteration check if neighbors colored and color by trying remaining colors in same order. Loops through every node and WC looks at every other node and edge so $O(V^2 + E)$
+
+### Covering a Number Line
+
+* Idea: n is initial position of person on a number line. l is probability of person going left. Find the probability of reaching all points on the number line after n moves. 
+* Solution: Think of knight moves. Probability of reaching i after j moves is $A[i][j]$. $A[i][j] = (l)A[i+1][j-1] + (1-l)A[i-1][j-1]$. Initialize with $A[i][0]$ for i=n, 0 otherwise.
+* So j goes from 0 to n, since number of possible moves. Can only reach up to 2n after n moves, so runs in $O(n^2)$. 
+
+### Minimum Spanning Tree with Constraint
+
+* Idea: weighted undirected graph G with edge weights in W = {1,2,3}, design algorithm to find an MST. 
+* Solution: Run Kruskal with RadixSort on the edges. Since weights are capped RadixSort is possible. Runs in $O(m)$
