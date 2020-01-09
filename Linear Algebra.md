@@ -4,6 +4,49 @@
 
 # Linear Algebra
 
+## Analytic Geometry
+
+### Norms
+
+* A norm on a vector space V is a function which assigns each vector x its length such that for all $\lambda \in \R$ and x, y in V the following hold:
+  * Absolutely homogeneous: $\|\lambda \boldsymbol{x}\|=| \lambda\|\boldsymbol{x}\|$
+  * Triangle Inequality (the sum of the lengths of any two sides must be greater than or equal to the length of the remaining side): $\|\boldsymbol{x}+\boldsymbol{y}\| \leqslant\|\boldsymbol{x}\|+\|\boldsymbol{y}\|$
+  * Positive Definite: $\|x\| \geqslant 0 \text { and }\|x\|=0 \Longleftrightarrow x=0$
+* $\ell_1$ norm (Manhattan norm): $\|x\|_{1}:=\sum_{i=1}^{n}\left|x_{i}\right|$ 
+* $\ell_2$ norm (euclidean norm): $\|x\|_{2}:=\sqrt{\sum_{i=1}^{n} x_{i}^{2}}=\sqrt{x^{\top} x}$
+  * euclidean distance of the vector
+
+### Inner Products
+
+* Dot product: $x \cdot y = \boldsymbol{x}^{\top} \boldsymbol{y}=\sum_{i=1}^{n} x_{i} y_{i}$
+* General Inner products
+  * bilinear mapping $\Omega$ is a mapping with 2 arguments and linear in each argument: $\Omega(\lambda \boldsymbol{x}+\psi \boldsymbol{y}, \boldsymbol{z})=\lambda \Omega(\boldsymbol{x}, \boldsymbol{z})+\psi \Omega(\boldsymbol{y}, \boldsymbol{z})$
+  * For $\Omega: V \times V \rightarrow \mathbf{R}$, mapping is symmetric if $\Omega(x, y)=\Omega(y, x)$
+  * Mapping is positive definite if $\forall x \in V \backslash\{0\}: \Omega(x, x)>0, \quad \Omega(0,0)=0$
+  * A positive definite, symmetric bilinear mapping is called an inner product on V, denoted $\langle\boldsymbol{x}, \boldsymbol{y}\rangle$
+* Given a basis B, can write x, y in terms of that basis. Then $\langle\boldsymbol{x}, \boldsymbol{y}\rangle=\left\langle\sum_{i=1}^{n} \psi_{i} \boldsymbol{b}_{i}, \sum_{j=1}^{n} \lambda_{j} \boldsymbol{b}_{j}\right\rangle=\sum_{i=1}^{n} \sum_{j=1}^{n} \psi_{i}\left\langle\boldsymbol{b}_{i}, \boldsymbol{b}_{j}\right\rangle \lambda_{j}=\hat{\boldsymbol{x}}^{\top} \boldsymbol{A} \hat{\boldsymbol{y}}$ where $A_{i j}:=\left\langle\boldsymbol{b}_{i}, \boldsymbol{b}_{j}\right\rangle$ and $\hat{\boldsymbol{x}}, \hat{\boldsymbol{y}}$ are the coordinates wrt the basis. The inner product is uniquely determine by A.
+
+### Lengths and Distances
+
+* Inner products and norms are closely related in the sense that any inner product induces a norm in a natural way, such that we can compute lengths of vectors using the inner product. However, not every norm is induced by an inner product. The Manhattan norm (3.3) is an example of a norm without a corresponding inner product.
+* Length $\|x\|:=\sqrt{\langle x, x\rangle} = \sqrt{x \cdot x}$
+* Schwarz Inequality: $|\boldsymbol{v} \cdot \boldsymbol{w}| \leq\|\boldsymbol{v}\|\|\boldsymbol{w}\|$
+* Triangle Inequality: $\|\boldsymbol{v}+\boldsymbol{w}\| \leq\|\boldsymbol{v}\|+\|\boldsymbol{w}\|$
+* Distance between x and y: $d(\boldsymbol{x}, \boldsymbol{y}):=\|\boldsymbol{x}-\boldsymbol{y}\|=\sqrt{\langle\boldsymbol{x}-\boldsymbol{y}, \boldsymbol{x}-\boldsymbol{y}\rangle}$. If we use the dot product as the inner product, then we get the euclidean distance.
+* A metric d satisfies: symmetric, positive definite, triangle inequality ($d(\boldsymbol{x}, \boldsymbol{z}) \leqslant d(\boldsymbol{x}, \boldsymbol{y})+d(\boldsymbol{y}, \boldsymbol{z})$).
+
+### Angles
+
+* Inner products capture the geometry of a vector space by defining the angle $\omega$ between two vectors.
+* From Cauchy-Schwarz Inequality, $-1 \leqslant \frac{\langle\boldsymbol{x}, \boldsymbol{y}\rangle}{\|\boldsymbol{x}\|\|\boldsymbol{y}\|} \leqslant 1$ for $x,y \neq 0 $. Then there exists a unique $\omega \in[0, \pi], \; \cos \omega=\frac{\langle\boldsymbol{x}, \boldsymbol{y}\rangle}{\|\boldsymbol{x}\|\|\boldsymbol{y}\|}$. Using the dot product as the inner product, this translates to $\cos \omega=\frac{\langle\boldsymbol{x}, \boldsymbol{y}\rangle}{\sqrt{\langle\boldsymbol{x}, \boldsymbol{x}\rangle\langle\boldsymbol{y}, \boldsymbol{y}\rangle}}=\frac{\boldsymbol{x}^{\top} \boldsymbol{y}}{\sqrt{\boldsymbol{x}^{\top} \boldsymbol{x} \boldsymbol{y}^{\top} \boldsymbol{y}}}$
+* Orthogonality: $\langle x, y\rangle = 0 \implies x \perp y$. Orthonormal when $||x|| = 1 = ||y||$. Can be orthogonal wrt one inner product but not another
+
+### Inner Products of Functions
+
+* $\langle u, v\rangle:=\int_{a}^{b} u(x) v(x) d x$ for limits $a, b<\infty$. If this evaluates to 0, functions u and v are orthogonal.
+* Unlike inner products on finite-dimensional vectors, inner products on functions may diverge
+
+
 ## Vectors and Matrices
 
 * Linear combination: $c v+d w=c\left[\begin{array}{l}
@@ -18,9 +61,6 @@
   \end{array}\right]$
 * Dot product: $\boldsymbol{v} \cdot \boldsymbol{w}=v_{1} w_{1}+v_{2} w_{2}$. 
 * Dot product = 0 indicates orthogonality: $v \cdot w = 0 \iff v \perp w$
-* Length: $||v|| = \sqrt{v \cdot v}$
-* Schwarz Inequality: $|\boldsymbol{v} \cdot \boldsymbol{w}| \leq\|\boldsymbol{v}\|\|\boldsymbol{w}\|$
-* Triangle Inequality: $\|\boldsymbol{v}+\boldsymbol{w}\| \leq\|\boldsymbol{v}\|+\|\boldsymbol{w}\|$
 
 ### Matrix x Vector Multiplication
 
@@ -120,14 +160,15 @@
 
 * $A^{-1}A = I = AA^{-1}$ if the inverse exists r = m = n
 * For square matrices, a left inverse = right inverse
-* If singular, det = 0, inverse does not exist
+* Easiest test for invertibility: If singular, det = 0, inverse does not exist
+* $(\boldsymbol{A} \boldsymbol{B})^{-1}=\boldsymbol{B}^{-1} \boldsymbol{A}^{-1}$
 
 #### Left Inverse
 
 * Matrix with full column rank r = n, N(A) = {0}, independent columns, 0 or 1 solutions to Ax = b
-* $(A^TA)^{-1}A^TA = I$ so the left inverse is $(A^TA)^{-1}A^T$
+* $(A^TA)^{-1}A^TA = I$ so the left inverse is $(A^TA)^{-1}A^T$ (Moore-Penrose Pseudoinverse)
 * $AA_{left}^{-1}$ is then a projection onto the column space
-* Used in least squares
+* Used in least squares since we sub in $\boldsymbol{x}=\left(\boldsymbol{A}^{\top} \boldsymbol{A}\right)^{-1} \boldsymbol{A}^{\top} \boldsymbol{b}$ for $\boldsymbol{x}=A^{-1} \boldsymbol{b}$
 
 #### Right Inverse
 
@@ -158,6 +199,10 @@
 * Switch columns and rows - $(A^T)_{ij} = A_{ji}$
 * For symmetric matrices, $A^T= A$. 
 * Note $A^TA$ is always symmetric, square.
+* $\begin{aligned}
+  (\boldsymbol{A}+\boldsymbol{B})^{\top} &=\boldsymbol{A}^{\top}+\boldsymbol{B}^{\top} \\
+  (\boldsymbol{A} \boldsymbol{B})^{\top} &=\boldsymbol{B}^{\top} \boldsymbol{A}^{\top}
+  \end{aligned}$
 
 ### Echelon Form
 
@@ -185,10 +230,17 @@
     {1} \\ {2} 
     \end{array}\right]$
   * Use upper triangular equations to solve for variables in reverse order $x_1, ...,x_n$. At each step have one additional unknown in each equation
-
-### Elimination in Matrix Form
-
-* All elimination steps could be combined into a single matrix E, that transforms A into U, ie. EA = U
+* Row Echelon Form: Any equation system in row-echelon form always has a “staircase” structure.
+  * All rows that contain only zeros are at the bottom of the matrix
+  * Looking at nonzero rows only, the first nonzero number from the left (also called the pivot or the leading coefficient) is always strictly to the right of the pivot of the row above it.
+* Reduced Row Echelon Form
+  * In row exchlon form
+  * Every pivot is 1
+  * The pivot is the only nonzero entry in its column
+* The key idea for finding the solutions of Ax = 0 is to look at the nonpivot columns, which we will need to express as a (linear) combination of the pivot columns. The reduced row echelon form makes this relatively straightforward, and we express the non-pivot columns in terms of sums and multiples of the pivot columns that are on their left
+* If we bring the augmented equation system into reduced row-echelon form, we can read out the inverse on the right-hand side of the equation system.
+*  Elimination in Matrix Form - all elimination steps could be combined into a single matrix E, that transforms A into U, ie. EA = U
+* The pivot columns indicate the linearly independent columns - the others are linearly dependent
 
 ### Factorization A= LU
 
@@ -201,6 +253,16 @@
 * Vectors form a subspace if all linear combinations of those vectors are also in the subspace. Vector space must be closed under linear combinations.
 * All subspaces of $\R^3$: $\R^3$, plane through the origin, line through the origin, zero vector only
 * Rank of A = # of pivots from elimination
+
+### Groups
+
+* Consider a set G and an operation ⊗ : G × G → G group defined on G. 
+* Then G := (G, ⊗) is called a group if the following hold: 
+  * Closure of G under ⊗: ∀x, y ∈ G : x ⊗ y ∈ G 
+  * Associativity: ∀x, y, z ∈ G : (x ⊗ y) ⊗ z = x ⊗ (y ⊗ z) 
+  * Neutral element: ∃e ∈ G ∀x ∈ G : x ⊗ e = x and e ⊗ x = x 4. 
+  * Inverse element: ∀x ∈ G ∃y ∈ G : x ⊗ y = e and y ⊗ x = e. We often write x −1 to denote the inverse element of x
+* Vector spaces are groups
 
 ### Solving Ax = 0
 
@@ -218,11 +280,14 @@
   2. Find solutions in the null space
   3. Take linear combination of particular solution and null space solutions. $X_{total} = X_p + X_n$. $Ax_p = b$ + $Ax_n =0 $ = $A(x_n+x_p) = b$. With a particular solution, can add anything in the null space and still get b
   4. $X_n$ is combination of the special solutions - $X_{total} = X_p + c_1X_{SS1} + c_2X_{SS2}...$
+* In short: Find a particular solution to Ax = b, find all solutions to Ax = 0, combine these two results to obtain a general solution
 
 ### Rank
 
 * \# of pivot columns
 * Dimension of C(A) column space
+* The column rank equals the row rank
+* Only full column rank matrices are invertible
 
 #### Full Column Rank
 
@@ -260,12 +325,17 @@
 
 * Span - vectors $v_1, ..., v_n$ span a space means a space consists of all combinations of these vectors
 
+* Generating sets are sets of vectors that span vector (sub)spaces, i.e., every vector can be represented as a linear combination of the vectors in the generating set.
+
+* Every linearly independent generating set of V is minimal and is called a basis of V
+
 * Basis - for a vector space, a basis is a sequence of vectors which
 
   1. are Independent
   2. span the space
 
   * A basis is not unique, but all bases for a space have the same number of vectors. In $\R^n$ need n vectors to form basis - this is the dimension D of the space
+  * Finding a basis: write spanning vectors as columns in matrix, reduce to row-echelon form, the spanning vectors associated with the pivot columns form a basis
 
 * Dimension D = number of vectors needed to form a basis
 
@@ -308,6 +378,15 @@
 * $S \cap U = $ symmetric + upper triangular = diagonal. S+U is the linear combinations of the matrices in the two spaces
 * $dim(S) + dim(U) = dim(S \cap U) + dim(S+U)$
 
+### Affine Subspace
+
+* Let V be a vector space, $x_0 \in V , \; U \subset V$ a subspace. Then the subset $\begin{aligned}
+  L &=\boldsymbol{x}_{0}+U:=\left\{\boldsymbol{x}_{0}+\boldsymbol{u}: \boldsymbol{u} \in U\right\}
+  =\left\{\boldsymbol{v} \in V | \exists \boldsymbol{u} \in U: \boldsymbol{v}=\boldsymbol{x}_{0}+\boldsymbol{u}\right\} \subseteq V
+  \end{aligned}$ is called affine subspace or linear manifold of V . U is called direction or direction space, and x0 is called support point.
+* Examples of affine subspaces are points, lines, and planes in R3 , which do not (necessarily) go through the origin.
+
+
 ## Orthogonality
 
 ### Vector Orthogonality
@@ -326,6 +405,8 @@
 * $C(A) \perp N(A^T)$: Column space orthogonal to left nullspace
 * Orthogonal complements: a complement contains all vectors perp to the other space
   * Null space and row space are orthogonal complements in $\R^n$
+  * For complements $U, U^T$, we have $U \cap U^{\perp}=\{\mathbf{0}\}$. Can decompose a vector in the larger space V as a combination of vectors in the complements: $\boldsymbol{x}=\sum_{m=1}^{M} \lambda_{m} \boldsymbol{b}_{m}+\sum_{j=1}^{D-M} \psi_{j} \boldsymbol{b}_{j}^{\perp}, \quad \lambda_{m}, \psi_{j} \in \mathbb{R}$. 
+  * The orthogonal complement can also be used to describe a plane U (two-dimensional subspace) in a three-dimensional vector space. More specifically, the vector w with $||w|| = 1$, which is orthogonal to the plane U, is the basis vector of $U^T$
 
 ### Projections
 
@@ -335,7 +416,7 @@
   * Define e = b - p = orthogonal vector from b to a vector. Therefore $a \perp b- p$
   * Then $a^T(b - xa) = 0 \implies xa^Ta = a^Tb \implies x = \frac{a^Tb}{a^Ta}$
 * $p =xa= a\frac{a^Tb}{a^Ta} = \frac{aa^T}{a^Ta}b = Pb$ for 
-* Projection Matrix $P = \frac{aa^T}{a^Ta}$
+* **Projection Matrix** $P = \frac{aa^T}{a^Ta}$
   * $P^T = P$ - symmetric
   * $P^2 = P$ - projection of projection same as single projection
 * Point of projection - Ax = b may have no solutions, ie. b not in C(A). Can instead solve $A\hat{x} = p$, where p is the projection of b onto the column space and $\hat{x}$ is the solution to this altered problem.
@@ -363,10 +444,19 @@
 * $Q^TQ = I$. For square Q, this implies $Q^T = Q^{-1}$
 * Q has orthonormal columns, to project onto its column space $P = Q(Q^TQ)^{-1}Q^T = QQ^T$
   * If P is square, then projection is onto whole space $QQ^T = I$
+* Transformations by orthogonal matrices are special because the length of a vector x is not changed when transforming it using an orthogonal matrix A.
+
+### Orthonormal Basis
+
+* The basis vectors are orthogonal to each other and where the length of each basis vector is 1.
+* $\left\langle\boldsymbol{b}_{i}, \boldsymbol{b}_{j}\right\rangle= 0 \quad \text { for } i \neq j$ and $\left\langle\boldsymbol{b}_{i}, \boldsymbol{b}_{i}\right\rangle= 1$
+* Gram-Schmidt is the process for forming an orthonormal basis.
 
 ### Gram-Schmidt
 
-* Process to find orthonormal projection
+* Process to find orthonormal projection - method iteratively constructs and orthogonal basis from any basis of V
+  * High-dimensional data quite often possesses the property that only a few dimensions contain most information, and most other dimensions are not essential to describe key properties of the data. Compression causes loss of information, so we need to find the most informative dimensions in the data
+  * The idea is to find the vector in the subspace spanned by the columns of A that is closest to b, i.e., we compute the orthogonal projection of b onto the subspace spanned by the columns of A -> the least-squares solution
 * For independent vectors a, b, c, let A, B, C be orthogonal, then $q_1 = \frac{A}{||A||}, \, q_2 = \frac{B}{||B||}, q_3 = \frac{C}{||C||}$
 * Let a = A, then need to change b to be orthogonal to a. Requires B = e, the error vector
 * $B = b - \frac{A^Tb}{A^TA}A$, then $A^TB = 0 \implies A\perp B$
@@ -375,6 +465,11 @@
 * A = QR
   * Basic expression of G-S
   * $A = \left[\begin{array}{c} a_1 a_2\end{array}\right] =  \left[\begin{array}{c} q_1 q_2\end{array}\right]R$ for R upper triangular
+
+### Projection onto Affine Subspaces
+
+* Given affine space $L = x_0 + U$ with $b_1, b_2$ basis vectors for U
+* Transform $L-x_{0}=U$, now can use projection onto a vector subspace. Projection equals $\pi_{L}(\boldsymbol{x})=\boldsymbol{x}_{0}+\pi_{U}\left(\boldsymbol{x}-\boldsymbol{x}_{0}\right)$ 
 
 ## Determinants
 
@@ -489,11 +584,14 @@
   2. Determinant: $a > 0, \; ac - b^2 > 0$
   3. Pivots: $a > 0,\; \frac{ac-b^2}{a} > 0$
   4. Key Test: $x^TAx > 0$
+* If only $x^TAx \geq 0$ holds then the matrix is positive semi-definite
 * $x^TAx$ produces a quadratic form: $A = \left[\begin{array}{c} 2 & 6 \\ 6 & 20\end{array}\right] \implies x^TAx = \left[\begin{array}{c}x_1&x_2\end{array}\right]\left[\begin{array}{c}2x_1 + 6x_2 \\6x_1 + 20x_2\end{array}\right] = 2x_1^2 + 12x_1x_2 + 20x^2_2$
 * det = 4, trace = 22 - then both eigenvalues must be positive. $x^TAx > 0$ except at x = 0
 * Intuition is we need the squares to overwhelm the combined term. Notice $a_{11},\;a_{22}$ are the cofficients for the squares
 * Essentially minimizing $f(x,y) = 2x^2 + 12xy + 20y^2 = 2(x+3y)^2 + 2y^2$ - factoring using complete the square shows the sum of two squares -> always positive
 * If A,B pos def, then A + B also pos def. Notice for least squares, $A^TA$ is square and symmetric, so $x^TA^TAx = (Ax)^T(Ax) = ||Ax||^2 \geq 0$. Only 0 when the vector is 0, so for any matrix of rank n can say least squares will be positive definite
+* For pos, def A $\langle\boldsymbol{x}, \boldsymbol{y}\rangle=\hat{\boldsymbol{x}}^{\top} \boldsymbol{A} \hat{\boldsymbol{y}}$ defines an inner product with respect to basis B where $\tilde{\boldsymbol{x}}, \tilde{\boldsymbol{y}}$ are the coordinate representations of x,y in the basis B
+* The null space of A consists only of zero vector because $x^{\top} A x>0$ for all $x \neq 0$
 
 ### Complex Matrices
 
@@ -545,6 +643,25 @@
   2. $T(cV) = cT(v)$
 * If we want to use a matrix, we need to use coordinates that the transformation is relative to: $T(v) = Av$
 * Coordinates come from a basis - $v = c_1v_1 + ... + c_nv_n$. We typically assume the standard basis but not necessary
+* Definitions for Transformations  $\Phi$ of Two Vector Spaces V, W
+  * Injective if $\Phi(x) = \Phi(y) \implies x = y$
+  * Surjective if $\Phi(V) = W$
+  * Bijective if injective and surjective. Every element in W can be “reached” via the mapping from V. A reversible mapping must also exist $\Psi = \Phi^{-1}$
+* Special Transformations
+  * Isomorphism: V to W linear and bijective
+    * Finite-dimensional vector spaces V and W are isomorphic if and only if dim(V ) = dim(W). Intuitively, this means that vector spaces of the same dimension are kind of the same thing, as they can be transformed into each other without incurring any loss.
+  * Endomorphism: V to V linear
+  * Automorphism: V to V linear and bijective
+
+### Matrix Form
+
+* Consider a vector space V and an ordered basis B = (b1, . . . , bn) of V . For any x in V we obtain a unique representation (linear combination) $\boldsymbol{x}=\alpha_{1} \boldsymbol{b}_{1}+\ldots+\alpha_{n} \boldsymbol{b}_{n}$ of x with respect to B. Then a1, . . . , an are the coordinates of x with respect to B, and the vector $\boldsymbol{\alpha}=\left[\begin{array}{c}
+  {\alpha_{1}} \\
+  {\vdots} \\
+  {\alpha_{n}}
+  \end{array}\right]$ is the coordinate vector/coordinate representation of x with respect to the ordered basis B.
+* For vector spaces V, W with ordered bases B in Rn, C in Rm, take linear mapping $\Phi: V \rightarrow W$, then we can represent B uniquely in terms of C as $\Phi\left(\boldsymbol{b}_{j}\right)=\alpha_{1 j} \boldsymbol{c}_{1}+\cdots+\alpha_{m j} \boldsymbol{c}_{m}=\sum_{i=1}^{m} \alpha_{i j} \boldsymbol{c}_{i}$. The transformation matrix is then defined by m x n A: $A_{\Phi}(i, j)=\alpha_{i j}$. 
+* The transformation matrix can be used to map coordinates with respect to an ordered basis in V to coordinates with respect to an ordered basis in W.
 
 ### Constructing a Transformation Matrix
 
@@ -559,6 +676,64 @@
 * W matrix of new basis vectors as columns
 * To go to vector x in new basis from c in old basis, $x = Wc$
 * Transforming between bases is equivalent to similar matrices. M is a change of basis matrix in $B = M^{-1}AM$
+* Two matrices are equivalent if there exists matrices S and T st $\tilde{\boldsymbol{A}}=\boldsymbol{T}^{-1} \boldsymbol{A} \boldsymbol{S}$. Similar matrices are always equivalent but not vice versa.
+
+## Vector Calculus
+
+### Univariate
+
+* Difference quotient: $\frac{\delta y}{\delta x}:=\frac{f(x+\delta x)-f(x)}{\delta x}$
+* Derivative: $\frac{\mathrm{d} f}{\mathrm{d} x}:=\lim _{h \rightarrow 0} \frac{f(x+h)-f(x)}{h}$
+* Taylor Polynomial of degree n at $x_0$: $ T_{n}(x):=\sum_{k=0}^{n} \frac{f^{(k)}\left(x_{0}\right)}{k !}\left(x-x_{0}\right)^{k} $ where $f^{(k)}\left(x_{0}\right)$ is the kth derivative at x0
+* Taylor Series at $x_0$: $T_{\infty}(x)=\sum_{k=0}^{\infty} \frac{f^{(k)}\left(x_{0}\right)}{k !}\left(x-x_{0}\right)^{k}$
+* Differentiation Rules: $\begin{aligned}
+  &\text { Product rule: } \quad(f(x) g(x))^{\prime}=f^{\prime}(x) g(x)+f(x) g^{\prime}(x)\\
+  &\text { Quotient rule: } \quad\left(\frac{f(x)}{g(x)}\right)^{\prime}=\frac{f^{\prime}(x) g(x)-f(x) g^{\prime}(x)}{(g(x))^{2}}\\
+  &\text { Sum rule: } \quad(f(x)+g(x))^{\prime}=f^{\prime}(x)+g^{\prime}(x)\\
+  &\text { Chain rule: } \quad(g(f(x)))^{\prime}=(g \circ f)^{\prime}(x)=g^{\prime}(f(x)) f^{\prime}(x)
+  \end{aligned}$
+
+### Partial Differentiation and Gradients
+
+* Partial Derivative: $\frac{\partial f}{\partial x_{1}}=\lim _{h \rightarrow 0} \frac{f\left(x_{1}+h, x_{2}, \ldots, x_{n}\right)-f(x)}{h}$ - collect them in a row vector
+* Gradient: $\nabla_{\boldsymbol{x}} f=\operatorname{grad} f=\frac{\mathrm{d} f}{\mathrm{d} \boldsymbol{x}}=\left[\frac{\partial f(\boldsymbol{x})}{\partial x_{1}} \quad \frac{\partial f(\boldsymbol{x})}{\partial x_{2}} \quad \cdots \quad \frac{\partial f(\boldsymbol{x})}{\partial x_{n}}\right] \in \mathbb{R}^{1 \times n}$
+* The reason why we define the gradient vector as a row vector is twofold: First, we can consistently generalize the gradient to vector-valued functions f : Rn → Rm (then the gradient becomes a matrix). Second, we can immediately apply the multi-variate chain rule without paying attention to the dimension of the gradient.
+* Partial $\text { Chain rule: } \quad \frac{\partial}{\partial \boldsymbol{x}}(g \circ f)(\boldsymbol{x})=\frac{\partial}{\partial \boldsymbol{x}}(g(f(\boldsymbol{x})))=\frac{\partial g}{\partial f} \frac{\partial f}{\partial \boldsymbol{x}}$
+  * $\frac{\mathrm{d} f}{\mathrm{d} t}=\left[\begin{array}{ll}
+    {\frac{\partial f}{\partial x_{1}}} & {\frac{\partial f}{\partial x_{2}}}
+    \end{array}\right]\left[\frac{\frac{\partial x_{1}(t)}{\partial t}}{\frac{\partial x_{2}(t)}{\partial t}}\right]=\frac{\partial f}{\partial x_{1}} \frac{\partial x_{1}}{\partial t}+\frac{\partial f}{\partial x_{2}} \frac{\partial x_{2}}{\partial t}$ for x a function of t
+* For $f(x_1, x_2), \;x_1(s,t), \;x_2(s,t)$, the gradient given by $\frac{\mathrm{d} f}{\mathrm{d}(s, t)}=\frac{\partial f}{\partial \boldsymbol{x}} \frac{\partial \boldsymbol{x}}{\partial(s, t)}=\left[\frac{\partial f}{\partial x_{1}} \quad \frac{\partial f}{\partial x_{2}}\right]\left[\begin{array}{ll}
+  {\frac{\partial x_{1}}{\partial s}} & {\frac{\partial x_{1}}{\partial t}} \\
+  {\frac{\partial x_{2}}{\partial s}} & {\frac{\partial x_{2}}{\partial t}}
+  \end{array}\right]$
+
+### Gradients of Vector Valued Functions
+
+* Function $\boldsymbol{f}: \mathbb{R}^{n} \rightarrow \mathbb{R}^{m}$ and vector X. Can take $\boldsymbol{f}(\boldsymbol{x})=\left[\begin{array}{c}
+  {f_{1}(\boldsymbol{x})} \\
+  {\vdots} \\
+  {f_{m}(\boldsymbol{x})}
+  \end{array}\right] \in \mathbb{R}^{m}$
+* Partial derivative of a vector valued function $\frac{\partial \boldsymbol{f}}{\partial x_{i}}=\left[\begin{array}{c}
+  {\frac{\partial f_{1}}{\partial x_{i}}} \\
+  {\vdots} \\
+  {\frac{\partial f_{m}}{\partial x_{i}}}
+  \end{array}\right]$
+* The Jacobian is the collection of all first order partial derivatives of vector valued function f: $\boldsymbol{J}=\nabla_{x} \boldsymbol{f}=\frac{\mathrm{d} \boldsymbol{f}(\boldsymbol{x})}{\mathrm{d} \boldsymbol{x}}=\left[\frac{\partial \boldsymbol{f}(\boldsymbol{x})}{\partial x_{1}} \quad \cdots \quad \frac{\partial \boldsymbol{f}(\boldsymbol{x})}{\partial x_{n}}\right] = =\left[\begin{array}{ccc}
+  {\frac{\partial f_{1}(\boldsymbol{x})}{\partial x_{1}}} & {\cdots} & {\frac{\partial f_{1}(\boldsymbol{x})}{\partial x_{n}}} \\
+  {\vdots} & {} & {\vdots} \\
+  {\frac{\partial f_{m}(\boldsymbol{x})}{\partial x_{1}}} & {\cdots} & {\frac{\partial f_{m}(\boldsymbol{x})}{\partial x_{n}}}
+  \end{array}\right]$. J is an m x n matrix 
+* J can be seen as a basis change matrix, taking the determinant is the area of a parallelogram. The change in the absolute value of the determinant of J describes how the area changes under the basis change. 
+* The calculus approach gives us the familiar Jacobian $\boldsymbol{J}=\left[\begin{array}{ll}
+  {\frac{\partial y_{1}}{\partial x_{1}}} & {\frac{\partial y_{1}}{\partial x_{2}}} \\
+  {\frac{\partial y_{2}}{\partial x_{1}}} & {\frac{\partial y_{2}}{\partial x_{2}}}
+  \end{array}\right]$ for a mapping of y in terms of x. The absolute value of the Jacobian determinant |det(J)| is the factor by which areas or volumes are scaled when coordinates are transformed. These transformations are extremely relevant in ML learning in the context of training deep neural networks using the reparametrization trick, also called infinite perturbation analysis.
+* Gradients in least squares: for $\boldsymbol{y}=\boldsymbol{\Phi} \boldsymbol{\theta}$, $\begin{aligned}
+  &L(e):=\|e\|^{2},\; e(\boldsymbol{\theta}):=\boldsymbol{y}-\boldsymbol{\Phi} \boldsymbol{\theta}
+  \end{aligned}$, we seek $\frac{\partial L}{\partial \boldsymbol{\theta}}$. We use the chain rule $\frac{\partial L}{\partial \boldsymbol{\theta}}=\frac{\partial L}{\partial e} \frac{\partial e}{\partial \theta}$. Then $\frac{\partial L}{\partial e}=2 e^{\tau}$ since $\|e\|^{2}=e^{T} e$ and $\frac{\partial e}{\partial \theta}=-\Phi \in \mathbf{R}^{N \times D}$. In total: $\frac{\partial L}{\partial \theta}=-2 e^{\top} \Phi \stackrel{(5, .77)}{=}-\underbrace{2\left(\boldsymbol{y}^{\top}-\boldsymbol{\theta}^{\top} \boldsymbol{\Phi}^{\top}\right)}_{1 \times N} \underbrace{\Phi}_{N \times D} \in \mathbf{R}^{1 \times D}$
+
+### Gradients of Matrices
 
 ## Applications
 
@@ -574,4 +749,6 @@
 ### Differential Equations
 
 ### Matrix Exponentials
+
+
 
