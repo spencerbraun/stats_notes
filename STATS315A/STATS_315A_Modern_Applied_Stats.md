@@ -47,10 +47,19 @@
 * Given vector of inputs $X^{T}=\left(X_{1}, X_{2}, \ldots, X_{p}\right)$, we predict Y with the model $\hat{Y}=\hat{\beta}_{0}+\sum_{j=1}^{p} X_{j} \hat{\beta}_{j}$. $\hat{\beta}_{0}$ is the intercept or bias.
 * Including a constant variable 1 in X and $\hat{\beta}_{0}$ in the vector of coefficients $\hat{\beta}$, we can write the model as the inner product: $\hat{Y}=X^{T} \hat{\beta}$. (Make the inclusion assumption moving forward). $X^T = \left[1 X_1X_2\right]$
 * Here $\hat{Y}$ is a scalar since we model a single output, though $\hat{Y}$ could be a K-vector making $\hat{\beta}$ a p x K matrix.
-* Least Squares minimizes RSS: $\operatorname{RSS}(\beta)=\sum_{i=1}^{N}\left(y_{i}-x_{i}^{T} \beta\right)^{2} = (\mathbf{y}-\mathbf{X} \beta)^{T}(\mathbf{y}-\mathbf{X} \beta)$
+* Least Squares minimizes RSS: $\operatorname{RSS}(\beta)=\sum_{i=1}^{N}\left(y_{i}-x_{i}^{T} \beta\right)^{2} = \|y-X \beta\|^{2} = (\mathbf{y}-\mathbf{X} \beta)^{T}(\mathbf{y}-\mathbf{X} \beta)$
   * X is an N x p matrix with each row an input vector, y is an N-vector of the outputs of the training set
-* Normal Equations: differentiate wrt $\beta$ to get $\mathbf{X}^{T}(\mathbf{y}-\mathbf{X} \beta)=0$
+* Normal Equations: differentiate wrt $\beta$ to get $\partial \mathbf{RSS}/ \partial \beta=-2 X^{T}(y-X \beta)=0\ = {X}^{T}({y}-{X} \beta)=0$
 * For non-singular $\mathbf{X}^{T} \mathbf{X}$, the unique solution given by $\hat{\beta}=\left(\mathbf{X}^{T} \mathbf{X}\right)^{-1} \mathbf{X}^{T} \mathbf{y}$, with specific point prediction given by $\hat{y}\left(x_{i}\right)=x_{i}^{T} \hat{\beta}$
+* Geometric interpretation
+  * $\hat{Y} = X\hat{\beta}$ is the orthogonal projection of y onto the subspace $M \subset \R^n$ spanned by the columns of X. (True even if X is not full rank). 
+* We seldomly actually invert $X^TX$ in practice - instead use QR decomposition 
+  * For full rank: $\begin{aligned}
+    \|y-X \beta\|^{2} &=\left\|Q^{T} y-R \beta\right\|^{2} 
+    =\left\|Q_{1}^{T} y-R_{1} \beta\right\|^{2}+\left\|Q_{2}^{T} y\right\|^{2} 
+     \Rightarrow \hat{\beta}=R_{1}^{-1} Q_{1}^{T} y \\
+    \end{aligned}$ and $\operatorname{RSS}(\hat{\beta}) =\left\|Q_{2}^{T} y\right\|^{2}$, $e=Q^{T} y$
+  * $\hat{y}=Q_{1} Q_{1}^{T} y=H y=X\left(X^{T} X\right)^{-1} X^{T} y$ - H is the hat matrix bc it puts the hat on y
 * For classification, could create a linear boundary with regression. If training data comes from bivariate Gaussians could be a good model, but if each class comes from a mixture of 10 low-variance Gaussians mixed together, need something more flexible - such as KNN.
 
 ### Nearest Neighbors

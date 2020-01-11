@@ -78,7 +78,14 @@ date: 01/06/2019
 ##### Discrete
 
 * Conditional PMF: $p_{X | Y}(x | y)=\frac{p_{X Y}(x, y)}{p_{Y}(y)}$ . Law of total probability: $\operatorname{Pr}\{X=x\}=\sum_{y=0}^{\infty} p(X=x | Y=y)P(Y=y)=\sum_{y=0}^{\infty} p_{X | Y}(x | y) p_{Y}(y)$
+* Conditional expectation with specified value (Y=y is an event): $E(X | Y = y) = \sum_x xp_{X|Y}(x|y)$
+* Conditioning expectation without an event. Denote $\phi(y) = E(X|Y=y)$, then $\phi(Y)$ is a RV $E(X|Y)$. 
+  * For example, $X \sim Unif(\{1,...,6\})$ outcome of die roll. $Y = \begin{cases}1 &if \; X \; even \\ 0 & if \; X \; odd\end{cases} = 1(X \;even)$. Then $E(X|Y) = \begin{cases}4 & \text{on Y =1} \\3 & \text{on Y = 0}\end{cases} = 4 \times1(Y=1) + 3\times1(Y=0) = 4Y + 3(1-Y) = 3 + Y$. Clearly this is a function of Y 
+  * $E(X) = E[E(X|Y)] = \sum_y p_Y(y)E(X|Y=y) = \sum_y P(Y=y+\sum_x xP(X=x|y=y) = \sum_x x\sum_yP(Y=y)P(X=x|Y=y)$. Summed over all y, $\sum_yP(Y=y)P(X=x|Y=y) = P(X=x)$, so the expression reduces to $E(X)$
 * Conditional expectation: $E[g(X) | Y=y]=\sum_{x} g(x) p_{X | Y}(x | y)$. Law of total probability: $E[g(X)]=\sum_{y} E[g(X) | Y=y] p_{Y}(y) = E\{E[g(X) | Y]\}$. In its final form, this is a function of the RV Y.
+
+##### Continuous
+* $f_{X|Y}(x|y) = \frac{f_{X,Y}(x,y)}{f_Y(y)}$
 
 ##### Random Sums
 
@@ -122,14 +129,23 @@ date: 01/06/2019
    * Let T = # of rounds until a heads is flipped (by A or B). Event $\{T=t\}$ splits into 3 events: 
      * 2(t-1) tails (before t^th round) followed by $\begin{cases}HH & A \; wins\\HT & A \; wins\\TH & B \; wins\end{cases}$, each has prob $(1/2)^{2t}$ - power of number of flips. $P(A \;wins | T=t) = \frac{P(A \;wins,T=t)}{P(T=t)} = \frac{2(0.5)^{wt}}{3(0.5)^{2t}} = \frac{2}{3}$
      * $P(A \; wins) = \sum_{t=1}^\infty P(A \;wins |T=t)P(T=t) = \frac{2}{3}\sum_{t=1}^\infty P(T=t) = \frac{2}{3}$
+  
+2. Branching
+  * Q: Family with N distributed $Pois(\lambda)$. Each child has blue eyes with prob 1/4, brown with prob 3/4, independent of other children and N. Let Z = # of blue eyed children. What is E(Z)?
+  * Let $X_i = 1(\text{ith child has blue eyes})$. Then $Z = \sum_{i=1}^N X_i$ - we have a sum with a random upper limit. But we can condition on the RV N: $E(Z|N) = E(\sum_{i=1}^N X_i| N) = \sum_{i=1}^NE(X_i|N)$. Note the summation becomes deterministic conditioned on N, so we can pull out of the expectation. X and N are independent, so $=\sum_{i=1}^NE(X_i) = N * \frac{1}{4} = N/4$ 
+  * $E(Z) = EE(Z|N) = \frac{1}{4}EN = \frac{\lambda}{4}$
 
 ## Chapter 3: Markov Chains
 
+* A stochastic process is a family of RVs $(X_t)_{t \in T}$ indexed by a set T (say time) characterized by 1) indexed set T, 2) state space S, the set of possible outcomes $X_t$, 3) Joint distributions of finite dimensional marginals, $X_{t_1},...,X_{t_n},\; \forall t_1,...,t_n \in T$
+* The joint distribution: need to specify $P(X_{t_1} \in A_1,...,X_{t_n} \in A_n)$ for all t in T and all A in S. But generally enough to know what the pmf is. For $X_t$ discrete (S finite) enough to specify the joint PMFs $P_{X_t1,...,X_tn}(x_1,...,x_n)$ for all t in T and all x in S.
+
 ### Markov Processes
 
-* Markov Process: the probability of any particular future behavior of the process, when its current state is known exactly, is not altered by additional knowledge concerning its past behavior. Formally, $\operatorname{Pr}\left\{X_{n+1}=j | X_{0}=i_{0}, \ldots, X_{n-1}=i_{n-1}, X_{n}=i\right\} = \operatorname{Pr}\left\{X_{n+1}=j | X_{n}=i\right\}$
-* One step transition probability: $P_{i j}^{n, n+1}=\operatorname{Pr}\left\{X_{n+1}=j | X_{n}=i\right\}$. When the one-step transition probabilities are independent of the time variable n, we say that the Markov chain has stationary transition probabilities, ie $P_{i j}^{n, n+1}=P_{i j}$ independent of n.
+* Markov Process: the probability of any particular future behavior of the process, when its current state is known exactly, is not altered by additional knowledge concerning its past behavior. Formally, $\operatorname{Pr}\left\{X_{n+1}=j | X_{0}=i_{0}, \ldots, X_{n-1}=i_{n-1}, X_{n}=i\right\} = \operatorname{Pr}\left\{X_{n+1}=j | X_{n}=i\right\}$ - this is the Markov property.
+* One step transition probability: $P_{i j}^{n, n+1}=\operatorname{Pr}\left\{X_{n+1}=j | X_{n}=i\right\}$. When the one-step transition probabilities are independent of the time variable n, we say that the Markov chain has stationary transition probabilities (time homogeneous), ie $P_{i j}^{n, n+1}=P_{i j}$ independent of n. The probability of transitioning from one state to another is independent of time.
 * Markov matrix: $\mathbf{P}=\left\|P_{i j}\right\|$ where the ith row is the probability distribution of the values of $X_{n+1}$ under the condition that $X_n = i$. All probabilities greater than 0 and all rows sum to 1
+* A discrete time Markov chain is a stochastic process $(X_t),\;t \in T$ with T = [0,1,2,...] and state space S (generally countable in this class) that satisfies the Markov property, defined as $\forall n \geq 0, \; \forall x_0,...,x_n \in S,\;\operatorname{Pr}\left\{X_{n+1}=j | X_{0}=i_{0}, \ldots, X_{n-1}=i_{n-1}, X_{n}=i\right\} = \operatorname{Pr}\left\{X_{n+1}=j | X_{n}=i\right\}$
 * A markov process is fully defined by its transition matrix and initial state $X_0$: $\operatorname{Pr}\left\{X_{0}=i_{0}, X_{1}=i_{1}, \ldots, X_{n}=i_{n}\right\} = p_{i_{0}} P_{i_{0}, i_{1}} \cdots P_{i_{n-2}, i_{n-1}} P_{i_{n-1}, i_{n}}$
 * n-Step Probability Matrices
   * $\mathbf{P}^{(n)}=\left\|P_{i j}^{(n)}\right\|$ denotes the probability that the process goes from state i to state j in n transitions. $P_{i j}^{(n)}=\operatorname{Pr}\left\{X_{m+n}=j | X_{m}=i\right\}$
@@ -178,8 +194,42 @@ date: 01/06/2019
 
 ##### One-Dimensional Random Walks
 
-* 
+* Markov chain with finite or infinite state space. If the particle is in state i, it can either stay in i or move to either i+1, i-1.
+* Transition matrix $P= \left[ \begin{array}{rl}
+  {p_{0}} & {0 \quad \cdots} & {0} & {\cdots} \\
+  {r_{1}} & {p_{1}} & {\ldots} & {0} & {\ldots} \\
+  {2} & {r_{2}} & {\ldots} & {0} & {\ldots} \\
+  {\vdots} & {} & {} & {} \\
+  {} & {0} & {q_{i}} & {r_{i}} & {p_{i}} & {0} \\
+  {} & {} & {\ddots} & {} & {} & {\ddots} \\
+  \end{array} \right]$ for $p_{i}>0, q_{i}>0, r_{i} \geq 0, \text { and } q_{i}+r_{i}+p_{i}=1, i=1,2, \ldots(i \geq 1), p_{0} \geq 0, r_{0} \geq 0, \;r_{0}+p_{0}=1$
+* If $X_n = i$ for i > 1, $\begin{aligned}
+  \operatorname{Pr}\left\{X_{n+1}=i+1 | X_{n}=i\right\}=p_{i},\;
+  \operatorname{Pr}\left\{X_{n+1}=i-1 | X_{n}=i\right\}=q_{j},\;
+  \operatorname{Pr}\left\{X_{n+1}=i | X_{n}=i\right\}=r_{i}
+  \end{aligned}$ 
 
+##### Success Runs
+
+* Transition matrix $\mathbf{P}=\left\|\begin{array}{llllll}
+  {p_{0}} & {q_{0}} & {0} & {0} & {0} & {\cdots} \\
+  {p_{1}} & {r_{1}} & {q_{1}} & {0} & {0} & {\cdots} \\
+  {p_{2}} & {0} & {r_{2}} & {q_{2}} & {0} & {\cdots} \\
+  {p_{3}} & {0} & {0} & {r_{3}} & {q_{3}} & {\cdots} \\
+  {\vdots} & {\vdots} & {\vdots} & {\vdots} & {\vdots} & {}
+  \end{array}\right\|$ for $q_i > 0,\; p_i > 0,\; p_i+q_i +r_r =1$
+* The zero state plays a distinguished role in that it can be reached in one transition from any other state, while state i + 1 can be reached only from state i.
+* Useful for applications counting successes in a row, renewal processes like lightbulb age - resets at burnout. 
+
+### Class Examples
+
+1. Stochastic Processes - Simple random walk on Z
+   * $T = \{0,1,2,...\},\;S = Z$. Given the history of the walk, we derive the n + 1 position: $P(X_{n+1} = k | X_0=x_0,....,X_n=x_n) = P(X_{n+1} = k | X_n = x_n)$. This is the Markov property, $=\begin{cases}1/2 & k=X_n+1\;or\;X_n-1 \\ 0 & else\end{cases}$. Gives joint PMFs pf $(X_0,...,X_n)$ for any n, get PMFs (X_{t1},...,X_{tn}) by summing out the extra variables. 
+   * Ex - $P_{X_0,X_2}(x_0,x_2) = \sum_{x_1}P_{X_0,X_1,X_2}(x_0,x_1,x_2)$ - summing over the probabilities for x1 gives you the marginal desired.
+2. Galton Watson Branching Process / Tree
+   * $X_t$ = size of the family at generation t. Say X0 = 1, starting with one individual. S= [0, 1, 2, ...] = T. 
+   * Specifying the distributions: joint distributions of $X_{t1},...,X_{tn}$ determined recursively by $X_{t+1} = \sum_{k=1}^{X_t} Y_{t,k}$. Define $Y_{t,1},...,Y_{t,X_t} \sim_{iid} Pois(\lambda)$ conditional on $X_t$; the Y's are the number of children each person has at a generation, where X's are the state of the family at time t. Note another sum up to a RV up to Xt. 
+     * Could alternatively draw $\{Y_{t,k}\}^{\infty,\infty}_{t=0,k=1$ iid Pois beforehand, but would not use a lot of those variables.
 
 
 ## Probability Reference
@@ -305,11 +355,13 @@ date: 01/06/2019
 
 * $X_1 ... X_i \sim iid$, $E(X_i) = \mu $ and $ Var(X_i) =\sigma^2$ . Let $X_n = n^{−1} \sum_{i=1}^n X_i$ and 
 * $lim_{n \rightarrow \infty}P(|\bar{X_n} - \mu| > \epsilon) = 0$
+* Convergence in probability
 
 ### Central Limit Theorem
 
 * For $X_i$ iid, $E(X) =\mu$,   $Var(X)=\sigma^2$
 * $\lim _{n \rightarrow \infty} \operatorname{Pr}\left(\frac{\bar{X}_{n}-\mu}{\sigma / \sqrt{n}}  \leq x\right)=\Phi(x)$
+* Convergence in distribution
 
 ### Useful Functions and Integrals
 

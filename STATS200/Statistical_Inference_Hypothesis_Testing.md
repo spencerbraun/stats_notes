@@ -13,11 +13,11 @@ date: 20191016
 
 * Null hypothesis $H_0$ and alternative hypothesis $H_A$
   * **Type I error**: rejecting null when it is true, FP. The probability of type I error is the **significance level of the test $\alpha$** - jury returns guilty when innocent. $\alpha = P(T(X_1,...,X_n) > t_0 | H_0)$
-  * **Type II error**: accepting the null hypothesis when false, FN. Denoted by $\Beta$. Jury says innocent when guilty
+  * **Type II error**: accepting the null hypothesis when false, FN. Denoted by $\beta$. Jury says innocent when guilty
     * $\beta = P(T(X_1,...,X_n) \leq t_0 | H_A)$
     * Inherent trade off between Type I error and Type II - Type I maximized when Type II minimized and vice versa
   * p-value: $p = P(T(X_1,...,X_n) \geq T(x_1,...,x_n) | H_0)$ The chance of getting a value of T as large as the one we got or larger under the null hypothesis. Our test rejects when $p < \alpha$
-  * **Power**: the probability that the null hypothesis is rejected when false, $1-\Beta$
+  * **Power**: the probability that the null hypothesis is rejected when false, $1-\beta$
   * Test statistic, statistic we are using as a test of the hypothesis. A function of sample we are going to test - eg. LRT
   * Null distribution: the probability distribution of the test statistic when the null hypothesis is true
 
@@ -80,7 +80,7 @@ date: 20191016
 * For $H_0: \mu = \mu_0,\,H_1:\mu \neq \mu_0$, the numerator of the likelihood ratio is the density function at point $\mu_0$ and the denominator we plug in the mle of the parameter $\mu$, (so here for example, $\bar{X}$). This follows from the definition, since the maximum of the likelihood function over the parameter space is the MLE.
 * Knowing the null distribution of the test statistic makes possible the construction of a rejection region for any significance level $\alpha$. Using the chi-square, RR is given by $\left|\bar{X}-\mu_{0}\right| \geq \frac{\sigma}{\sqrt{n}} z(\alpha / 2)$ for $\chi_1^2$, otherwise use chi square tables for more Df.
 
-* Under smoothness conditions on the probability density or frequency functions  involved, the null distribution of $−2 log \Lambda$ tends to a chi-square distribution  with degrees of freedom equal to  $dim\,\Omega−dim\,ω_0$ as the sample size tends to  infinity.
+* Under smoothness conditions on the probability density or frequency functions  involved, the null distribution of $−2 log \Lambda$ tends to a chi-square distribution  with degrees of freedom equal to  $dim\,\Omega−dim\,\omega_0$ as the sample size tends to  infinity.
 * Generally - set up the distributions, compose the likelihood ratio, often take the log of both sides, try to determine how the likelihood changes for different observed values.
 * $-2 \log \Lambda \approx \sum_{i=1}^{m} \frac{\left[x_{i}-n p_{i}(\hat{\theta})\right]^{2}}{n p_{i}(\hat{\theta})} = X^2$ : RHS is Pearson’s test statistic for goodness of fit. Degrees of freedom (df): # of free parameters (think: # of unknown parameters) 
 

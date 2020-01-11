@@ -15,6 +15,7 @@
 * $\ell_1$ norm (Manhattan norm): $\|x\|_{1}:=\sum_{i=1}^{n}\left|x_{i}\right|$ 
 * $\ell_2$ norm (euclidean norm): $\|x\|_{2}:=\sqrt{\sum_{i=1}^{n} x_{i}^{2}}=\sqrt{x^{\top} x}$
   * euclidean distance of the vector
+* Frobenius norm of a matrix: $\|X\|_{F}=\sqrt{\sum_{i=1}^{M} \sum_{j=1}^{N} X_{i j}^{2}}=\sqrt{\sum_{i=1}^{m} \sum_{j=1}^{n}\left|a_{i j}\right|^{2}}=\sqrt{\operatorname{trace}\left(A A^H\right)}=\sqrt{\sum_{i=1}^{\min \{m, n\}} \sigma_{i}^{2}(A)}$ for sigma, the singular values of A
 
 ### Inner Products
 
@@ -25,6 +26,13 @@
   * Mapping is positive definite if $\forall x \in V \backslash\{0\}: \Omega(x, x)>0, \quad \Omega(0,0)=0$
   * A positive definite, symmetric bilinear mapping is called an inner product on V, denoted $\langle\boldsymbol{x}, \boldsymbol{y}\rangle$
 * Given a basis B, can write x, y in terms of that basis. Then $\langle\boldsymbol{x}, \boldsymbol{y}\rangle=\left\langle\sum_{i=1}^{n} \psi_{i} \boldsymbol{b}_{i}, \sum_{j=1}^{n} \lambda_{j} \boldsymbol{b}_{j}\right\rangle=\sum_{i=1}^{n} \sum_{j=1}^{n} \psi_{i}\left\langle\boldsymbol{b}_{i}, \boldsymbol{b}_{j}\right\rangle \lambda_{j}=\hat{\boldsymbol{x}}^{\top} \boldsymbol{A} \hat{\boldsymbol{y}}$ where $A_{i j}:=\left\langle\boldsymbol{b}_{i}, \boldsymbol{b}_{j}\right\rangle$ and $\hat{\boldsymbol{x}}, \hat{\boldsymbol{y}}$ are the coordinates wrt the basis. The inner product is uniquely determine by A.
+
+### Outer Products
+
+* In matrix multiplication, can be done by taking the columns of A times rows of B to get AB
+* one column u times one row $v^T$ produces a matrix. While inner product $v^Tu$ produces a scalar, outer product produces $uv^T = \left[\begin{array}{c}2\\2\\1\end{array}\right]\left[\begin{array}{c}3&4&6\end{array}\right] = \left[\begin{array}{c}6&8&12 \\6&8&12\\3&4&6\end{array}\right]$ a rank 1 matrix.
+* The column space of the outer product is one-dimensional - the line in the direction of u. The row space is the line through v
+* $(uv^T)^T = vu^T$ 
 
 ### Lengths and Distances
 
@@ -217,7 +225,7 @@
 
 ## Elimination and Factorization
 
-### Manual Elimination
+### Gaussian Elimination
 
 * Pick pivot in the first row - pivot must not be zero. If we have a zero pivot, can try to exchange rows to produce a non-zero pivot. 
 * Reduce the numbers below pivot to zero using linear combinations of rows
@@ -239,7 +247,7 @@
   * The pivot is the only nonzero entry in its column
 * The key idea for finding the solutions of Ax = 0 is to look at the nonpivot columns, which we will need to express as a (linear) combination of the pivot columns. The reduced row echelon form makes this relatively straightforward, and we express the non-pivot columns in terms of sums and multiples of the pivot columns that are on their left
 * If we bring the augmented equation system into reduced row-echelon form, we can read out the inverse on the right-hand side of the equation system.
-*  Elimination in Matrix Form - all elimination steps could be combined into a single matrix E, that transforms A into U, ie. EA = U
+* Elimination in Matrix Form - all elimination steps could be combined into a single matrix E, that transforms A into U, ie. EA = U
 * The pivot columns indicate the linearly independent columns - the others are linearly dependent
 
 ### Factorization A= LU
@@ -615,7 +623,9 @@
 * Every square matrix A is similar to a jordan matrix made of these jordon blocks.
 * \# blocks = # of eigenvectors
 
-## Singular Value Decomposition
+## Decompositions
+
+### Singular Value Decomposition
 
 * $A = U\Sigma V^T$ for $\Sigma$ diagonal, U,V orthogonal
 * Special case of positive definite: $A = Q\Lambda Q^T$
@@ -623,7 +633,14 @@
   * $AV = U\Sigma \implies A\left[\begin{array}{c}v_1...v_r\end{array}\right]= \left[\begin{array}{c}u_1...u_r\end{array}\right]\left[\begin{array}{c}\sigma_1 & &\\ & \sigma_2 & \\& &...\end{array}\right]$
   * $A = U\Sigma V^{-1} = U\Sigma V^T$
 
-### Procedure
+##### Interpretations
+
+* Expresses every row of A as a linear combination of the rows of $V^T$. The rows of US are the coefficients to those combinations
+* Expresses every column of A as linear combination of the columns of U, with coefficients given by $SV^T$. Therefore we interpret just the rows or columns of the decomposition, we can say something important about A.
+* Say rows are customers, columns products, values ratings. The right singular values could be customer types, with each customer defined as a linear mixture of types. Left sigular values could be product types and SVD expresses A as a mixture of product types.
+* When only a single direction is interesting, can use PCA instead of a full SVD.
+
+##### Procedure
 
 * Using $A = \left[\begin{array}{cc} 4 & 4  \\ -3 & 3\end{array}\right]$
 
@@ -678,9 +695,9 @@
 * Transforming between bases is equivalent to similar matrices. M is a change of basis matrix in $B = M^{-1}AM$
 * Two matrices are equivalent if there exists matrices S and T st $\tilde{\boldsymbol{A}}=\boldsymbol{T}^{-1} \boldsymbol{A} \boldsymbol{S}$. Similar matrices are always equivalent but not vice versa.
 
-## Vector Calculus
+## Matrix Calculus
 
-### Univariate
+### Univariate Calc Key Results
 
 * Difference quotient: $\frac{\delta y}{\delta x}:=\frac{f(x+\delta x)-f(x)}{\delta x}$
 * Derivative: $\frac{\mathrm{d} f}{\mathrm{d} x}:=\lim _{h \rightarrow 0} \frac{f(x+h)-f(x)}{h}$
@@ -692,11 +709,12 @@
   &\text { Sum rule: } \quad(f(x)+g(x))^{\prime}=f^{\prime}(x)+g^{\prime}(x)\\
   &\text { Chain rule: } \quad(g(f(x)))^{\prime}=(g \circ f)^{\prime}(x)=g^{\prime}(f(x)) f^{\prime}(x)
   \end{aligned}$
+* You can think of $\frac{d}{dx}$ as an operator that maps a function of one parameter to another function - it's distributive and we can just pull out constants
 
 ### Partial Differentiation and Gradients
 
 * Partial Derivative: $\frac{\partial f}{\partial x_{1}}=\lim _{h \rightarrow 0} \frac{f\left(x_{1}+h, x_{2}, \ldots, x_{n}\right)-f(x)}{h}$ - collect them in a row vector
-* Gradient: $\nabla_{\boldsymbol{x}} f=\operatorname{grad} f=\frac{\mathrm{d} f}{\mathrm{d} \boldsymbol{x}}=\left[\frac{\partial f(\boldsymbol{x})}{\partial x_{1}} \quad \frac{\partial f(\boldsymbol{x})}{\partial x_{2}} \quad \cdots \quad \frac{\partial f(\boldsymbol{x})}{\partial x_{n}}\right] \in \mathbb{R}^{1 \times n}$
+* Gradient is simply a vector of partials of f. Each entry is a partial derivative with respect to a different variable: $\nabla_{\boldsymbol{x}} f=\operatorname{grad} f=\frac{\mathrm{d} f}{\mathrm{d} \boldsymbol{x}}=\left[\frac{\partial f(\boldsymbol{x})}{\partial x_{1}} \quad \frac{\partial f(\boldsymbol{x})}{\partial x_{2}} \quad \cdots \quad \frac{\partial f(\boldsymbol{x})}{\partial x_{n}}\right] \in \mathbb{R}^{1 \times n}$
 * The reason why we define the gradient vector as a row vector is twofold: First, we can consistently generalize the gradient to vector-valued functions f : Rn → Rm (then the gradient becomes a matrix). Second, we can immediately apply the multi-variate chain rule without paying attention to the dimension of the gradient.
 * Partial $\text { Chain rule: } \quad \frac{\partial}{\partial \boldsymbol{x}}(g \circ f)(\boldsymbol{x})=\frac{\partial}{\partial \boldsymbol{x}}(g(f(\boldsymbol{x})))=\frac{\partial g}{\partial f} \frac{\partial f}{\partial \boldsymbol{x}}$
   * $\frac{\mathrm{d} f}{\mathrm{d} t}=\left[\begin{array}{ll}
@@ -735,7 +753,100 @@
 
 ### Gradients of Matrices
 
+* For details, see [explained.ai](https://explained.ai/matrix-calculus/#sec4.3)
+* When we move from derivatives of one function to derivatives of many functions, we move from the world of vector calculus to matrix calculus. 
+* Gradient vectors organize all of the partial derivatives for a specific scalar function. Say we have functions $f(x, y)=3 x^{2} y,\;g(x, y)=2 x+y^{8}$ If we have two functions, we can also organize their  gradients into a matrix by stacking the gradients - this gives us a Jacobian matrix. $J=\left[\begin{array}{c}
+  {\nabla f(x, y)} \\
+  {\nabla g(x, y)}
+  \end{array}\right]=\left[\begin{array}{ll}
+  {\frac{\partial f(x, y)}{\partial x}} & {\frac{\partial f(x, y)}{\partial y}} \\
+  {\frac{\partial g(x, y)}{\partial x}} & {\frac{\partial g(x, y)}{\partial y}}
+  \end{array}\right]=\left[\begin{array}{cc}
+  {6 y x} & {3 x^{2}} \\
+  {2} & {8 y^{7}}
+  \end{array}\right]$. Note this layout is the **numerator layout**. Some in ML use the denominator layout, which is the transpose: $\left[\begin{array}{cc}
+  {6 y x} & {2} \\
+  {3 x^{2}} & {8 y^{7}}
+  \end{array}\right]$
+* With multiple scalar-valued functions, we can combine them all into a vector just like we did with the parameters. Let y = f(x) be a vector of m scalar-values functions that each take a vector x of length n. From our prior examples: $  y_{1}=f_{1}(x)=3 x_{1}^{2} x_{2},\;y_{2}=f_{2}(\mathrm{x})=2 x_{1}+x_{2}^{8}$ 
+* Generally, the Jacobian is the collection of all m x n possible partial derivatives, ie. a stack of m gradients wrt x: $\frac{\partial \mathbf{y}}{\partial \mathbf{x}}=\left[\begin{array}{c}
+  {\nabla f_{1}(\mathbf{x})} \\
+  {\nabla f_{2}(\mathbf{x})} \\
+  {\cdots} \\
+  {\nabla f_{m}(\mathbf{x})}
+  \end{array}\right]=\left[\begin{array}{c}
+  {\frac{\partial}{\partial x} f_{1}(\mathbf{x})} \\
+  {\frac{\partial}{\partial \mathbf{x}} f_{2}(\mathbf{x})} \\
+  {\cdots} \\
+  {\frac{\partial}{\partial \mathbf{x}} f_{m}(\mathbf{x})}
+  \end{array}\right]=\left[\begin{array}{ccc}
+  {\frac{\partial}{\partial x_{1}} f_{1}(\mathbf{x})} & {\frac{\partial}{\partial x_{2}} f_{1}(\mathbf{x})} & {\cdots} & {\frac{\partial}{\partial x_{n}} f_{1}(\mathbf{x})} \\
+  {\frac{\partial}{\partial x_{1}} f_{2}(\mathbf{x})} & {\frac{\partial}{\partial x_{2}} f_{2}(\mathbf{x})} & {\cdots} & {\frac{\partial}{\partial x_{n}} f_{2}(\mathbf{x})} \\
+  {\cdots} & {} & {\cdots} & {} \\
+  {\frac{\partial}{\partial x_{1}} f_{m}(\mathbf{x})} & {\frac{\partial}{\partial x_{2}} f_{m}(\mathbf{x})}& {\cdots} & { \frac{\partial}{\partial x_{n}} f_{m}(\mathbf{x})}
+  \end{array}\right]$
+* We often have functions combined by element-wise binary operators (apply an operator the first item of ecch vector to get the first item of the output, then the second, etc). We are left with an ugly Jacobian applied to $\mathbf{y}=\mathbf{f}(\mathbf{w}) \bigcirc \mathbf{g}(\mathbf{x})$ wrt the x vector. However, we are left with a diagonal matrix, since when i not equal j, $\frac{\partial}{\partial w_{j}}\left(f_{i}(\mathbf{w}) \bigcirc g_{i}(\mathbf{x})\right)=0$ since taking derivatives of constants.
+* Scalars: changing vectors by a scalar is really an element-wise operation. For scalar, wrt to the variable z, we get a vector $\frac{\partial}{\partial z}\left(f_{i}\left(x_{i}\right)+g_{i}(z)\right)=\frac{\partial\left(x_{i}+z\right)}{\partial z}=\frac{\partial x_{i}}{\partial z}+\frac{\partial z}{\partial z}=0+1=1$. Alternatively, wrt x, we get a diagonal Jacobian with elements $\frac{\partial}{\partial x_{i}}\left(f_{i}\left(x_{i}\right) \otimes g_{i}(z)\right)=x_{i} \frac{\partial z}{\partial x_{i}}+z \frac{\partial x_{i}}{\partial x_{i}}=0+z=z$
+* Sums: we often need to sum over results, and we can move the sum outside of the derivative. For $y=\operatorname{sum}(\mathbf{f}(\mathbf{x}))=\sum_{i=1}^{n} f_{i}(\mathbf{x})$, we can get gradient $\nabla y=\left[\sum_{i} \frac{\partial f(x)}{\partial x_{1}}, \sum_{i} \frac{\partial f(x)}{\partial x_{2}}, \ldots, \sum_{i} \frac{\partial f(x)}{\partial x_{n}}\right]=\left[\sum_{i} \frac{\partial x_{i}}{\partial x_{i}}, \sum_{i} \frac{\partial x_{i}}{\partial x_{i}}, \ldots, \Sigma_{i} \frac{\partial x}{\partial x_{i}}\right] = \left[\frac{\partial x_{1}}{\partial x_{1}}, \frac{\partial x_{2}}{\partial x_{2}}, \ldots, \frac{\partial x_{n}}{\partial x_{n}}\right]=[1,1, \ldots, 1]=\overrightarrow{\mathrm{I}}^{T}$ since $\frac{\partial}{\partial x_{j}} x_{i}=0 \text { for } j \neq i$.
+
+##### Chain Rules
+
+* Forward differentiation from x to y: $\frac{d y}{d x}=\frac{d u}{d x} \frac{d y}{d u}$. Backward differentiation from y to x: $\frac{d y}{d x}=\frac{d y}{d u} \frac{d u}{d x}$
+* When x affects y through a single data flow path in nested functions, we simply introduce intermediate variables, compute derivatives wrt each, then combine using the chain rule, eg $\frac{d y}{d x}=\frac{d u_{4}}{d x}=\frac{d u_{4}}{d u_{3}} \frac{d u_{3}}{d u_{2}} \frac{d u_{2}}{d u_{1}} \frac{d u_{1}}{d x}$. With an expression like $f(x) = x + x^2$, we need a different technique since x affects y through 2 different pathways.
+* We use the law of total derivatives - to compute derivative we need to sum up all possible contributions from changes in x to the change in y. **Single variable total derivative chain rule** that assumes all variables may be codependent: $\frac{\partial f\left(x, u_{1}, \ldots, u_{n}\right)}{\partial x}=\frac{\partial f}{\partial x}+\frac{\partial f}{\partial u_{1}} \frac{\partial u_{1}}{\partial x}+\frac{\partial f}{\partial u_{2}} \frac{\partial u_{2}}{\partial x}+\ldots+\frac{\partial f}{\partial u_{n}} \frac{\partial u_{n}}{\partial x}=\frac{\partial f}{\partial x}+\sum_{i=1}^{n} \frac{\partial f}{\partial u_{i}} \frac{\partial u_{i}}{\partial x}$
+* The total derivative is adding terms because it represents a weighted sum of all x contributions to the change in y.
+* Vector chain rule: We can take the single variable chain rule $\frac{d}{d x} f(g(x))=\frac{d f}{d g} \frac{d g}{d x}$ and convert to a vector rule $\frac{\partial}{\partial x} \mathbf{f}(\mathrm{g}(x))=\frac{\partial \mathrm{f}}{\partial \mathrm{g}} \frac{\partial \mathrm{g}}{\partial x} =\left[\begin{array}{ll}
+  {\frac{\partial f_{1}}{\partial g_{1}}} & {\frac{\partial f_{1}}{\partial g_{2}}} \\
+  {\frac{\partial f_{2}}{\partial g_{1}}} & {\frac{\partial f_{2}}{\partial g_{2}}}
+  \end{array}\right]\left[\begin{array}{l}
+  {\frac{\partial g_{1}}{\partial x}} \\
+  {\frac{\partial g_{2}}{\partial x}}
+  \end{array}\right]$ . To broaden to multiple parameters, vector x, we now multiply two full matrix Jacobians: $\frac{\partial}{\partial \mathbf{x}} \mathbf{f}(\mathbf{g}(\mathbf{x}))=\left[\begin{array}{cccc}
+  {\frac{\partial f_{1}}{\partial g_{1}}} & {\frac{\partial f_{1}}{\partial g_{2}}} & {\cdots} & {\frac{\partial f_{1}}{\partial g_{k}}} \\
+  {\frac{\partial f_{2}}{\partial g_{1}}} & {\frac{\partial f_{2}}{\partial g_{2}}} & {\cdots} & {\frac{\partial f_{2}}{\partial g_{k}}} \\
+  {\frac{\partial f_{m}}{\partial g_{1}}} & {\frac{\partial f_{m}}{\partial g_{2}}} & {\cdots} & {\frac{\partial f_{m}}{\partial g_{k}}}
+  \end{array}\right] \left[\begin{array}{cccc}
+  {\frac{\partial g_{1}}{\partial x_{1}}} & {\frac{\partial g_{1}}{\partial x_{2}}} & {\cdots} & {\frac{\partial g_{1}}{\partial x_{n}}} \\
+  {\frac{\partial g_{2}}{\partial x_{1}}} & {\frac{\partial g_{2}}{\partial x_{2}}} & {\cdots} & {\frac{\partial g_{2}}{\partial x_{n}}} \\
+  {\frac{\partial g_{k}}{\partial x_{1}}} & {\frac{\partial g_{k}}{\partial x_{2}}} & {\cdots} & {\frac{\partial g_{k}}{\partial x_{n}}}
+  \end{array}\right]$
+* Most often, the Jacobian reduces to a diagonal matrix whose elements are the single variable chain rule values
+* A  summary to get to the Jacobian: ![Jacobian](/Users/spencerbraun/Documents/Notes/Stanford/YBxJ4nuULTKdl1cRaDTxGz2KMAOxhaacEB6dvfdGDpk.original.fullsize.png)
+
 ## Applications
+
+### Low Rank Matrix Approximations
+
+* The following are equivalent definitions for the rank of a matrix B to be k
+  * The  largest  linearly  independent  subset  of  columns
+  * The largest linearly independent subset of rows
+  * B can written as, or “factored into,” the product of long and skinny (n×k) matrix $Y_k$ and a short and long (k×d) matrix $Z_k^T$. Think outer product
+* Idea is to approximate our matrix with a matrix of rank k - useful for compression or denoising. 
+* For every n x d A with rank target k and given a rank-k n x d matrix B, $\left\|\mathbf{A}-\mathbf{A}_{k}\right\|_{F} \leq\|\mathbf{A}-\mathbf{B}\|_{F}$ 
+* For $X  = A - A_k,\;||X||_F$ measures the discrepancy between A and its approximation. Want to find the $A_k$ that minimizes this distance.
+
+##### Using SVD
+
+* $\mathbf{A}=\mathbf{U S V}^{T}$, for U nxn orthogonal matrix, V dxd orthogonal matrix, S nxd matrix of nonnegative entries with diagonal entries sorted from high to low. Columns of U are left singular values of A, V are right singular values of A. Entries of S are singular values of A.
+* Choosing a rank-k matrix boils down to choosing a set of k basis vectors. What vectors to choose? The SVD gives us a representation of A as a linear combination of sets of vectors ordered by importance!
+* Given n x d matrix A and target rank k, we do the following
+  * Compute SVD $A = USV^T$. Keep only the top k right singular vectors: set $V^T_k$  equal to the first k rows of $V^T$
+  * Keep only the top k left singular vectors: first k columns of U
+  * Keep only the top k singular values: first k rows / columns of S, the k largest singular values of A
+* Low rank approximation is then $\mathbf{A}_{k}=\mathbf{U}_{k} \mathbf{S}_{k} \mathbf{V}_{k}^{T}$ . This now takes $O(k(n+d))$ space to store instead of $O(nd)$
+* This is akin to approximating A in terms of k “concepts” where the singular values express the signal strength of these concepts, rows of V^T and columns of U express the canonical row/column associated with each concept and rows of U and cols of V^T express each row / column of A as a linear combination of the canonical rows
+
+##### Choosing K
+
+* Ideally, guidance from eigenvalues of $A^TA$ or singular values of A. If top few are big and rest are small, cut off is relatively obvious
+* Often choose k st the sum of the top k eigenvalues is at least c times as big as the sum of othe eigenvalues.
+* The effect of small eigenvalues on matrix products is small. Thus, it seems plausible that replacing these small eigenvalues by zero will not substantially alter the product
+
+##### Application: Fill in missing values
+
+* A is a matrix of Netflix customers and movie ratings. A reasonable assumption that makes the problemmore tractable is that the matrix to be recovered is well-approximated by a low-rank matrix.
+* If there aren’t too many missing entries, and if the matrix to be recoveredis approximately low rank, then the following application of the SVD can yield a good guessas to the missing entries
+* Fill in missing entries with suitable default values to obtain a matrix $\hat{A}$ then compute the best rank-k approximation of $\hat{A}$
 
 ### Markov Matrices
 
