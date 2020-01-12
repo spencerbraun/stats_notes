@@ -482,6 +482,13 @@
 ## Determinants
 
 * A number associated with every **square** matrix. Test for invertibility when $det(A) \neq 0$
+* The determinant det(A) is the signed volume of an n-dimensional parallelepiped formed by columns of the matrix A.
+* If A invertible, $\operatorname{det}\left(\boldsymbol{A}^{-1}\right)=\frac{1}{\operatorname{det}(\boldsymbol{A})}$
+* Similar matrices possess the same determinant - for a linear mapping all transformation matrices have the same determinant. Therefore the determinant is invariant to the choice of basis of a linear mapping.
+* Characteristic polynomial for square matrix A: $p_{A}(\lambda):=\operatorname{det}(A-\lambda I) = =c_{0}+c_{1} \lambda+c_{2} \lambda^{2}+\cdots+c_{n-1} \lambda^{n-1}+(-1)^{n} \lambda^{n}$. Note $
+  c_{0} =\operatorname{det}(\boldsymbol{A}) ,\;
+  c_{n-1} =(-1)^{n-1} \operatorname{tr}(\boldsymbol{A})$
+
 
 ### Properties
 
@@ -532,47 +539,55 @@
 * Cofactor of $a_{ij} = C_{ij}$, given + if i + j is even, - if i+j odd: $\left|\begin{array}{ccc} + & - & + \\ - & + & - \\ + & - & +\end{array}\right|$
 * Cofactor formula: $det \; A = a_{11}C_{11} + ... + a_{1n}C_{1n}$ along a single row (here row 1)
 
-### Cramer’s Rule
-
-
-
 ## Eigenvalues and Eigenvectors
 
 * $Ax = \lambda x$ - for a square matrix A
   * eigenvector - a vector that fits the property Ax || x
   * eigenvalue - some scalar value that allows eigenvector property to hold
+* All vectors that are collinear to x are also eigenvectors of A. 
+* Eigenspace - the set of all eigenvectors of A associated with an eigenvalue $\lambda$ spans a subspace, the eigenspace of A wrt $\lambda$, denoted $E_\lambda$. The set of all eigenvalues of A is called the eigenspectrum (or spectrum) of A. The eigenspace for $\lambda$ solves the system $(A - \lambda I)x = 0$, ie. its the null space of the $(A - \lambda I)$
 * If A is singular, 0 will be an eigenvalue
 * Projection matrix - Px = x with $\lambda = 1$ for vectors in the plane, $\lambda = 0$ for x fitting Px = 0
 * Permutation matrix - $\lambda = 1, -1$
 * Trace  = sum down diagonal of A = $a_{11} + a_{22} + ... + a_{nn}$
+* The identity matrix has a single eigenvalue 1 repeated n times and clearly the eigenspace spans the full n dimensions.
+* Geometrically, the eigenvector corresponding to a nonzero eigenvalue points in a direction that is stretched by the linear mapping. The eigenvalue is the factor by which it is stretched. If the eigenvalue is negative, the direction of the stretching is flipped.
+
+* It is often a convention that eigenvalues are sorted in descending order, so that the largest eigenvalue and associated eigenvector are called the first eigenvalue and its associated eigenvector, and the second largest called the second eigenvalue and its associated eigenvector, and so on.
 
 ### Tricks
 
 * With symmetric matrices, eigenvalues will always be real
 * Eigenvalues are always complex conjugates
 * Triangular matrix - eigenvalues are just the diagonal values
+* A matrix and its transpose possess the same eigenvalues (not necessarily same eigenvectors)
+* Similar matrices have the same eigenvalues - eigenvalues are independent of the basis for a transformation matrix.
 
 ### General Procedure
 
 * Write $Ax = \lambda x$
 * Rewrite as $(A - \lambda I)x = 0$, giving us a singular matrix $(A - \lambda I)$ with det = 0
-* Get characteristic equation from $det(A - \lambda I) = 0$
-* Solve for $\lambda$ 
+* Get characteristic equation (polynomial) from $det(A - \lambda I) = 0$
+* Solve for $\lambda$ as root to characteristic equation
 * An n x n matrix will have n eigenvalues, though could be repeated
 * Once lambdas found, find x with elimination, finding the null space of the singular matrix with lambda values plugged in 
-* If repeated eigenvalue, will have fewer eigenvectors
-* **Eigenvalues sum to trace, multiply to determinant**
+* If repeated eigenvalue, will have fewer eigenvectors. Otherwise the n eigenvectors for n eigenvalues are linearly independent.
+* **Eigenvalues sum to trace, multiply to determinant**. Put another way the determinant is the product of eigenvalues $\operatorname{det}(\boldsymbol{A})=\prod_{i=1}^{n} \lambda_{i}$ and the trace is the sum of the eigenvalues $\operatorname{tr}(\boldsymbol{A})=\sum_{i=1}^{n} \lambda_{i}$ 
 
-### Diagonalization
+### Diagonalization / Eigendecomposition
 
 * Suppose n linearly independent eigenvectors of A - form columns of matrix S
 * $AS = A\left[\begin{array}{c}x_1x_2...x_n\end{array}\right] = \left[\begin{array}{c}\lambda_1x_1...\lambda_nx_n\end{array}\right] = \left[\begin{array}{c}x_1x_2...x_n\end{array}\right]\left[\begin{array}{c}\lambda_1 & 0 & ... & 0\\ 0& \lambda_2 & ... & 0 \\ 0& 0 & ... & \lambda_n\end{array}\right] = S\Lambda$
-* Key: $ A = S\Lambda S^{-1}$
+* Key: $ A = S\Lambda S^{-1}$ - A is similar to a diagonal matrix of eigenvalues
 * Powers of A: $A^K = S \Lambda^KS^{-1}$
 * Theorem: $A^K \rightarrow 0 \text{ as } k \rightarrow \infty$ if all $|\lambda_i| < 1$
   * dependent on assumption of n independent eigenvectors, otherwise cannot diagonalize
 * A is sure to be diagonalizable if all eigenvalues are different. If eigenvalues repeated, may or may not have n independent eigenvectors
 * Can use to solve recursive formulae: $u_{k+1} = Au_k$ then can solve using $u_{k+1} = A^{k+1}u_0$
+* Procedure
+  * Compute eigenvalues and eigenvectors 
+  * Check that A can be diagonalized - do the eigenvectors form a basis in $\R^n$
+  * Construct the transformation matrix P - collect eigenvectors of A in $S:= \left[x_1\;x_2\;...\right]$
 
 ### Symmetric Matrices
 
@@ -600,6 +615,7 @@
 * If A,B pos def, then A + B also pos def. Notice for least squares, $A^TA$ is square and symmetric, so $x^TA^TAx = (Ax)^T(Ax) = ||Ax||^2 \geq 0$. Only 0 when the vector is 0, so for any matrix of rank n can say least squares will be positive definite
 * For pos, def A $\langle\boldsymbol{x}, \boldsymbol{y}\rangle=\hat{\boldsymbol{x}}^{\top} \boldsymbol{A} \hat{\boldsymbol{y}}$ defines an inner product with respect to basis B where $\tilde{\boldsymbol{x}}, \tilde{\boldsymbol{y}}$ are the coordinate representations of x,y in the basis B
 * The null space of A consists only of zero vector because $x^{\top} A x>0$ for all $x \neq 0$
+* We can always produce a positive, semidefinite matrix by $\boldsymbol{S}:=\boldsymbol{A}^{\top} \boldsymbol{A}$. If A has full column rank then positive definite.
 
 ### Complex Matrices
 
@@ -625,18 +641,49 @@
 
 ## Decompositions
 
+### Cholesky Decomposition
+
+* A square root equivalence on symmetric, positive definite matrices
+* $A=L L^{T}$ where L is a lower triangular matrix with positive diagonal elements: $\left[\begin{array}{ccc}
+  {a_{11}} & {\cdots} & {a_{1 n}} \\
+  {\vdots} & {\ddots} & {\vdots} \\
+  {a_{n 1}} & {\cdots} & {a_{n n}}
+  \end{array}\right]=\left[\begin{array}{ccc}
+  {l_{11}} & {\cdots} & {0} \\
+  {\vdots} & {\ddots} & {\vdots} \\
+  {l_{n 1}} & {\cdots} & {l_{n n}}
+  \end{array}\right]\left[\begin{array}{ccc}
+  {l_{11}} & {\cdots} & {l_{n 1}} \\
+  {\vdots} & {\ddots} & {\vdots} \\
+  {0} & {\cdots} & {l_{n n}}
+  \end{array}\right]$
+* Eg $\boldsymbol{A}=\left[\begin{array}{ccc}
+  {l_{11}^{2}} & {l_{21} l_{11}} & {l_{31} l_{11}} \\
+  {l_{21} l_{11}} & {l_{21}^{2}+l_{22}^{2}} & {l_{31} l_{21}+l_{32} l_{22}} \\
+  {l_{31} l_{11}} & {l_{31} l_{21}+l_{32} l_{22}} & {l_{31}^{2}+l_{32}^{2}+l_{33}^{2}}
+  \end{array}\right]$, L is the Cholesky factor of A and L is unique.
+* We can backward calculate what the components $l_{ij}$ should be given the values for A and previously computed elements of L.
+* The covariance matrix of a multivariate Gaussian variable (see Section 6.5) is symmetric, positive definite. The Cholesky factorization of this covariance matrix allows us to generate samples from a Gaussian distribution. It also allows us to perform a linear transformation of random variables, which is heavily exploited when computing gradients in deep stochastic models.
+* Given the Cholesky decomposition $A = LL^T$ , we know that $det(A) = det(L) det(L^T) = det(L)^2$ . Since L is a triangular matrix, the determinant is simply the product of its diagonal entries so that $det(A) = \prod_{i} l_{i i}^{2}$.
+
+
 ### Singular Value Decomposition
 
-* $A = U\Sigma V^T$ for $\Sigma$ diagonal, U,V orthogonal
+* $A = U\Sigma V^T$ for $\Sigma$ diagonal, U,V orthogonal. Exists for any matrix A.
 * Special case of positive definite: $A = Q\Lambda Q^T$
 * Basic Idea: for V a basis in the row space, U a basis in the col space, and for sigma scaling factors:
   * $AV = U\Sigma \implies A\left[\begin{array}{c}v_1...v_r\end{array}\right]= \left[\begin{array}{c}u_1...u_r\end{array}\right]\left[\begin{array}{c}\sigma_1 & &\\ & \sigma_2 & \\& &...\end{array}\right]$
   * $A = U\Sigma V^{-1} = U\Sigma V^T$
+* The matrix S consists of the singular values. Ordered largest in the top left to smallest in the bottom right. S is unique, m x n rectangular - it is the same size as A. If m > n, square matrix of sigmas on top of matrix of 0. For n > m, square matrix of sigmas to the left of a matrix of 0’s.
+* The SVD expresses a change of basis in both the domain and codomain. This is in contrast with the eigendecomposition that operates within the same vector space, where the same basis change is applied and then undone. What makes the SVD special is that these two different bases are simultaneously linked by the singular value matrix S.
+* The left singular vectors of A are eigenvectors of $AA^T$. The right singular vectors of A are the eigenvectors of $A^TA$. The non zero singular values of A are the square roots of the nonzero eigenvalues of $AA^T$ and are equal to the nonzero eigenvalues of $A^TA$. 
+* Substituting a matrix with its SVD has often the advantage of making calculation more robust to numerical rounding errors.
+
 
 ##### Interpretations
 
-* Expresses every row of A as a linear combination of the rows of $V^T$. The rows of US are the coefficients to those combinations
-* Expresses every column of A as linear combination of the columns of U, with coefficients given by $SV^T$. Therefore we interpret just the rows or columns of the decomposition, we can say something important about A.
+* Expresses every row of A as a linear combination of the rows of $V^T$, the right singular vectors. The rows of US are the coefficients to those combinations
+* Expresses every column of A as linear combination of the columns of U, the left singular vectors, with coefficients given by $SV^T$. Therefore we interpret just the rows or columns of the decomposition, we can say something important about A.
 * Say rows are customers, columns products, values ratings. The right singular values could be customer types, with each customer defined as a linear mixture of types. Left sigular values could be product types and SVD expresses A as a mixture of product types.
 * When only a single direction is interesting, can use PCA instead of a full SVD.
 
@@ -835,6 +882,7 @@
   * Keep only the top k singular values: first k rows / columns of S, the k largest singular values of A
 * Low rank approximation is then $\mathbf{A}_{k}=\mathbf{U}_{k} \mathbf{S}_{k} \mathbf{V}_{k}^{T}$ . This now takes $O(k(n+d))$ space to store instead of $O(nd)$
 * This is akin to approximating A in terms of k “concepts” where the singular values express the signal strength of these concepts, rows of V^T and columns of U express the canonical row/column associated with each concept and rows of U and cols of V^T express each row / column of A as a linear combination of the canonical rows
+* Alternate approach: From U and V can construct rank-1 matrices via $\boldsymbol{A}_{i}:=\boldsymbol{u}_{i} \boldsymbol{v}_{i}^{\top}$. A matrix of rank r can be written as a sum of rank 1 matrices. Construct rank-1 matrices using each singular value, then consider a rank-2 (etc) matrix $\widehat{\boldsymbol{A}}(2)=\sigma_{1} \boldsymbol{A}_{1}+\sigma_{2} \boldsymbol{A}_{2}$. Stop the combination when we have a close enough approximation.
 
 ##### Choosing K
 

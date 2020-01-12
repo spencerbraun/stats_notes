@@ -221,15 +221,36 @@ date: 01/06/2019
 * The zero state plays a distinguished role in that it can be reached in one transition from any other state, while state i + 1 can be reached only from state i.
 * Useful for applications counting successes in a row, renewal processes like lightbulb age - resets at burnout. 
 
+### Branching Processes
+
+* Say organisms produce $\xi$ offspring, ${Pr}\{\xi=k\}=p_{k} \quad \text { for } k=0,1,2, \ldots$
+* The process $\{X_n\}$ where $X_n$ is the population size at the nth generation, is a Markov chain of special structure called a branching process.
+* In the nth generation, the Xn individuals independently give rise to numbers of offspring $\xi_{1}^{(n)}, \xi_{2}^{(n)}, \ldots, \xi_{X_{n}}^{(n)}$ - the cumulative number produced for the (n + 1)st generation is $X_{n+1}=\xi_{1}^{(n)}+\xi_{2}^{(n)}+\cdots+\xi_{X_{n}}^{(n)}$
+* Mean: recursively defined $M(n+1)=\mu M(n)$, generally $M(n)=\mu^{n} \quad \text { for } n=0,1, \ldots$ where $X_n$ is the population size at time n and M(n) is the mean of $X_n$
+  * The mean population size increases geometrically when $\mu$ > 1, decreases geometrically when $\mu$< 1, and remains constant when $\mu$ = 1.
+* Variance: recursively defined $V(n+1)=\sigma^{2} M(n)+\mu^{2} V(n)$, generally $V(n)=\sigma^{2} \mu^{n-1} \times\left\{\begin{array}{ll}
+  {n} & {\text { if } \mu=1} \\
+  {\frac{1-\mu^{n}}{1-\mu}} & {\text { if } \mu \neq 1}
+  \end{array}\right.$ 
+  * The variance of the population size increases geometrically if $\mu$ > 1, increases linearly if $\mu$ = 1, and decreases geometrically if $\mu$ < 1
+
+##### Extinction
+
+* The random time of extinction N is thus the first time n for which Xn = 0, and then, obviously, Xk = 0 for all $k \geq N$.
+* In Markov chain terminology, 0 is an absorbing state, and we may calculate the probability of extinction by invoking a first step analysis.
+* Defn $u_{n}=\operatorname{Pr}[N \leq n]=\operatorname{Pr}\left\{X_{n}=0\right\}$, be the probability of extinction at or prior to the nth generation, beginning with a single parent X0 = 1. The k subpopulations independent, w/ original statistical properties. Each has probability of dying out in n-1 generations equal to $u_{n-1}$. 
+* Probability that all die out in n-1 generations is $u_{n-1}^k$ by independence. Then weighting by probability of k offspring:
+* $u_{n}=\sum_{k=0}^{\infty} p_{k}\left(u_{n-1}\right)^{k}$
+
 ### Class Examples
 
 1. Stochastic Processes - Simple random walk on Z
-   * $T = \{0,1,2,...\},\;S = Z$. Given the history of the walk, we derive the n + 1 position: $P(X_{n+1} = k | X_0=x_0,....,X_n=x_n) = P(X_{n+1} = k | X_n = x_n)$. This is the Markov property, $=\begin{cases}1/2 & k=X_n+1\;or\;X_n-1 \\ 0 & else\end{cases}$. Gives joint PMFs pf $(X_0,...,X_n)$ for any n, get PMFs (X_{t1},...,X_{tn}) by summing out the extra variables. 
+   * $T = \{0,1,2,...\},\;S = Z$. Given the history of the walk, we derive the n + 1 position: $P(X_{n+1} = k | X_0=x_0,....,X_n=x_n) = P(X_{n+1} = k | X_n = x_n)$. This is the Markov property, $=\begin{cases}1/2 & k=X_n+1\;or\;X_n-1 \\ 0 & else\end{cases}$. Gives joint PMFs pf $(X_0,...,X_n)$ for any n, get PMFs $(X_{t1},...,X_{tn})$ by summing out the extra variables. 
    * Ex - $P_{X_0,X_2}(x_0,x_2) = \sum_{x_1}P_{X_0,X_1,X_2}(x_0,x_1,x_2)$ - summing over the probabilities for x1 gives you the marginal desired.
 2. Galton Watson Branching Process / Tree
    * $X_t$ = size of the family at generation t. Say X0 = 1, starting with one individual. S= [0, 1, 2, ...] = T. 
    * Specifying the distributions: joint distributions of $X_{t1},...,X_{tn}$ determined recursively by $X_{t+1} = \sum_{k=1}^{X_t} Y_{t,k}$. Define $Y_{t,1},...,Y_{t,X_t} \sim_{iid} Pois(\lambda)$ conditional on $X_t$; the Y's are the number of children each person has at a generation, where X's are the state of the family at time t. Note another sum up to a RV up to Xt. 
-     * Could alternatively draw $\{Y_{t,k}\}^{\infty,\infty}_{t=0,k=1$ iid Pois beforehand, but would not use a lot of those variables.
+     * Could alternatively draw $\{Y_{t,k}\}^{\infty,\infty}_{t=0,k=1}$ iid Pois beforehand, but would not use a lot of those variables.
 
 
 ## Probability Reference
