@@ -96,7 +96,8 @@ date: 01/06/2019
 * Moments assuming ${E\left[\xi_{k}\right]=\mu,}  \;{\operatorname{Var}\left[\xi_{k}\right]=\sigma^{2}},\;
   {E[N]=v,} \;{\operatorname{Var}[N]=\tau^{2}}
   $
-  * $E[X]=\mu v, \quad \operatorname{Var}[X]=v \sigma^{2}+\mu^{2} \tau^{2}$
+  * $E[X]=E[\xi_k]E[N]=\mu v$
+  * $\operatorname{Var}[X]=E[N]Var[\xi_k] + E[\xi_k]^2Var[N]=v \sigma^{2}+\mu^{2} \tau^{2}$
 * Distribution - n-fold convolution of the density f(z), denoted $f^{(n)}(z)$
   * For $\xi_{1}, \xi_{2}, \ldots$ continuous RVs with PDFs f(z)
   * $f^{(1)}(z)=f(z)$
@@ -145,14 +146,21 @@ date: 01/06/2019
 * Markov Process: the probability of any particular future behavior of the process, when its current state is known exactly, is not altered by additional knowledge concerning its past behavior. Formally, $\operatorname{Pr}\left\{X_{n+1}=j | X_{0}=i_{0}, \ldots, X_{n-1}=i_{n-1}, X_{n}=i\right\} = \operatorname{Pr}\left\{X_{n+1}=j | X_{n}=i\right\}$ - this is the Markov property.
 * One step transition probability: $P_{i j}^{n, n+1}=\operatorname{Pr}\left\{X_{n+1}=j | X_{n}=i\right\}$. When the one-step transition probabilities are independent of the time variable n, we say that the Markov chain has stationary transition probabilities (time homogeneous), ie $P_{i j}^{n, n+1}=P_{i j}$ independent of n. The probability of transitioning from one state to another is independent of time.
 * Markov matrix: $\mathbf{P}=\left\|P_{i j}\right\|$ where the ith row is the probability distribution of the values of $X_{n+1}$ under the condition that $X_n = i$. All probabilities greater than 0 and all rows sum to 1
-* A discrete time Markov chain is a stochastic process $(X_t),\;t \in T$ with T = [0,1,2,...] and state space S (generally countable in this class) that satisfies the Markov property, defined as $\forall n \geq 0, \; \forall x_0,...,x_n \in S,\;\operatorname{Pr}\left\{X_{n+1}=j | X_{0}=i_{0}, \ldots, X_{n-1}=i_{n-1}, X_{n}=i\right\} = \operatorname{Pr}\left\{X_{n+1}=j | X_{n}=i\right\}$
-* A markov process is fully defined by its transition matrix and initial state $X_0$: $\operatorname{Pr}\left\{X_{0}=i_{0}, X_{1}=i_{1}, \ldots, X_{n}=i_{n}\right\} = p_{i_{0}} P_{i_{0}, i_{1}} \cdots P_{i_{n-2}, i_{n-1}} P_{i_{n-1}, i_{n}}$
+* A discrete time **Markov chain** is a stochastic process $(X_t),\;t \in T$ with T = [0,1,2,...] and state space S (generally countable in this class) that satisfies the Markov property, defined as $\forall n \geq 0, \; \forall x_0,...,x_n \in S,\;\operatorname{Pr}\left\{X_{n+1}=j | X_{0}=i_{0}, \ldots, X_{n-1}=i_{n-1}, X_{n}=i\right\} = \operatorname{Pr}\left\{X_{n+1}=j | X_{n}=i\right\}$
+* Time homogeneous MC when transition probabilities are independent of n. In this case define the transition matrix of entries $P_{xy} = P(x,y):=P(X_{n+1} | X_n = x) = P(X_1=y|X_o=x)$. Note, if S is infinite then P is an infinite matrix.
+* We write $\pi_x = \pi^n(x) = P(X_n=x)$: the pmf of state of chain at time n. Proposition: Distribution of time homogeneous MC is completely determined by P and $\pi_0$, the PMF of the initial state. For $n \geq 1$ and any $x_o,...,x_n \in S, \; P(X_n=x_n,...,X_0=x_0) = P(X_n=x_n|X_{n-1}=x_{n-1},...,X_0=x_0)P(X_{n-1}=x_{n-1},...,X_0=x_0)$. Then applying rules for homogeneous MC $P(X_n=x_n|X_{n-1}=x_{n-1},...,X_0=x_0) = P_{X_{n-1},X_n}$, ie. the additional history does not matter. Repeating $P_{X_{n-1}, X_n}P_{X_{n-2},X_{n-1}}..P(X_0=x_0)$ where $P(X_0=x_0) = \pi_0(x_0)$. 
+* In book notation, a markov process is fully defined by its transition matrix and initial state $X_0$: $\operatorname{Pr}\left\{X_{0}=i_{0}, X_{1}=i_{1}, \ldots, X_{n}=i_{n}\right\} = p_{i_{0}} P_{i_{0}, i_{1}} \cdots P_{i_{n-2}, i_{n-1}} P_{i_{n-1}, i_{n}}$
 * n-Step Probability Matrices
   * $\mathbf{P}^{(n)}=\left\|P_{i j}^{(n)}\right\|$ denotes the probability that the process goes from state i to state j in n transitions. $P_{i j}^{(n)}=\operatorname{Pr}\left\{X_{m+n}=j | X_{m}=i\right\}$
   * Theorem: $P_{i j}^{(n)}$ satisfies $P_{i j}^{(n)}=\sum_{k=0}^{\infty} P_{i k} P_{k j}^{(n-1)}$ for $P_{i j}^{(0)}=\left\{\begin{array}{ll}
     {1} & {\text { if } i=j} \\
     {0} & {\text { if } i \neq j}
     \end{array}\right.$. This gives the conclusion: $\mathbf{P}^{(n)}=\mathbf{P}^{n}$
+  * For distribution of state at time n: $\pi^{(n)}(y) = \sum_{X \in S} \pi^0(x)P^{(n)}(x,y) = (\pi^0 \cdot P^n)(y)$ so $\pi^n = \pi^0P^n$ as row vectors
+* Properties of Transition Matrices
+  * Stochastic matrix $P(x,y) \geq 0,\; \forall x,y \in S$
+  * $\sum_{y \in S}P(x,y) = 1,\;\forall x \in S$
+  * Conversely any N x N stochastic matrix P and a pmf $\pi^0$ row vector give rise to a MC on {1,2,...,N} = S
 
 ### First Step Analysis
 
@@ -251,6 +259,33 @@ date: 01/06/2019
    * $X_t$ = size of the family at generation t. Say X0 = 1, starting with one individual. S= [0, 1, 2, ...] = T. 
    * Specifying the distributions: joint distributions of $X_{t1},...,X_{tn}$ determined recursively by $X_{t+1} = \sum_{k=1}^{X_t} Y_{t,k}$. Define $Y_{t,1},...,Y_{t,X_t} \sim_{iid} Pois(\lambda)$ conditional on $X_t$; the Y's are the number of children each person has at a generation, where X's are the state of the family at time t. Note another sum up to a RV up to Xt. 
      * Could alternatively draw $\{Y_{t,k}\}^{\infty,\infty}_{t=0,k=1}$ iid Pois beforehand, but would not use a lot of those variables.
+3. Gambler’s Ruin
+   * Game where we win in each round (independent) 1 dollar with probability p=0.4 and lose one dollar with probability 1-p=0.6. Decide ahead of time to quit once we reach N dollars. The game is over once we reach 0 dollars. $X_n$= amount of money we have after n rounds. State space S = {0,1,...,N} - between and including the absoption states.
+   * If still playing $X_n \in [1,N-1],\; P(X_{n+1} = x_n+1|X_n=x_n,...,X_0=x_0) = 0.4 \text{ and }P(X_{n+1} = x_n-1|X_n=x_n,...,X_0=x_0) = 0.6$
+   * $P_{0,0}=1,\; P_{N,N} =1$ - if you start at either end state the game is immediately over. At every other row, have (0.6,0,0.4) centered at the column equal to the row position. Alternatively, could create a directed graph of the possible state transitions with edge weights equal to the probabilities with that state transition - this makes P an adjacency matrix.
+   * Now ask what are the chances of falling into 0 or N and how long does it take to get there? Given $X_0 = x\in\{1,2,3\}$
+   * $P = \left[\begin{array}{c}1 & 0 & 0 & 0 \\0.6 & 0 & 0.4 & 0\\0 & 0.6 & 0 & 0.4\\...\end{array}\right]$ Computer calculations suggest $lim_{n\rightarrow \infty}(P^n) = \left[\begin{array}{c}1\\57/65\\45/65\\27/65\\0\end{array}...0...\begin{array}{c}0\\8/65\\20/65\\38/65\\1\end{array}\right]$ with zeroes for all middle columns.
+4. Ehrenfest Chain
+   * Stat Physics model for two equal sized containers of gas connected by a small opening. Expect equilibrium eventually with same number of molecules in each container (balls, urns).
+   * N = total # of balls (order 10^23), particle exchange modeled as a random process, pick 1 ball uniformly at random a move to the other urn. Let $X_n = $# of balls in the left urn after the nth draw, change +- 1 at each step.
+   * $P(X_{n+1} = x + 1 | X_n=x) = \frac{N-x}{N}$ = # balls in right urn / total N. $P(X_{n+1} = x - 1 | X_n=x) = \frac{x}{N}$ = # balls in left urn / total N. Note observes the markov property.
+   * 1) How long until $x_n \approx N/2$? 2) Does it stay there? 3) How much does it fluctuate? 4) How often does the chain reach endpoints 0,N?
+   * For N=4, S = [0,1,2,3,4], $P=\left[\begin{array}{ccccc}0&1&0&0&0\\1/4&0&3/4&0&0\\0&1/2&0&1/2&0\\0&0&3/4&0&1/4\\0&0&0&1&0\\\end{array}\right]$. Similar structure to Gambler’s ruin, except:
+     * Probability of moving right / left not constant
+     * 0,4 are now repelling instead of absorbing states. 
+     * Long term behavior should be very different - gravitate to the middle rather than the endpoints
+5. Simple Random Walk (SRW)
+   * Let G = (V, E) be a graph. ||V|| = 6, E=[[1,2], [3,4], [3,5], [4,5], [5,6]]. 
+   * SRW on G: state space S = V, transition probabilities $P(x,y) = \begin{cases}1/degree(x) & for\; \{x,y\}\in E\\0 & otherwise\end{cases}$ - that is at each time step move along an edge at random chosen uniformly at random from set of edges leading out of current state.
+   * For V finite, is the distribution of $X_t \approx uniform$ on V after a long time? For our example, certainly not since 1-2 and 3-4-5-6 are separate CCs, whichever component contains $X_0$ contains $X_t\; \forall t \geq 0$. Additionally, vertices have different degrees, leading to different probabilities of visiting those nodes. Can come up with less intuitive examples as well, such as a connected 2D square - only can visit some vertices on odd states, others on even states.
+   * Recalls the drunkard on the street, that is a SRW on G with V = Z and nearest neighbor edges $E = \{\{k,k+1\}:k\in \Z\}$
+6. iid Sequence
+   * Let $\{X_n\}_{n=0}^\infty$ be iid RVs taking values in a countable set S with distribution $p(x) = P(X_n=x)$ then $P(X_{n+1}=x|X_n=x,...,X_0=x_0)=P(X_{n+1}=x|X_n=x) = P(X_{n+1}=x) =p(x)$
+   * Transition matrix $P_{X,Y} = P(X_1=y)= p(y)$ - P has identical rows all equal to the row vector p
+7. Deterministic Chain
+   * MC with $X_t$, S = [1,2,3,4] and P(1,2) = P(2,3) = P(3,4) = P(4,1) = 1 and P(x,y) = 0 - think of moving around edges of a box
+   * $X_t$ is completely deterministic conditional on $X_0$ but it is still an MC
+   * Color state 1 red, 2,4 green, 3 blue. Define $Y_t = $ color of $X_t$. Is Y an MC? No, consider if previous color is green, we may be going to red or blue with probability 1 depending on if the color prior to green was red or blue, ie $P(Y_2 =blue|Y_1=green,Y_0 = red) = 1 \neq 0 = P(Y_2 =blue|Y_1=green,Y_0 = blue)$ Distribution of the next state depends on both current and previous states. The fact that MC is deterministic did not cause this problem though.
 
 
 ## Probability Reference
