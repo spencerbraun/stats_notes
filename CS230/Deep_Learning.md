@@ -61,6 +61,38 @@
 * Architecture - RNN
 * Critical piece is data collection and labelling process. Instead of manual collection and labeling, create DB of positive words, negative words, background noise. BN is freely available online, no problem. Record in the world, just get word by word recordings - just positive word and just negative words. No need to label then, can just write script to insert positive and negative words into background noise, script can automatically label the data. By recombining in different ways, get millions of data points. The way you collect data is critical.
 
+## Full Cycle Deep Learning
+
+### Steps in a Project
+
+* 1) Select a project. Example: Using Facial Recognition to Unlock Doors
+* Get data, design model, train and evaluate the model and iterate, ship and deploy. Finally maintain the system
+
+### Getting Data
+
+* How many days will you use to collect data? Important to get some data, but don’t wait to long to dive into the problem. Only need a small amount to get started, see how far we get, then collect more data dependent on performance. 1-2 could easily suffice for an initial dataset. 
+* Get data quickly and train a quick model. Doesn’t need to be the most up to date, complicated network. Find something OSS on Github, etc. Look at the results to determine how far you are from the objective. Iterate over this process, slowly improving the dataset and the model.
+* Note - this is reasonable for jumping into a new domain. If you already have the domain knowledge, you might already know that you need a minimum number of examples, or a certain model architecture. 
+
+### Deploying Model
+
+* Edge device - model is running on the physical device. Cloud device - streams the data to the cloud for processing. 
+* For door problem, cannot have 30 f/s through NN or 24 hour streaming video to the cloud. Instead might feed an image to an activity detector as preprocessing. Most of the time, nothing is changing outside of the front door, no need to run the inference engine during this time. 
+* Only when some activity is detected do you feed it to the NN for classification.
+* How should we deploy an activity detector?
+  * Could write a program to take in a picture from 10s ago and current picture, sum up differences in pixels, and trigger for some threshold.
+  * Alternatively, train a small NN to predict human or not.
+  * Option 1 could lead to higher errors, option 2 could pass fewer images to the higher compute NN. Option 1 could be written quite quickly given its simplicity, option 2 has more to tune. 
+  * Option 1 can be a good choice for the quick and dirty model. Option 2 might be a backup if we see that option 1 is a problem. Also has very few parameters to tune. Consistent with the theme to do something quick and dirty first to see if it works, then iterate upwards when it does not.
+  * The other thing to consider is that the data changes in ML systems. Weather changes with seasons, people dress differently, people look different in other regions, hardware used might change, diversity of population, etc. A network trained to recognize data at a point in time and location will not be robust
+
+### Model Maintainence
+
+* Web search - training a system of search ranking, say there is a new figure, celebrity or language changes. The ranking algorithm no longer is relevant because the world has changed.
+* Speech recognition - trained on adult voices, but younger people were more likely to use speech recognition and the younger voices had different performance. Speech recognition attempted to be used in noisier environments, cars, initial dataset did not cover these situations.
+* Defect inspection - say in manufacturing, detecting scratches on smart phones. If the lighting changes in the factory, algorithm may cease working.
+* When the data changes, have to get new data, retrain the model, redeploy. Using a simple threshold / preprocessing step, it is easy to update or retune this section. Using a neural network means more retraining before you even get to the heart of the model.
+
 # Coursera Modules
 
 ## C1 - Neural Networks and Deep Learning

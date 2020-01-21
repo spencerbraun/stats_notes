@@ -102,12 +102,15 @@
   =\operatorname{Var}_{\mathcal{T}}\left(\hat{y}_{0}\right)+\operatorname{Bias}^{2}\left(\hat{y}_{0}\right)
   \end{aligned}$
 * In low dimensions and with N = 1000, the nearest neighbor is very close to 0, and so both the bias and variance are small. As the dimension increases, the nearest neighbor tends to stray further from the target point, and both bias and variance are incurred.
+* Bias increases as dimension increases with 1-NN, but variance can decrease - function gets very flat far from the test point, so the predictions don’t vary much once all distances are huge. (Page 25). Alternatively, with a different function, the bias is small and the variance takes off - very scenario dependent.
 
 ### Statistical Models
 
-* Additive error model for regression $Y=f(X)+\varepsilon$ where random error epsilon has $E(\varepsilon) = 0$, independent of X. $f(x)=\mathrm{E}(Y | X=x)$
+* Additive error model for regression $Y=f(X)+\varepsilon$ where random error epsilon has $E(\varepsilon) = 0$, independent of X. This assumptions imply: $f(x)=\mathrm{E}(Y | X=x)$. $P(Y|X)$ depends on X only though f(X) as an assumption - we get the same shape distribution for the errors given any value of X. These model’s approximation that means all unmeasured variables are captured by $\varepsilon$. N realizations from the model and assume errors are independent - $Var(\varepsilon_i) = \sigma^2$
 * Generally there will be other unmeasured variables that also contribute to Y, including measurement error. The additive model assumes that we can capture all these departures from a deterministic relationship via the error epsilon.
 * Function approximation - The goal is to obtain a useful approximation to f(x) for all x in some region of $\R^p$, given the representations in T. Allows us to use geometrical concepts and probabilistic inference.
+* We can write down a loss function without making any assumptions - doesn’t necessarily imply a statistical model. But it is often useful to employ a model instead of pure inference learning from data.
+* MLE: $P(G=k|X=x)=p_{k,\theta}(x)$ - vector of functions for G = k. Maximizes log likelihood to pick the parameter.
 * Linear basis expansions $f_{\theta}(x)=\sum_{k=1}^{K} h_{k}(x) \theta_{k}$. 
   * $h_k$ are a suitable set of functions or transformations of the input vector x, such as polynomials, trig functions. Or non-linear expansions such as the sigmoid $h_{k}(x)=\frac{1}{1+\exp \left(-x^{T} \beta_{k}\right)}$
   * $\theta$ - set of parameters modified to suit the data at hand, say $\theta = \beta$ for regression. Could estimate through OLS
@@ -117,15 +120,15 @@
 
 ### Structured Regression Models
 
-* For arbitrary f, minimizing $\operatorname{RSS}(f)=\sum_{i=1}^{N}\left(y_{i}-f\left(x_{i}\right)\right)^{2}$ has infinite solutions since any f passing through the points is min.
+* For arbitrary f, minimizing $\operatorname{RSS}(f)=\sum_{i=1}^{N}\left(y_{i}-f\left(x_{i}\right)\right)^{2}$ has infinite solutions since any f passing through the points is min. We need to restrict the class of function considered. If our prediction fits every training point, under a different training set where for each x there is a slightly different y value, every prediction will have error.
 * However If there are multiple observation pairs $x_i, y_{i\ell},  \;\ell= 1,...,N_i$ at each value of $x_i$, the risk is limited - solutions pass through average of $y_{i\ell}$. If sample size is infinite, this is guaranteed, but for finite N, need to reduce set of f’s.
-* There are still infinite possible restrictions, so the amiguity still exists. In general the constraints imposed by most learning methods can be described as complexity restrictions of one kind or another. This usually means some kind of regular behavior in small neighborhoods of the input space. How small a neighborhood do we draw within which the function is constant.
-* Any method that attempts to produce locally varying functions in small isotropic neighborhoods will run into problems in high dimensions—again the curse of dimensionality. And conversely, all methods that overcome the dimensionality problems have an associated—and often implicit or adaptive—metric for measuring neighborhoods, which basically does not allow the neighborhood to be simultaneously small in all directions.
+* There are still infinite possible restrictions, so the amiguity still exists. In general the constraints imposed by most learning methods can be described as complexity restrictions of one kind or another. This usually means some kind of regular behavior in small neighborhoods of the input space. How small a neighborhood do we draw within which the function is constant. Very often we impose smoothing conditions - either explicity like setting a linear model or splines, implicity with some nonparametric method.
+* Any method that attempts to produce locally varying functions in small isotropic neighborhoods will run into problems in high dimensions—again the curse of dimensionality. And conversely, all methods that overcome the dimensionality problems have an associated—and often implicit or adaptive—metric for measuring neighborhoods, which basically does not allow the neighborhood to be simultaneously small in all directions. If we restrict our attention to a single dimension or a few, we can look closely at distance in those directions.
 
 ### Classes of Restricted Estimators
 
 * Roughness penalty and Bayesian methods
-  * Penalize RSS with a roughness penalty: $\operatorname{PRSS}(f ; \lambda)=\operatorname{RSS}(f)+\lambda J(f)$
+  * Penalize RSS with a roughness penalty: $\operatorname{PRSS}(f ; \lambda)=\operatorname{RSS}(f)+\lambda J(f)$. Instead of minimizing RSS through interpolation between all points, we force some smoothing considerations.
   * $J(f)$ will be large for functions that vary too rapidly over small regions of input space. Eg. cubic smoothing spline $\operatorname{PRSS}(f ; \lambda)=\sum_{i=1}^{N}\left(y_{i}-f\left(x_{i}\right)\right)^{2}+\lambda \int\left[f^{\prime \prime}(x)\right]^{2} d x$
   * Penalty function, or regularization methods, express our prior belief that the type of functions we seek exhibit a certain type of smooth behavior, and indeed can usually be cast in a Bayesian framework.
 * Kernel Methods and Local Regression
@@ -133,16 +136,17 @@
   * Kernel function specifies local neighborhood $K_{\lambda}\left(x_{0}, x\right)$. Assigns weights to points x in region around $x_0$. 
   * Eg. local regression minimizing $\operatorname{RSS}\left(f_{\theta}, x_{0}\right)=\sum_{i=1}^{N} K_{\lambda}\left(x_{0}, x_{i}\right)\left(y_{i}-f_{\theta}\left(x_{i}\right)\right)^{2}$
 * Basis Functions and Dictionary Methods
-  * Includes the familiar linear and polynomial expansions, but more importantly a wide variety of more flexible models. Model f is a linear expansion of basis functions $f_{\theta}(x)=\sum_{m=1}^{M} \theta_{m} h_{m}(x)$. 
+  * Includes the familiar linear and polynomial expansions, but more importantly a wide variety of more flexible models. Model f is a linear expansion of basis functions $f_{\theta}(x)=\sum_{m=1}^{M} \theta_{m} h_{m}(x)$. M can be a tuning parameter, choose the # of basis functions.
   * Radial basis functions are symmetric p-dimensional kernels located at particular centroids: $f_{\theta}(x)=\sum_{m=1}^{M} K_{\lambda_{m}}\left(\mu_{m}, x\right) \theta_{m}$
 
 ### Model Selection and Bias-Variance Tradoff
 
+* Many flexible methods have a complexity parameter described above, since RSS would produce a perfectly interpolating function. Can have low penalty in low noise situations and come close to fitting data exactly - think of tight fitting of NN for image classification. Such a high signal to noise ratio that danger of overfitting is low.
 * $\operatorname{EPE}_{k}\left(x_{0}\right)=\mathrm{E}\left[\left(Y-\hat{f}_{k}\left(x_{0}\right)\right)^{2} | X=x_{0}\right] = \sigma^{2}+\left[\operatorname{Bias}^{2}\left(\hat{f}_{k}\left(x_{0}\right)\right)+\operatorname{Var}_{\mathcal{T}}\left(\hat{f}_{k}\left(x_{0}\right)\right)\right]=\sigma^{2}+\left[f\left(x_{0}\right)-\frac{1}{k} \sum_{\ell=1}^{k} f\left(x_{(\ell)}\right)\right]^{2}+\frac{\sigma^{2}}{k}$ for $ \mathcal{T}$= training data. $Y|x_0$ is independent of $\mathcal{T}$. $\sigma^2_{x_0}$ is the variance of Y arouund x0.
 * Note $\hat{f}(X_0)$ is a RV, it depends on the training data - this leads directly to our understanding of bias and variance 
-* 
 * The first term $\sigma^2$ is the irreducible error. The second and third terms are under our control, and make up the mean squared error, broken down into a bias component and a variance component. 
 * Bias: $\left[\mathrm{E}_{\mathcal{T}}\left(\dot{f}_{k}\left(x_{0}\right)\right)-f\left(x_{0}\right)\right]^{2}$ square difference between true mean and expected value of the estimate.
+* When we calculated EPE, consider what is random. Treating $x_i's$ as fixed, the randomness if from the training Y’s that are associated with the x’s in the training set. Then we can say $\mathrm{E}_{Y | X}\left[\left(Y-\hat{f}_{k}\left(x_{0}\right)\right)^{2} | X=x_{0}\right]=\sigma^{2}+\operatorname{Bias}^{2}\left(\hat{f}_{k}\left(x_{0}\right)\right)+\operatorname{Var}_{\mathcal{T}}\left(\hat{f}_{k}\left(x_{0}\right)\right)=\sigma^{2}+\left[f\left(x_{0}\right)-\frac{1}{k} \sum_{\ell=1}^{k} f\left(x_{(\ell)}\right)\right]^{2}+\frac{\sigma^{2}}{k}$ As k gets big in KNN, the variance term declines but the bias term increases since we are averaging over more f(x) values.
 * The variance term is simply the variance of an average here, and decreases as the inverse of k.
 * Often prediction error (EPE) is a vehicle for getting at MSE, which tells how well we are estimating f(x), our real interest.
 * Performance of OLS vs KNN in Bias Variance Terms
@@ -154,3 +158,83 @@
 
 ## Chapter 3: Linear Methods for Regression
 
+* Function in nature are generally not linear, so we should always think of our model as an approximation. 
+* RSE is divided by n-p-1 - we have already done some fitting, so we have reduced our degrees of freedom by p. This ensures RSE is unbiased estimate.
+* Hat matrix is conditonal on X - assuming that x is not random. So when we do $Var(\hat{\beta}) = (X^TX)^{-1}\sigma^2$, $\hat{\beta} = My$, $Var(\hat{\beta}) = MVar(y)M^T = \sigma^2MM^T = \sigma^2(X^TX)^{-1}$ since $Var(y) = \sigma^2I_n$ and $M=(X^TX)^{-1}X^T$
+
+### Least Squares
+
+* Basic model: $f(X)=\beta_{0}+\sum_{j=1}^{p} X_{j} \beta_{j}$  - the model is linear in the parameters, but X can be a number of different forms
+* Minimize RSS: $\operatorname{RSS}(\beta)=\sum_{i=1}^{N}\left(y_{i}-f\left(x_{i}\right)\right)^{2} = (\mathbf{y}-\mathbf{X} \beta)^{T}(\mathbf{y}-\mathbf{X} \beta)$ and when X has full rank, $\hat{\beta}=\left(\mathbf{X}^{T} \mathbf{X}\right)^{-1} \mathbf{X}^{T} \mathbf{y}$
+* The outcome vector y is orthogonally projected onto the hyperplane spanned by the input vectors x1 and x2. The projection $\hat{y}$ represents the vector of the least squares predictions: $\hat{\mathbf{y}}=\mathbf{X} \hat{\beta}=\mathbf{X}\left(\mathbf{X}^{T} \mathbf{X}\right)^{-1} \mathbf{X}^{T} \mathbf{y} = Hy$
+* The p predictors span a p-dimensional subspace of N space. Want to find an approximation of y that lies in that subspace - a linear combination of the columns of X. Necessarily the closest y is orthogonal to the subspace - $\hat{y} \perp $ subspace. Essentially $(y-\hat{y})\perp x_j \forall j$ - e is perp to all x vectors that form a basis for the subspace. Could choose many betas that project onto the subspace - but the one with the smallest e is the least square solution.
+* If two inputs perfectly correlated, X won’t be full rank. The least square projection no longer works, but $\hat{y}$ is still the projection of y onto C(X), there is just more than one way to express the projection in terms of the X columns.
+* To do more with this model, we need to assume the conditional expectation of Y is linear in $X_1,...,X_p$ and deviations of Y around its expectation are additive and Gaussian - $\varepsilon \sim N\left(0, \sigma^{2}\right)$. Then $\hat{\beta} \sim N\left(\beta,\left(\mathbf{X}^{T} \mathbf{X}\right)^{-1} \sigma^{2}\right)$
+* F-Statisic: $F=\frac{\left(\mathrm{RSS}_{0}-\mathrm{RSS}_{1}\right) /\left(p_{1}-p_{0}\right)}{\mathrm{RSS}_{1} /\left(N-p_{1}-1\right)}$ measures the change in residual sum-of-squares per additional parameter in the bigger model, and it is normalized by an estimate of $\sigma^2$.
+
+##### Gauss Markov Theorem
+
+* The least squares estimates of the parameters $\beta$ have the smallest variance among all linear unbiased estimates.
+* The Gauss-Markov theorem implies that the least squares estimator has the smallest mean squared error of all linear estimators with no bias. However, there may well exist a biased estimator with smaller mean squared error.
+
+##### Multiple Regression
+
+* From simple regression: $Y=X \beta+\varepsilon$, $\begin{aligned}
+  \hat{\beta}=\frac{\langle\mathbf{x}, \mathbf{y}\rangle}{\langle\mathbf{x}, \mathbf{x}\rangle},\;
+  \mathbf{r}=\mathbf{y}-\mathbf{x} \hat{\beta}
+  \end{aligned}$ for residuals r. 
+* When the inputs of X are orthogonal, they have no effect on each other’s parameter estimates in the model. Very rare in observational data, so need to orthogonalize them.
+* Gram Schmidt for multiple regression
+  * Initialize $z_0 = x_0 = 1$. 
+  * For $j \in 1,...,p$, regress $x_j$ onto $z_0,...,z_j-1$ to produce coefficients $\hat{\gamma}_{lj}=\left\langle\mathbf{z}_{\ell}, \mathbf{x}_{j}\right\rangle /\left\langle\mathbf{z}_{\ell}, \mathbf{z}_{\ell}\right\rangle$ for l in 0 to j-1 and residual vector $z_j = \mathbf{x}_{j}-\sum_{k=0}^{j-1} \hat{\gamma}_{k j} \mathbf{z}_{k}$. This procedure is equivalent to $\mathbf{X}=\mathbf{Z} \mathbf{\Gamma} = \mathbf{Z D}^{-1} \mathbf{D} \mathbf{\Gamma}=\mathbf{Q} \mathbf{R}$
+  * Regress y on the residual $z_p$ to get estimate $\hat{\beta}_{p}$
+* The algorithm produces $\hat{\beta}_{p}=\frac{\left\langle\mathbf{z}_{p}, \mathbf{y}\right\rangle}{\left\langle\mathbf{z}_{p}, \mathbf{z}_{p}\right\rangle}$ Since the zj are all orthogonal, they form a basis for the column space of X, and hence the least squares projection onto this subspace is $\hat{y}$. 
+* The multiple regression coefficient $\beta_j$ represents the additional contribution of xj on y, after xj has been adjusted for x0, x1,..., xj−1, xj+1,..., xp. If xp is highly correlated with some of the other xk’s, the residual vector zp will be close to zero, and from (3.28) the coefficient $\hat{\beta}_p$ will be very unstable. See via this formula $\operatorname{Var}\left(\hat{\beta}_{p}\right)=\frac{\sigma^{2}}{\left\langle\mathbf{z}_{p}, \mathbf{z}_{p}\right\rangle}=\frac{\sigma^{2}}{\left\|\mathbf{z}_{p}\right\|^{2}}$
+
+### Regression via QR Decomposition
+
+* Think of relation of Q and R. The first column of x is the first column of Q times a single number. Vector $q_1 = \frac{x_1}{||x_1||_2}$, the top element of R is $||x_1||_2$ to bring us back to X. 
+* The second column of X is a linear combination of the first two columns of Q - hence Q’s second column has the elements of the first column substracted off.
+* If X is not full rank, then first r columns of R look the same, but then we get a deficient triangle and get 0’s towards the bottom of the triangle. Don’t need the later columns in the linear combinations that produce X.
+* With an L2 norm, can insert an orthogonal matrix inside of it and it won’t change the norm: $||a||_2^2 = ||Qa||_2^2 \implies a^TQ^TQa = a^Ta$
+* Using this fact, for the full rank X, $\begin{aligned}
+  \|y-X \beta\|^{2} &=\left\|Q^{T} y-R \beta\right\|^{2}
+  =\left\|Q_{1}^{T} y-R_{1} \beta\right\|^{2}+\left\|Q_{2}^{T} y\right\|^{2}
+  \end{aligned}$. (Steps to get here: $X=QR \implies y=QR\beta \implies Q^Ty=Q^TQR\beta \implies y=R\beta$). Then $\hat{\beta}=R_{1}^{-1} Q_{1}^{T} y$ from the first term leaving $\mathbf{R S S}(\hat{\beta})=\left\|Q_{2}^{T} y\right\|^{2}$
+* $e=Q^{T} y$ - coordinates of y on columns of Q. $H = Q_1Q_1^T$. For rank of X k < p, we solve $Q_{1}^{T} y=R_{11} \beta_{1}+R_{12} \beta_{2}$ where $Q_1$ has r columns - this has infinite solutions. 
+
+### Subset Selection
+
+* Prediction accuracy: the least squares estimates often have low bias but large variance, may be improved by taking on some bias via shrinkage and selection. Interpretation: With a large number of predictors, we often would like to determine a smaller subset that exhibit the strongest effects.
+* Best subset regression finds for each $k \in \{0, 1, 2,...,p\}$ the subset of size k that gives smallest residual sum of squares
+* Forward stepwise selection starts with the intercept, and then sequentially adds into the model the predictor that most improves the fit. Computational: for large p we cannot compute the best subset sequence, but we can always compute the forward stepwise sequence. Statistical: forward stepwise is a more constrained search, and will have lower variance, but perhaps more bias.
+* Backward-stepwise selection starts with the full model, and sequentially deletes the predictor that has the least impact on the fit. The candidate for dropping is the variable with the smallest Z-score. Backward selection can only be used when N>p, while forward stepwise can always be used.
+* Forward-stagewise regression (FS) is even more constrained than forward stepwise regression. At each step the algorithm identifies the variable most correlated with the current residual. It then computes the simple linear regression coefficient of the residual on this chosen variable, and then adds it to the current coefficient for that variable. This is continued till none of the variables have correlation with the residuals (the least square fit when N > p). Unlike forward-stepwise regression, none of the other variables are adjusted when a term is added to the model. As a consequence, forward stagewise can take many more than p steps to reach the least squares fit - slow fitting.
+
+### Shrinkage
+
+##### Ridge Regression
+
+* $\hat{\beta}^{\text {ridge }}=\underset{\beta}{\operatorname{argmin}}\left\{\sum_{i=1}^{N}\left(y_{i}-\beta_{0}-\sum_{j=1}^{p} x_{i j} \beta_{j}\right)^{2}+\lambda \sum_{j=1}^{p} \beta_{j}^{2}\right\}$ or equivalently $\hat{\beta}^{\text {ridge }}=\underset{\beta}{\operatorname{argmin}} \sum_{i=1}^{N}\left(y_{i}-\beta_{0}-\sum_{j=1}^{p} x_{i j} \beta_{j}\right)^{2}$  st $\sum_{j=1}^{p} \beta_{j}^{2} \leq t$
+* Here $\lambda \geq 0$ is a complexity parameter that controls the amount of shrinkage: the larger the value of $\lambda$, the greater the amount of shrinkage. 
+* Ridge solutions dependent on scale - should standardize inputs! Note $\beta_0$ is not in penalty term, otherwise adding a constant to Y would effect results non linearly.
+* In matrix notation, take centered inputs $x_{i j}-\bar{x}_{j}$ less the constant. Using centered X, $\operatorname{RSS}(\lambda)=(\mathbf{y}-\mathbf{X} \beta)^{T}(\mathbf{y}-\mathbf{X} \beta)+\lambda \beta^{T} \beta$ and the solutions are $\hat{\beta}^{\text {ridge }}=\left(\mathbf{X}^{T} \mathbf{X}+\lambda \mathbf{I}\right)^{-1} \mathbf{X}^{T} \mathbf{y}$
+* Note by adding a constant to $X^TX$, it is always non-singular and is always invertible. In the case of orthonormal inputs, ridge edstimates are just scaled LS estimates $\hat{\beta}^{\text {ridge }}=\hat{\beta} /(1+\lambda)$
+* Effective degrees of freedom: $\begin{aligned}
+  \mathrm{df}(\lambda) &=\operatorname{tr}\left[\mathbf{X}\left(\mathbf{X}^{T} \mathbf{X}+\lambda \mathbf{I}\right)^{-1} \mathbf{X}^{T}\right] 
+  =\operatorname{tr}\left(\mathbf{H}_{\lambda}\right) 
+  =\sum_{j=1}^{p} \frac{d_{j}^{2}}{d_{j}^{2}+\lambda}
+  \end{aligned}$ for singular values d.
+
+##### Lasso
+
+* $\hat{\beta}^{\text {lasso }}=\underset{\beta}{\operatorname{argmin}}\left\{\frac{1}{2} \sum_{i=1}^{N}\left(y_{i}-\beta_{0}-\sum_{j=1}^{p} x_{i j} \beta_{j}\right)^{2}+\lambda \sum_{j=1}^{p}\left|\beta_{j}\right|\right\}$ or equivalently $\hat{\beta}^{\text {lasso }}=\underset{\beta}{\operatorname{argmin}} \sum_{i=1}^{N}\left(y_{i}-\beta_{0}-\sum_{j=1}^{p} x_{i j} \beta_{j}\right)^{2}$ st $\sum_{j=1}^{p}\left|\beta_{j}\right| \leq t$
+* Small t -> coefficients shrink to 0, form of subset selection. Larger t, end up with LS estimates.
+
+### Regression Restriction Comparisons
+
+* Ridge regression does a proportional shrinkage. Lasso translates each coefficient by a constant factor $\lambda$, truncating at zero. This is called “soft thresholding”
+* Both methods find the first point where the elliptical contours hit the constraint region. Unlike the disk, the diamond has corners; if the solution occurs at a corner, then it has one parameter $\beta_j$ equal to zero.
+* Consider penalty $\lambda \sum_{j=1}^{p}\left|\beta_{j}\right|^{q}$; each $\left|\beta_{j}\right|^{q}$ can be a log-prior density for $\beta_j$. The lasso, ridge regression and best subset selection are Bayes estimates with different priors.
+* This generic penalty constructs different constraint contours, but little values for q > 2 and between 0 and 1 becomes non convex.
+* Elastic-net Penalty - compromise between ridge and lasso: $\lambda \sum_{j=1}^{p}\left(\alpha \beta_{j}^{2}+(1-\alpha)\left|\beta_{j}\right|\right)$. Has constraint contour like lasso with slightly rounded edges.

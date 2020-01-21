@@ -165,6 +165,10 @@ date: 01/06/2019
 ### First Step Analysis
 
 * This method proceeds by analyzing the possibilities that can arise at the end of the first transition, and then invoking the law of total probability + the Markov property to establish a characterizing relationship among the unknown variables.
+* For a stochastic process $(X_n)^\infty_{n=0}$ denote the random times $T_x = min\{n \geq 1, X_n=x\}$ for $x \in S$, $T_A = min\{n \geq 1, X_n \in A\}$ for $A \subset S$. These T’s are called **return times**
+* $V_x = min\{n \geq 0, X_n=x\}$ for $x \in S$, $V_A = min\{n \geq 0, X_n \in A\}$ for $A \subset S$ - these are **hitting times**. Note return or hitting times could be infinite.
+* Only have $V_X \neq T_x$ if $X_0 =x$ in which case $V_x= 0$ and $T_x \geq 1$ is random
+* Absorbing: For a MC with transition probabilities $P_{XY}$ a state x is called absorbing iff $P_{xx} = 1$. Then $V_X$ is called an absorbtion time.
 * Transitory vs. Absorption Model: Transitory states in which further moves can occur and absorption states from which the model can no longer move
   * Given multiple absorption states, want to determine in which state the process gets trapped and at what time period.
   * Let $\{X_n\}$ be a finite-state Markov chain whose states are labeled 0,1,...,N. Suppose that states 0,1,..., r - 1 are transient in that $P_{i j}^{(n)} \rightarrow 0 \text { as } n \rightarrow \infty \text { for } 0 \leq i, j<r$ while states r,...,N are absorbing $\left(P_{i i}=1 \text { for } r \leq i \leq N\right)$. 
@@ -178,6 +182,10 @@ date: 01/06/2019
   * $w_i$, the mean total amount for starting position $X_0 = i$: $w_{i}=E\left[\sum_{n=0}^{T-1} g\left(X_{n}\right) | X_{0}=i\right]$
   * The sum $\sum_{n=0}^{T-1} g\left(X_{n}\right)$ always includes first term $g\left(X_{0}\right)=g(i)$. Proceeding from a future transient state j, $w_{i}=g(i)+\sum_{j=0}^{r-1} P_{i j} w_{j} \quad \text { for } i=0, \ldots, r-1$ 
   * $W_{ik}$, the mean number of visits to state k prior to absorption: $W_{i k}=\delta_{i k}+\sum_{j=0}^{r-1} P_{i j} W_{j k} \quad \text { for } i=0,1, \ldots, r-1$ 
+* Hitting and return times are examples of a class of RVs for stochastic processes - **stopping times**. Define a random variable $T \in N$ is a stopping time for a stochastic process $(X_n)_{n\geq0}$ if for any $n \geq 0$ event $\{T_n \leq n\}$ is determined by $X_0,...,X_n$. In other words conditioning on the values of $X_0,...,X_n$ makes the value of the indicator RV $1(T \leq n)$ deterministic. 
+  * Example - return time TA for A in S, by observing $X_0,...,X_n$ we see whether we had $X_k \in A$ for some 1 < k < n
+  * Non example - last return time: the last time the chain visits A before the sequence stops. We need to know when the sequence stops to say this is the last visit to A, but that is a future event.
+  * If we were to observe the values X0,X1,..., sequentially in time and then “stop” doing so right after some time n, basing our decision  to  stop  on  (at  most)  only  what  we  have  seen  thus  far,  then  we  have  the  essence  of a stopping  time. 
 
 ### Special Markov Chains
 
@@ -286,6 +294,31 @@ date: 01/06/2019
    * MC with $X_t$, S = [1,2,3,4] and P(1,2) = P(2,3) = P(3,4) = P(4,1) = 1 and P(x,y) = 0 - think of moving around edges of a box
    * $X_t$ is completely deterministic conditional on $X_0$ but it is still an MC
    * Color state 1 red, 2,4 green, 3 blue. Define $Y_t = $ color of $X_t$. Is Y an MC? No, consider if previous color is green, we may be going to red or blue with probability 1 depending on if the color prior to green was red or blue, ie $P(Y_2 =blue|Y_1=green,Y_0 = red) = 1 \neq 0 = P(Y_2 =blue|Y_1=green,Y_0 = blue)$ Distribution of the next state depends on both current and previous states. The fact that MC is deterministic did not cause this problem though.
+8. Exit Distribution for Gambler’s Ruin
+   * $X_n \in [1,N-1],\; P(X_{n+1} = x_n+1|X_n=x_n,...,X_0=x_0) = 0.4 \text{ and }P(X_{n+1} = x_n-1|X_n=x_n,...,X_0=x_0) = 0.6$ and N=4. 0 and 4 are absorbing states
+   * Q: For $X_0 = x \in \{1,2,3\}$ what is the probability we win? What is the probability $P_x(V_4 < V_0)=h(x)$ - hitting time for 4 precedes the hitting time for 0. Notation: for an event E and $x \in S$ write $P_x(E) = P(E|X_0=x),\; E_X(Y) = E(Y|X_0=x)))$
+   * h(0) = 0 - the probability that we win given the first state is 0
+   * h(4) = 1 - the probability that we win given we start at 4
+   * $h(1) =P(V_4 < V_0| V_0 = 1) = P(V_4<V_0 | X_1=0, X_0=1)P(X_1=0|X_0=1)+P(V_4<V_0 | X_1=2, X_0=1)P(X_1=2|X_0=1)\\=h(0))P(X_1=0|X_0=1) + h(2)P(X_1=2|X_0=1)=0(0.6)+h(2)(0.4)$
+   * Similarly, $h(2) = h(1)(0.6) + h(3)(0.4)$, $h(3) = h(2)(0.6) + h(4)(0.4)=h(2)(0.6) + 0.4$. Now have a system of linear equations and can solve for the hitting times. Let $h(1) = a, \;h(2) = b,\; h(3) = c$,  then $a = 2b/5,\;b=3a/5 + 2c/5,\; c=3b/5 + 2/5$. Solving the system, $c = 38/65,\; b=20/65,\;a=8/65$
+   * Q: How long does the game take - expected playing time conditional on different starting points?
+   * Need to compute $g(x) = E_xV_A$ with A = [1,4] - the set of absorbing states. $g(0) = 0,\;g(4) = 0$ since we are already at the absorbing states (if we used T, they would equal 1).
+   * $g(1)  = E[V_A|X_0 = 1]=E[V_A|X_1=0,X_0=1]0.6 +  E[V_A|X_1=2,X_0=1]0.4=(1+g(0))(0.6) + (1+g(2))(0.4)=1+0.4g(2)$
+   *  $g(2) = 1+0.6g(1) + 0.4g(3)$, $g(3) = 1+0.6g(2)+0.4g(4) - 1+0.6g(2)$. Solving the system we get g(1) = 33/13, g(2) = 50/13, g(3) = 43/13
+9. Repeated coin toss
+   * We toss a fair coin repeatedly and independently recording results as $X_n \in \{H,T\}, n \geq 1$. What is the expected # of times before we see the pattern HTH?
+   * Attempt 1: define $Y_n = (X_n, X_{n-1}, X_{n-2})$, Transition probability P(HHT, HTT) = 1/2 and P(HHT,TTT) = 0 for some examples. Say $X_{-1}=X_{-2}=T$ or Y0 = TTT as a good starting state.
+   * Attempt 2: define a MC $(Y_n)_{n \geq 1}$ with S = [0,1,2,3] defined as the largest length l for which the most recent l flips $(X_{n-l+1},...,X_n)$ match the first l letters of HTH. Y measures how far along in the sequence of HTH we are. For instance, if $Y_n=0\;if\; X_n = T$ and $X_{n-1} = T$, then $Y_n = 1$ if $X_n =H$ but $(X_{n-2},X_{n-1}) \neq (H,T)$, $Y_n=2\;if\;(X_{n-1},X_n) = (H,T)$, and $Y_n=3$ if $(X_{n-2},X_{n-1},X_n) = (H,T,H)$. 
+     * From 0, we transition to 0 with 1/2 or to 1 with 1/2. (If tails or heads respectively)
+     * From 1, we transition to 1 with 1/2 or to 2 with 1/2 (HH, HT respectively)
+     * From 2, we transition to 3 with 1/2 or 0 with 1/2 (HTT, HTH respectively)
+     * From 3 go to 1 or 2 with equal probability, but doesn't really matter since we have achieved HTH at 3
+     * E(time until HTH) = $E_0V_3$. Let g(x) = $E_XV_3$ then from the first step analysis, 
+     * g(0) = 1 + g(0)/2 + g(1)/2
+     * g(1) = 1 + g(1)/2 + g(2)/2
+     * g(2) + 1 + g(0)/2 + g(3)/2
+     * g(3) = 0
+     * Note the plus 1 ensures we are taking the minimum amount of time required to get to each stage. Solving we get g(0) = E(time until HTH) =10.
 
 
 ## Probability Reference
