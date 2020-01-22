@@ -182,10 +182,37 @@ date: 01/06/2019
   * $w_i$, the mean total amount for starting position $X_0 = i$: $w_{i}=E\left[\sum_{n=0}^{T-1} g\left(X_{n}\right) | X_{0}=i\right]$
   * The sum $\sum_{n=0}^{T-1} g\left(X_{n}\right)$ always includes first term $g\left(X_{0}\right)=g(i)$. Proceeding from a future transient state j, $w_{i}=g(i)+\sum_{j=0}^{r-1} P_{i j} w_{j} \quad \text { for } i=0, \ldots, r-1$ 
   * $W_{ik}$, the mean number of visits to state k prior to absorption: $W_{i k}=\delta_{i k}+\sum_{j=0}^{r-1} P_{i j} W_{j k} \quad \text { for } i=0,1, \ldots, r-1$ 
+
+### Stopping Times
 * Hitting and return times are examples of a class of RVs for stochastic processes - **stopping times**. Define a random variable $T \in N$ is a stopping time for a stochastic process $(X_n)_{n\geq0}$ if for any $n \geq 0$ event $\{T_n \leq n\}$ is determined by $X_0,...,X_n$. In other words conditioning on the values of $X_0,...,X_n$ makes the value of the indicator RV $1(T \leq n)$ deterministic. 
-  * Example - return time TA for A in S, by observing $X_0,...,X_n$ we see whether we had $X_k \in A$ for some 1 < k < n
-  * Non example - last return time: the last time the chain visits A before the sequence stops. We need to know when the sequence stops to say this is the last visit to A, but that is a future event.
-  * If we were to observe the values X0,X1,..., sequentially in time and then “stop” doing so right after some time n, basing our decision  to  stop  on  (at  most)  only  what  we  have  seen  thus  far,  then  we  have  the  essence  of a stopping  time. 
+* Example - return time TA for A in S, by observing $X_0,...,X_n$ we see whether we had $X_k \in A$ for some 1 < k < n
+* Non example
+  * Last return time: the last time the chain visits A before the sequence stops. We need to know when the sequence stops to say this is the last visit to A, but that is a future event.
+  * $L_A = sup\{n \geq 0: X_n\ in A\} \in \{0,1,2,...\} \cup \{\infty\}$. Conditioning on the first n steps doesn't tell you if you ever come back again. (Note, could be deterministic if you knew some information such as A is an absorbing state, but can not generalize to any chain.)
+* If we were to observe the values X0,X1,..., sequentially in time and then “stop” doing so right after some time n, basing our decision  to  stop  on  (at  most)  only  what  we  have  seen  thus  far,  then  we  have  the  essence  of a stopping  time. 
+* Recall hitting time $V_A = min\{n \geq 0; X_n \in A\}$. Return time $T_A = min\{n \geq 1; X_n \in A\}$ for A subset S. Both of these are stopping times
+* A RV $T \in \{0,1,2,3,...\}$ stopping time for a stochastic $(X_n)_{n \geq 0}$ if for all n greater than 0, the event $\{T \leq n\}$ is determined by $X_0,...,X_n$. Look at  $X_0,...,X_n$ tells us whether $X_n \in A$ by that step. For $V_A, T_A$ we can learn whether this time T has happened looking at the X's. Note $V_A$ is 0 if you start there, for return times we are bound by the minimum of 1.
+* Kth return time: $T_A^{(k)}$ is a stopping time. $T_A{(1)} = T_A,\; k \geq 2 \; T_A^{(k)} = min\{n > T_A^{k-1}: X_n \in A\}$.
+
+### Strong Markov Property
+* Regular Markov property for $(X_n)_{n \geq 0}$ condtion on $X_{n_0}=x$ then $(X_{n_0 + m})_{m \geq 0}$ is a MC with $X_0 =x$. 
+	* If you have an MC conditioned on reaching x, then once x is reached you have an a new MC starting at x. If time homogeneous $(X_{n_0+m})_{m \geq 0}$ has same distribution as $(X_n)$ conditioned on $X_0=x$.
+* Strong Markov Property - The above remains true even if x is a stopping time. 
+	*  Let T be a stopping time for a MC $(X_n)_{n \geq 0}$. For any $n \geq 1,\; x_0,...,x_{n-1}$ and $x,y \in S$, $P(X_{n+1}= y|T=n,X_0=x_0,...,X_{n-1}=x_{n-1}, X_T=x) = P(X_{n+1}=y|T=n,X_t=x)$. Y starts as soon as X hits some state. So putting  $Y_m = X_{T+m}$ conditional on $X_T =x,\; (Y_m)_{m \geq 0}$ is a MC conditioned on $Y_0 =x$. If $(X_n)_{n \geq 0}$ time homogeneous, then $(Y_m)_{m \geq 0}$ has same distribution as $(X_n)_{n \geq 0} | X_0=x$.
+	*  It is a stronger property because deterministic times are an example of stopping times. Useful for study of long time behavior of MC, since if you look after some random time, we have a MC with a distribution as if we had started at this random time.
+*  For example, consider $(X_n)_{n \geq 0}$ on SRW on Z (nearest neighbor transitions). $X_0 =0$ and stopping time $T_n = min\{n \geq 1: X_n=10\}$. Then define $Y_m = X_{T_{10}+ m}$ is a SRW on Z started at $Y_0 = 10$.
+
+### Long Term Behavior of MCs
+* Notation (see Durrett): $\rho_{xy} = P_x(T_y < \infty) = P(T_y < \infty | X_0=x)$ probability you ever return to y
+* Time homogeneous case
+	* Kth return times: For say K = 2, $P_y(T_y^{(2)} < \infty)$ - probability that if we start at y, we will come back at least twice.
+	* $P_y(T_y^{(2)} < \infty) = \sum_{n \geq 1} P(T_y^{(1)} = n , T_y^{(2)} < \infty | X_0 =y) = \sum_{n \geq 1} P(T_y^{(2)} < \infty | X_0 =y, T_y^{(1)} = n )P_y(T_y^{(1)} = n ) $. First time must be finite, then the probability that the second time must also be finite. Conditioning on $X_0 =y, T_y^{(1)}$ implies at time n we are at y, so we start a new MC once we have reached n. We can forget about $X_0 = y$ since it is now redundant by the SMP. 
+	* In the language of SMP: $(X_{T_y^{(1)}})_{m \geq 0} =^d (X_m)_{m \geq 0} | X_0 =y$
+	* So $P_y(T_y^{(2)} < \infty) = \sum_{n \geq 1} P_y(T_y^{(1)} < \infty)P_y(T_y^{(1)} = n)$, where $P_y(T_y^{(1)} < \infty) = \rho_{yy}$. So $=  \rho_{yy}\sum_{n \geq 1}P_y(T_y^{(1)} = n) =  \rho_{yy}P_y(T_y^{(1)} < \infty) =  \rho_{yy}^2$ Therefore to return twice, it just needs to happen once twice in separate MCs - so you get the square of rho. 
+	* Repeating: $P_y(T_y^{(k)} < \infty) = \rho_{yy}^k$ for time homogeneous MCs
+* SMP: interarrival times $\Delta_y^{(k)} = T_y^{(k)} T_y^{(k-1)},\; k \geq 1$ with $T_y^{(0)} = 0$, once you return to y, its as if we are starting over and these are iid variables. So all have distribution of $\Delta_y^{(1)} = T_y^{(1)} - 0 = T_y$
+	* So $T_y^{(k)}  = \sum_{j=1}^k \Delta_y^{(j)}$, then $P_y(T_y^k < \infty) = P(\sum_{j=1}^k \Delta_y^{(j)} < \infty) = P_y(\Delta_y^{(j)} < \infty  \;\forall\; 1 \leq j \leq k) = P_y(T_y < \infty)^k = \rho_{yy}^k$
+* Definition: If $y \in S$ such that $\rho_{yy} < 1$, then $\rho_{yy}^k \rightarrow 0$ as $k \rightarrow 0$ and say y is a transient state. $\rho_{yy} = 1 \implies$ chain returns to y infinitely many times with probability 1 - say y is a recurrent state.
 
 ### Special Markov Chains
 

@@ -92,6 +92,9 @@
 * Speech recognition - trained on adult voices, but younger people were more likely to use speech recognition and the younger voices had different performance. Speech recognition attempted to be used in noisier environments, cars, initial dataset did not cover these situations.
 * Defect inspection - say in manufacturing, detecting scratches on smart phones. If the lighting changes in the factory, algorithm may cease working.
 * When the data changes, have to get new data, retrain the model, redeploy. Using a simple threshold / preprocessing step, it is easy to update or retune this section. Using a neural network means more retraining before you even get to the heart of the model.
+* You also want to get ahead on maintainence - deploy updates before users complain. Between cloud and edge approaches to deployment, cloud is easier to maintain. When we deploy an ML system, often set up monitors / dashboard where we can monitor key metrics over time with threshold bands, notified once we exceed those thresholds. 
+* Often can just sample some portion of the data from devices as a statistical sample to monitor things. Cloud vs edge doesn’t affect the day 1 accuracy of the system, but if the system is designed to continue to accumulate data and improve will help keep the system working.  Builds a defensive moat to ward off competitors.
+* QA: In ML, our problems are statistical more than software bugs. The testing is not binary, right or wrong, but some % accuracy on the test set. Always important to ensure you meet some accuracy criteria.
 
 # Coursera Modules
 
@@ -386,11 +389,143 @@
 ##### Parameters and Hyperparameters
 
 * Hyperparameters - learning rate, # iterations, # hidden layers L, # hidden units $n^{[i]}$, activation function
-
 * We need to tell our learning algorithm these features. They control the parameters learned on the data
-
 * We will add to this list - momentum, mini batch size, regularizations, ...
-
 * Need to iterate through trying values for the hyperparamters to see their effect on the model.
 
-  
+## C2 - Hyperparameter tuning, Regularization and Optimization
+
+### Module 1 - Practical Aspects of Deep Learning
+
+##### Training / Dev / Test Sets
+
+* So many hyperparameters to determine - layers, hidden units, learning rates, activation functions. This is why deep learning is such an iterative process. Often intuitions in one application area do not transfer well to another application
+* Break data into training, validation / dev set, finally a test set. Use the validation set for CV and tuning, finally get results from test set.
+* In the big data era, dev and test sets become much smaller % of total data than classic 70/30 split. Say for 1mm examples, might just keep 10k for dev, 10k test.
+* Mismatched training and dev / test sets. If you are pulling data from different sources, this will turn out poorly. Make sure dev and test are definitely from the same distribution, but many people will pull in additional training data that may come from different sources that may exhibit other features.
+* Not having a test set might be ok - only needed if you want an unbiased estimate of your error. 
+
+##### Bias - Variance
+
+* Flexible - high variance, Rigid - high bias.
+* Key numbers are the train set error and dev set error. Great train set error but poor dev set error - we have high variance and have likely overfit.
+* If instead, train set error is 15% and dev set error is 16%, assuming humans have good performance on this task, the algorithm is underfitting the data and has high bias.
+* If instead 15% on training error and 30% on dev set error - have high variance and high bias. Worst of both worlds. Can construct high bias and high variance models that are highly linear in some areas while highly overfit in other regions - happens most in high dimensional inputs.
+* All of this predicated on knowing the human error or optimal Bayes error rate. If instead Bayes were higher, then we would have to adjust how we interpret these numbers
+
+##### Recipe for ML
+
+* Bias: After training, do we have high bias? Look at the training performance. If we are not fitting the training too well, could increase the network size, train longer, change our architecture. Repeat trying solutions until our bias is reduced and we fit the training data pretty well.
+* Variance: Next look at the dev set performance. If we have high variance, can we get more data, regularize, try another NN architecture? 
+* Notice these bias and variance solutions can be quite different - important to diagnose your problem correctly.
+* Bias-Variance Tradeoff in DL - so long as you can make the NN deeper and get more data, we can reduce the bias or variance respectively without really any tradeoff from the other measure. 
+
+##### Regularization
+
+* Frobenius norm: $\left\|w^{[l]}\right\|^{2}=\sum_{i=1}^{n^{l}} \sum_{j=1}^{n^{[l-1]}}\left(w_{i, j}^{[l]}\right)^{2}$
+* If you have high variance / overfitting, regularization is a good alternative to getting more data
+* L2 norm for a vector: $\|\omega\|_{2}^{2}=\sum_{j=1}^{n_{x}} \omega_{j}^{2}=w^{\top} w$
+* L2 regularization: $J(\omega, b)=\frac{1}{m} \sum_{i=1}^{m} L\left(\hat{y}^{(i)}, y{(i)}\right)+\frac{\lambda}{2 m}\|\omega\|_{2}^{2}$ - note we omit b from regularization
+* L1 $\frac{\lambda}{2 m}\|w\|_{1}$ instead will produce a sparse w, but in practice L2 is used much more often.
+* In a neural network, we are dealing with matrices - $\frac{1}{m} \sum_{i=1}^{n} L\left(\hat{y}^{(i)}, y^{(i)}\right)+\frac{\lambda}{2 m} \sum_{l=1}^{L}\left\|\omega^{(l)}\right\|^{2}_F$
+* In gradient descent, we calculated dW from backprop, then update W
+* Now we calculate the same dW, but add $\frac{\lambda}{m} \omega^{[l]}$. This is also called weight decay, since it is equivalent to multiplying W by a factor less than 1. 
+* Imagine fitting a large and deep NN, and it is overfitting the data. Our regularizer penalizes large weight matrices, so many of the hidden units carry small weights and the network is equivalent to a simpler NN with fewer hidden units.
+* Additionally, look at the tanh activation function. With a large regularization parameter, z will be constrained to be small as well. This puts in the in linear range of tanh around 0 with a strong slope - then every layer is roughly linear, and our model will have a near linear decision boundary.
+* In gradient descent, make sure you are plotting the new definition of the cost function J - otherwise may not see a monotonic decrease as we expect.
+
+##### Dropout Regularization
+
+* Randomly eliminate a set of nodes across different layers. We are now training a smaller network on each example.
+* Inverted Dropout - a method of implementing dropout, say with l=3. d3 is the dropout vector for layer 3: `d3 = np.random.rand(a3.shape[0], a3.shape[1]) < keep_prob` for `keep_prob= 0.8`, the probability that a unit will be kept in the model. Then there is a 20% chance that the node in the layer will be dropped. Then `a3 = np.multiply(a3,d3)`, then d3 will zero out the entries of a3 that correspond by the dropout. Finally `a3 /= keep_prob` to reinflate the a3 weights to ensure the expected value of a3 remains the same.
+* At test time, we do not use dropout and run the test points on the full network. This would just add noise to your predictions, since the dropout is part of random process.
+* Note: In general, the number of neurons in the previous layer gives us the number of columns of the weight matrix, and the number of neurons in the current layer gives us the number of rows in the weight matrix.
+* Intuition: we cannot put too much weight on any given unit, since it may not be present in the next iteration of training. Weights become spread over more units, reducing the size of weights on any given unit.
+* `keep_prob` can vary by layer. The largest hidden layer would have the largest weights, so you might set keep_prob to be lower than other layers where we don’t worry about overfitting. Smaller layers, we probably want minimal if any dropout.
+* Computer vision makes heavy use of dropout since they almost never have enough data for the size of the network, but in other application areas would wait to see overfitting before trying dropout.
+* Cost function J is less well defined and we lose the debugging tool of seeing a monotonically decreasing J in gradient descent. Can run the network without dropout just as a debugging tool to double check.
+
+##### Other Regularization Methods
+
+* Data augmentation - say with image, you could flip or mirror image your training data to increase data size. Not as good as new data but a good proxy. Could also apply random distortions or cropping. 
+* Early stopping - as you run gradient descent, you plot the cost function J and it should decrease monotonically. With early stopping also plot the dev set error - this will be more of a U convex shape. Can stop training the neural network at the dev set min instead of minimizing J all the way. By stopping halfway, our W is smaller than the fully trained network.
+  * Orthogonalization - you want to think about one objective at a time. Downside of early stopping is we are not considering optimizing J and preventing overfitting separately. Easier to search of all hyperparameters with L2 reg, but it is more computationally expensive since we have to search over the lambda space.
+
+##### Normalizing Inputs
+
+* Formula for normalization: $\frac{x-\mu}{\sigma}$ - 0 mean and standard variance. The variance along each predictor variable is 1
+* We normalize same mean and variance to standardize test and training set
+* If we didn’t normalize, cost function likely to be distorted to odd curve, which distorts the weighting values - elongated eliptical curves instead of circles. Gradient descent is likely to go much more directly to the minimum, instead of bouncing around.
+
+##### Vanishing / Exploding Gradients
+
+* Training difficult with very large and very small derivatives. Especially problematic in very deep networks - $y = W^{[l]}W^{[l-1]}...W^{[0]}x$. Note $a^{[1]} = W^{[0]}x$, $a^{[2]}=W^{[1]}W^{[0]}x$, etc. We are taking large powers of the weight matrices, so the value of y can explode for weights over 1 (W > I). For weights less than 1 ( W < I ), the exponents shrink the weights to zero.
+* Learning slows for tiny gradients, takes too large steps for large.
+* Weight Initialization Fix: Say we have 4 inputs in X. $z = w_1x_1 + ...w_nx_n$ - for larger n we want smaller w’s to balance out. Can set $Var(w_i) = 1/n$. In practice, set $W^{[l]} = $ `np.random.randn(slope)*np.sqrt(2/n^{[l-1]})` (better to set variance to 2 instead of 1). This is the fix generally for ReLU
+* For tanh, we tend to use Xavier initialization: $\sqrt{\frac{1}{n^{[l-1]}}}$ or $\sqrt{\frac{2}{n^{[l-1]}+n^{[l]}}}$. These initializations for variances can be tuned as well.
+
+##### Gradient Approximation and Checking
+
+* Numerical approximation - better approximations of derivatives by taking triangle around point we are interested in: $\frac{f(\theta + \epsilon)- f(\theta - \epsilon)}{2\epsilon} \approx g(\theta)$ - notice this is the difference quotient in the limit. The error is on the order of $O(\epsilon^2)$ instead of one side epsilon with error on order of $O(\epsilon)$
+* Gradient checking for debugging and verification. Take all parameters W, b, concatenate and reshape into a big vector $\theta$. Take the dW, db, etc into a big vector $d\theta$. 
+* $J(\theta) = J(\theta_1, \theta_2,...)$. For each i, $d\theta_{approx}[i] = \frac{J(\theta_1,...,\theta_i + \epsilon,...) - J(\theta_1,...,\theta_i - \epsilon,...)}{2\epsilon} \approx d\theta[i] = \frac{\partial J}{\partial \theta_i}$
+* We take $\frac{||d\theta_{approx} - d\theta||_2}{||d\theta||_2 + ||d\theta||_2} \approx 10^{-7}$ is a good range for the approximation to be close to the expected gradient. If it climbs to $10^{-3}$, should be cause for worry.
+* This is not used for training, just debugging - backprop is reserved for actual training. 
+* If algorithm fails grad check, look at components, see which have the largest differences. Remember if you included regularization, you need to include it in the grad check (note this won’t work for dropout since it is randomized). Run at random initialization, then try again after some training since the problem may be cause by extremely small weights that will grow over time.
+
+### Module 2 - Optimization Algorithms
+
+##### Mini-batch Gradient Descent
+
+* Vectorization allows you to compute on m examples. If m = 5mm, we have to process the whole dataset to take a single step in gradient descent
+* If we split up the training set into mini-batches of say 1000, and call these batches $X^{\{1\}}, X^{\{2\}},...$ for $X^{\{1\}} = ^{(1)},...,x^{(1000)}$. Then we have mini-batch t $X^{\{t\}},Y^{\{t\}}$
+* Running mini-batch gradient descent - for t = 1,...,5000 we take 1 step of grad descent using $X^{\{t\}},Y^{\{t\}}$, vectorizing calcs over those 1000 examples in each mini-batch. Perform backprop to compute gradients for the batch - this is 1 epoch of training.
+* Here, the cost function may not monotonically decrease, since we minimize over new training batches at each epoch. Should be jittery, but trend downwards. Some mini-batches may be easier to minimize than others, leading to non-monotonic minimization.
+* Choosing mini-batch size - if batch size = m, we have batch gradient descent. At the other extreme, could set batch size to 1, producing stochastic gradient descent where every example is its own mini-batch $X^{\{t\}},Y^{\{t\}} = x^{(t)},y^{(t)}$
+  * SGD won’t march directly to the minimum like BGD. Examples may lead it in an oscillating or jittery path. 
+  * In practice, use something in between. BGD takes too long to process the large dataset at each step. SGD loses all the speedup from vectorization (note the jitter can be controlled via learning rate). MBGD gives us the fastest learning in practice; we get vectorized speed ups while making progress with smaller datasets.
+  * If m less than 2000, just use BGD. Otherwise often use MB sizes of 64, 128, 256, 512. Make sure MBs fit in CPU / GPU memory
+
+##### Exponentially Weighted Averages
+
+* Say the temperature in a city over time - cold in the winter, warm in the summer. Might be useful to have a moving average. Initialize $V_0 = 0,\; V_1 = 0.9 V_0 + 0.1\theta_1$ and generally $V_t = \beta V_{t-1} + (1-\beta)\theta_t$
+* $V_t$ is approximately average over $\approx \frac{1}{1-\beta}$ days’ temperature. With a high value of beta, our curve gets much smoother, but the curve shifts as it take more days of changes to move the curve - it reacts much more slowly to changes day over day. Similarly, over smaller beta like 1/2, we average over a small number of days and the curve is highly variable
+* Notice this formulas are recursive. We essentially have an exponentially decaying function in the thetas of prior days. Note $(1-\varepsilon)^{1/\varepsilon}=\frac{1}{e}$ - use this as the gauge to see how far back weights hold power for a given epsilon/beta.
+* Implementation - initialize, V=0, then each day update V $V_{\theta} := \beta V_{\theta} + (1-\beta)\theta_t$. This takes very little memory to compute this weighted average. 
+* Bias correction - when we initialize to 0, we get a poor estimate of the first data points. For day t, use $\frac{V_t}{1-\beta^t}$ instead. When t is large, denominator becomes 1, but for small t, the denominator boosts the initial values.
+
+##### Gradient Descent with Momentum
+
+* Compute exponentially weight average of your gradient and use this to update your weights.
+* If you have elliptical level curves, GD tends to oscillate back and forth, forcing us to use a slower learning rate. On one axis (shorter) we want slower learning and the other (longer) axis want faster learning.
+* Momentum  - on iteration t, compute dW, db on current MB. Compute $V_{dW} = \beta V_{dW} + (1-\beta)dW$, the MA for the derivatives of W. $V_{db} = \beta V_{db} +(1-\beta)db$. Then $W = W - \alpha V_{dW}$, $b := b- \alpha V_{db}$. In long axis direction, derivatives are aligned and GD moves quickly in this direction, but in the shorter axis derivates cancel out and the moving average dampens the oscillations. 
+* The $dW$ term is like the acceleration and $V_{db}$ is the velocity. The beta acts as friction on the ball rolling down the bowl.
+* $\beta$ is a new hyperparameter we tune alongside $\alpha$, though commonly beta is 0.9, the average over the last 10 gradients. In practice, most do not perform bias correction, since within ten iterations we should have a good approximation for the gradient. Additionally, often omit $(1-\beta)$, and run $V_{dW} = \beta V_{dW} + dW$, though this is a bit less intuitive.
+
+##### RMSprop
+
+* Root mean squared prop. Speed up learning on the long axis, slow it on the short. 
+* On iteration t, compute dW, db on current MB. $S_{dW} = \beta_2 S_{dW} + (1-\beta_2)dW^2$ where square is element wise operation. $S_{db} = \beta_2 S_{db} + (1-\beta_2)db^2$. Then $W = W -\alpha \frac{dW}{\sqrt{S_{dW}} + \epsilon}$, $b = b - \alpha\frac{db}{\sqrt{S_{db}+\epsilon}}$. If we say W is along the long direction, it will have small dW, and b along short direction will have big db. Net effect is the the short axis direction, we divide by a larger number dampening updates and the opposite for the long direction. In practice we are in higher dimensions, could be some W vector. 
+* Note the epsilons are to ensure numerical stability - ie. not dividing by zero or a number close to zero.
+
+##### Adam Optimization
+
+* Adaptive Moment Estimation. Init: $V_{dW} = 0$, $S_{dW} =0 ,\; V_{db}=0,\;S_{db} = 0$
+* On iteration t: compute dW, db using current MB. Use momentum and RMSprop equations to update the parameters above. 
+* Implement bias correction $V_{dW}^{corrected} = V_{dW} / (1-\beta^t_1),\; V_{db}^{corrected} = V_{db} / (1-\beta^t_1),\; S_{dW}^{corrected} = S_{dW} / (1-\beta^t_2),\; S_{db}^{corrected} = S_{db} / (1-\beta^t_2)$
+* Then to update parameters - $W := W - \alpha \frac{V_{dW}^{corrected}}{\sqrt{S_{dW}^{corrected}}+\epsilon}$ and $b := b - \alpha \frac{V_{db}^{corrected}}{\sqrt{S_{db}^{corrected}}+\epsilon}$
+* Many hyperparameters: $\alpha$ needs to be tuned, $\beta_1: 0.9,\;\beta_2:0.999,\;\epsilon:10^{-8}$ 
+
+##### Learning Rate Decay
+
+* Slowly reduce your learning rate over time. Formula: $\alpha=\frac{1}{1+d e c a y R a t e \times \text { epoch } N u m b e r} \alpha_{0}$
+* Algorithm in GD may not fully converge to minimum, keeps taking steps around the min. If we reduce alpha over time, we oscillate in a tighter region around the min as we get closer. We can afford to take larger steps at the beginning and want smaller steps when we are close.
+* Can try a variety of values for hyperparameters $\alpha_0$ and decay rate
+* Could also rate decay in other ways. For example $\alpha= 0.95^{\text{epoch num}}\alpha_0$  or $\alpha = \frac{k}{\sqrt{\text{epoch num}}}\alpha_0$, discrete stepwise function, manual decay
+* Learning rate decay likely lower down on the list of things to try to improve your NN
+
+##### Local Optima and Saddle Points
+
+* In high dimensions - actually most points of zero gradients are not local optima but are saddle points. This is because you would need all p dimensions forming a cup or cap together, but much more likely to have some dimensions with positive and others with negative derivatives. 
+* Problem of plateaus - areas of zero for a large portion of a surface. This means it will take a long time to find a way towards an area of more extreme gradient. 
+
