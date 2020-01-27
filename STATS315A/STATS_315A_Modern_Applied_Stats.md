@@ -171,9 +171,34 @@
 * If two inputs perfectly correlated, X won’t be full rank. The least square projection no longer works, but $\hat{y}$ is still the projection of y onto C(X), there is just more than one way to express the projection in terms of the X columns.
 * To do more with this model, we need to assume the conditional expectation of Y is linear in $X_1,...,X_p$ and deviations of Y around its expectation are additive and Gaussian - $\varepsilon \sim N\left(0, \sigma^{2}\right)$. Then $\hat{\beta} \sim N\left(\beta,\left(\mathbf{X}^{T} \mathbf{X}\right)^{-1} \sigma^{2}\right)$
 * F-Statisic: $F=\frac{\left(\mathrm{RSS}_{0}-\mathrm{RSS}_{1}\right) /\left(p_{1}-p_{0}\right)}{\mathrm{RSS}_{1} /\left(N-p_{1}-1\right)}$ measures the change in residual sum-of-squares per additional parameter in the bigger model, and it is normalized by an estimate of $\sigma^2$.
+  * More general from F test: say $H_0:\beta_{1,...,p-q}\neq 0$ and last q = 0. Then $(RSS_0 - RSS /q)/(RSS/n-p)\sim F_{n-p},q$ for $RSS_0$ the RSS for our subset model forcing the last q to 0. When q = 1, $F_{n-p,1} = t^2_{n-p}$ - equivalence between t and F tests. Then the p values can be interpreted as the effect you get leaving that variable out of the model and keeping the others.
+  * Cannot simply remove the insignificant variables - if they are linearly dependent, then removing one might make the other significant. 
+* Properties of OLS 
+  * OLS is **equivariant** under non-singular linear transformations of X. If we make a transformation and solve we can undo the transformation to recover the solution for the original system. If $\hat{\beta}$ is OLS solution for X then $\beta^* = A^{-1}\hat{\beta}$ is OLS solution for $X^* = XA$ for A p x p nonsingular.
+    * Many models are not equivariant - PCA is not equivariant. $z_1 = Xa_1$ - if we standardized the cols of X we get a solution but not recoverable if we didn’t standardize the cols of X. Lasso and ridge are also not equivariant.
+  * Given $$\mathbf{z}_{p}=\mathbf{x}_{p}-\mathbf{X}_{(p)} \gamma$$ for $\mathbf{X}_{(p)}$ submatrix of X exluding last columns for any gamma. Then OLS coef for $x_p$ is the same as for $z_p$. This follows from equivariance. We have $X = (X_{(p)},x_p)$, $\tilde{X} = (X_{(p)},z_p)$. Regression on X and $\tilde{X}$, then $x_p, z_p$ fill the same role in the regression.
+    * Now let $\gamma$ be the OLS coef of $x_p$ on $X_{(p)}$, then $z_p$ is the residual obtained by adjusting $x_p$ for other variables in the model. $z_p$ then orthogonal to $X_{(p)}$. 
+    * Why do we care? The coef of a variable picks up what is left off after removing the effect of others. The variance of a coefficient depends on the size of the norm of $z_p$. If the residual is small after adjusting for the other variables, the norm gets small and the variance of the coef blows up - highly uncertain when not much unexplained signal left in the residuals. This is true for any of the variates. The more correlated stuff you throw into your model, the less interpretable your model will be.
+
+##### Assumptions for Inference
+
+* Assume linearity, normality, constant variance and independent of errors with X’s.
+* Often the last is ignored - given some model $y_{i}=\beta_{0}+\sum_{j} x_{i j} \beta_{j}+\left(\sum_{k} x_{i k}^{*} \theta_{k}+\varepsilon_{i}\right)$ we often just lump in the last ones with the error.
+* Also the x’s are considered fixed, but just an assumption of convenience - most of the time x’s are random. 
+* **Bootstrap can help here**
+* We assume additivity, but predictors usually change together - correlation in the data can confound interpretation. Can often end up with negative effect on one predictor when two correlated predictors are both positively correlated with the response. Can render a model uninterpretable
+
+##### Model Performance
+
+* Measure of estimator: $$\operatorname{Mse}[\hat{\mathbf{f}}(x)]=\mathrm{E}[\hat{\mathbf{f}}(x)-\mathbf{f}(x)]^{2} = \operatorname{Var}[\hat{\mathbf{f}}(x)]+[\mathrm{E} \hat{\mathbf{f}}(x)-\mathbf{f}(x)]^{2}$$
+* If linear model is correct, Gauss-Markov theorem applies and the LS prediction is unbiased and has the lowest variance among all unbiased estimators that are linear functions of y. 
+* Application: Time Series
+  * Fitting AR(k) model - k lags as predictors.
+  * We regress over many correlated variables, the t-stats are not significant, but prediction is our goal, not inference.
 
 ##### Gauss Markov Theorem
 
+* Assumptions: linear model is correct, unbiased estimate, linear estimate. These are hard assumptions to live up to in practice. Always we can create a biased estimate with smaller MSE, James-Stein theorem says we can always improve an estimator’s MSE through regularization / shrinkage.
 * The least squares estimates of the parameters $\beta$ have the smallest variance among all linear unbiased estimates.
 * The Gauss-Markov theorem implies that the least squares estimator has the smallest mean squared error of all linear estimators with no bias. However, there may well exist a biased estimator with smaller mean squared error.
 
@@ -184,6 +209,7 @@
   \mathbf{r}=\mathbf{y}-\mathbf{x} \hat{\beta}
   \end{aligned}$ for residuals r. 
 * When the inputs of X are orthogonal, they have no effect on each other’s parameter estimates in the model. Very rare in observational data, so need to orthogonalize them.
+* Saying formally, $X_1, X_2$ mutually orthogonal, then $X_1^T(y - X\hat{\beta}) = X_1^T(y - X_1\hat{\beta}_1)=0$ and same for $\beta_2$. You can do the multiple regression by doing the univaritate regression with orthogonal columns.
 * Gram Schmidt for multiple regression
   * Initialize $z_0 = x_0 = 1$. 
   * For $j \in 1,...,p$, regress $x_j$ onto $z_0,...,z_j-1$ to produce coefficients $\hat{\gamma}_{lj}=\left\langle\mathbf{z}_{\ell}, \mathbf{x}_{j}\right\rangle /\left\langle\mathbf{z}_{\ell}, \mathbf{z}_{\ell}\right\rangle$ for l in 0 to j-1 and residual vector $z_j = \mathbf{x}_{j}-\sum_{k=0}^{j-1} \hat{\gamma}_{k j} \mathbf{z}_{k}$. This procedure is equivalent to $\mathbf{X}=\mathbf{Z} \mathbf{\Gamma} = \mathbf{Z D}^{-1} \mathbf{D} \mathbf{\Gamma}=\mathbf{Q} \mathbf{R}$
@@ -193,15 +219,26 @@
 
 ### Regression via QR Decomposition
 
-* Think of relation of Q and R. The first column of x is the first column of Q times a single number. Vector $q_1 = \frac{x_1}{||x_1||_2}$, the top element of R is $||x_1||_2$ to bring us back to X. 
+* Think of relation of Q and R. The first column of x is the first column of Q times a single number. Vector $q_1 = \frac{x_1}{||x_1||_2}$, the top element of R is $||x_1||_2$ to bring us back to X.  The first p columns of X for a basis for the columns of X. 
 * The second column of X is a linear combination of the first two columns of Q - hence Q’s second column has the elements of the first column substracted off.
-* If X is not full rank, then first r columns of R look the same, but then we get a deficient triangle and get 0’s towards the bottom of the triangle. Don’t need the later columns in the linear combinations that produce X.
+* If X is not full rank, then first r columns of R look the same, but then we get a deficient triangle and get 0’s towards the bottom of the triangle. Don’t need the later columns in the linear combinations that produce X. This assumes that the columns are in a certain order that allow us to do this - we can shuffle the columns and pull the independent columns of X forward.
 * With an L2 norm, can insert an orthogonal matrix inside of it and it won’t change the norm: $||a||_2^2 = ||Qa||_2^2 \implies a^TQ^TQa = a^Ta$
 * Using this fact, for the full rank X, $\begin{aligned}
   \|y-X \beta\|^{2} &=\left\|Q^{T} y-R \beta\right\|^{2}
   =\left\|Q_{1}^{T} y-R_{1} \beta\right\|^{2}+\left\|Q_{2}^{T} y\right\|^{2}
   \end{aligned}$. (Steps to get here: $X=QR \implies y=QR\beta \implies Q^Ty=Q^TQR\beta \implies y=R\beta$). Then $\hat{\beta}=R_{1}^{-1} Q_{1}^{T} y$ from the first term leaving $\mathbf{R S S}(\hat{\beta})=\left\|Q_{2}^{T} y\right\|^{2}$
-* $e=Q^{T} y$ - coordinates of y on columns of Q. $H = Q_1Q_1^T$. For rank of X k < p, we solve $Q_{1}^{T} y=R_{11} \beta_{1}+R_{12} \beta_{2}$ where $Q_1$ has r columns - this has infinite solutions. 
+  * When you have a euclidean norm, you can always multiply inside on the left by an ortho matrix. Why? $||Z||^2  = Z^TZ \implies (QZ)^TQZ = Z^TZ$
+  * $R_1$ above is p x p nonsingular. The inverse of triangular matrix is trivial.
+* $e=Q^{T} y$ - coordinates of y on columns of Q - ie. in an orthonormal basis. $H = Q_1Q_1^T$. For rank of X k < p, we solve $Q_{1}^{T} y=R_{11} \beta_{1}+R_{12} \beta_{2}$ where $Q_1$ has r columns - this has infinite solutions. 
+* $\hat{y}$ is a projection of y into the columns space of X, so $\hat{y} = Q_1Q_1^ty = Hy = X(X^TX)^{-1}X^T$ for projection matrix hat H. Clearly the orthornormal version of H is more convenient. When rank X is deficient, this is especially useful. $Q_1$ is the first r columns of Q, and all columns beyond that are going to be zero when multiplied by R. Then $Q_{1}^{T} y=R_{11} \beta_{1}+R_{12} \beta_{2}$ has infinite solutions, need to set $\beta_2=0$ and solve for $\beta_1$, but this is an arbitrary choice. We could have chosen other solutions. We can do something less arbitrary - finding the $\beta$ with the smallest norm (see Strang for min solution).
+* Despite the non-uniqueness of the solution, the fit is well defined - we still are projecting onto the same subspace $Q_1Q_1^Ty$.
+
+##### Distributional Aspects
+
+* $\varepsilon \sim (0, \sigma^2)$ iid, though we can add normality. Given the X’s (fixed), $Cov(\hat{\beta}) = (X^TX)^{-1}\sigma^2 = (R^TR)^{-1}\sigma^2$
+* Adding the normal assumption for errors, we get the beta distribution $\hat{\beta} \sim N(\beta, (X^TX)^{-1}\sigma^2)$
+* The effects e also normal $N(R\beta, \sigma^2 I)$ (since y was distributed $Q\beta$). Can break e into e1 and e2, wheree1 has mean $R_1\beta$ and e2 have mean zero since remaining R is zero. Then $||e_2||^2 \sim \sigma^2\chi^2_{N-p}$
+* Note $\sigma^2 = RSS / (n-p)$, denom to make unbiased. e1 distributed with a non zero mean, but under H0, $\beta =0$, so e1 also chi distributed. e1 and e2 independent since uncorrelated Normals are independent. Then $$\frac{\left\|e_{1}\right\|^{2}}{p} / \frac{\left\|e_{2}\right\|^{2}}{N-p} \sim F_{p, N-p}$$ which we can use to test all the coefficients are simultaneously 0.
 
 ### Subset Selection
 

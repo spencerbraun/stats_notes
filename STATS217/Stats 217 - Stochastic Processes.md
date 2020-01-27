@@ -1,7 +1,5 @@
----
 title: STATS 217
 date: 01/06/2019
----
 
 
 
@@ -136,10 +134,18 @@ date: 01/06/2019
   * Let $X_i = 1(\text{ith child has blue eyes})$. Then $Z = \sum_{i=1}^N X_i$ - we have a sum with a random upper limit. But we can condition on the RV N: $E(Z|N) = E(\sum_{i=1}^N X_i| N) = \sum_{i=1}^NE(X_i|N)$. Note the summation becomes deterministic conditioned on N, so we can pull out of the expectation. X and N are independent, so $=\sum_{i=1}^NE(X_i) = N * \frac{1}{4} = N/4$ 
   * $E(Z) = EE(Z|N) = \frac{1}{4}EN = \frac{\lambda}{4}$
 
-## Chapter 3: Markov Chains
+## Markov Chains
 
 * A stochastic process is a family of RVs $(X_t)_{t \in T}$ indexed by a set T (say time) characterized by 1) indexed set T, 2) state space S, the set of possible outcomes $X_t$, 3) Joint distributions of finite dimensional marginals, $X_{t_1},...,X_{t_n},\; \forall t_1,...,t_n \in T$
 * The joint distribution: need to specify $P(X_{t_1} \in A_1,...,X_{t_n} \in A_n)$ for all t in T and all A in S. But generally enough to know what the pmf is. For $X_t$ discrete (S finite) enough to specify the joint PMFs $P_{X_t1,...,X_tn}(x_1,...,x_n)$ for all t in T and all x in S.
+
+### Definitions and Theorems
+
+* Chapman-Kolmogorov Equation for m step transition probability: $p^{m+n}(i, j)=\sum_{k} p^{m}(i, k) p^{n}(k, j)$
+* Notation: probability of A given initial state x $P_{x}(A)=P\left(A | X_{0}=x\right)$
+* Time of first return (to y): $T_{y}=\min \left\{n \geq 1: X_{n}=y\right\}$
+* Probability $X_n$ returns to y when it starts at y: $\rho_{y y}=P_{y}\left(T_{y}<\infty\right)$. Take powers to see probability of returning twice, etc.
+* Stopping time $\{T=n\}=\left\{X_{1} \neq y, \ldots, X_{n-1} \neq y, X_{n}=y\right\}$
 
 ### Markov Processes
 
@@ -193,6 +199,7 @@ date: 01/06/2019
 * Recall hitting time $V_A = min\{n \geq 0; X_n \in A\}$. Return time $T_A = min\{n \geq 1; X_n \in A\}$ for A subset S. Both of these are stopping times
 * A RV $T \in \{0,1,2,3,...\}$ stopping time for a stochastic $(X_n)_{n \geq 0}$ if for all n greater than 0, the event $\{T \leq n\}$ is determined by $X_0,...,X_n$. Look at  $X_0,...,X_n$ tells us whether $X_n \in A$ by that step. For $V_A, T_A$ we can learn whether this time T has happened looking at the X's. Note $V_A$ is 0 if you start there, for return times we are bound by the minimum of 1.
 * Kth return time: $T_A^{(k)}$ is a stopping time. $T_A{(1)} = T_A,\; k \geq 2 \; T_A^{(k)} = min\{n > T_A^{k-1}: X_n \in A\}$.
+* Some intuition for stopping time: originates from the gambler's ruin, the gambler has made some decsion to stop after reaching a certain amount of money. It is a stopping rule, once this happens, I will stop. For it to be a stopping rule, you have to be able to tell if it has occurred - ie it must not be random anymore.
 
 ### Strong Markov Property
 * Regular Markov property for $(X_n)_{n \geq 0}$ condtion on $X_{n_0}=x$ then $(X_{n_0 + m})_{m \geq 0}$ is a MC with $X_0 =x$. 
@@ -201,18 +208,6 @@ date: 01/06/2019
 	*  Let T be a stopping time for a MC $(X_n)_{n \geq 0}$. For any $n \geq 1,\; x_0,...,x_{n-1}$ and $x,y \in S$, $P(X_{n+1}= y|T=n,X_0=x_0,...,X_{n-1}=x_{n-1}, X_T=x) = P(X_{n+1}=y|T=n,X_t=x)$. Y starts as soon as X hits some state. So putting  $Y_m = X_{T+m}$ conditional on $X_T =x,\; (Y_m)_{m \geq 0}$ is a MC conditioned on $Y_0 =x$. If $(X_n)_{n \geq 0}$ time homogeneous, then $(Y_m)_{m \geq 0}$ has same distribution as $(X_n)_{n \geq 0} | X_0=x$.
 	*  It is a stronger property because deterministic times are an example of stopping times. Useful for study of long time behavior of MC, since if you look after some random time, we have a MC with a distribution as if we had started at this random time.
 *  For example, consider $(X_n)_{n \geq 0}$ on SRW on Z (nearest neighbor transitions). $X_0 =0$ and stopping time $T_n = min\{n \geq 1: X_n=10\}$. Then define $Y_m = X_{T_{10}+ m}$ is a SRW on Z started at $Y_0 = 10$.
-
-### Long Term Behavior of MCs
-* Notation (see Durrett): $\rho_{xy} = P_x(T_y < \infty) = P(T_y < \infty | X_0=x)$ probability you ever return to y
-* Time homogeneous case
-	* Kth return times: For say K = 2, $P_y(T_y^{(2)} < \infty)$ - probability that if we start at y, we will come back at least twice.
-	* $P_y(T_y^{(2)} < \infty) = \sum_{n \geq 1} P(T_y^{(1)} = n , T_y^{(2)} < \infty | X_0 =y) = \sum_{n \geq 1} P(T_y^{(2)} < \infty | X_0 =y, T_y^{(1)} = n )P_y(T_y^{(1)} = n ) $. First time must be finite, then the probability that the second time must also be finite. Conditioning on $X_0 =y, T_y^{(1)}$ implies at time n we are at y, so we start a new MC once we have reached n. We can forget about $X_0 = y$ since it is now redundant by the SMP. 
-	* In the language of SMP: $(X_{T_y^{(1)}})_{m \geq 0} =^d (X_m)_{m \geq 0} | X_0 =y$
-	* So $P_y(T_y^{(2)} < \infty) = \sum_{n \geq 1} P_y(T_y^{(1)} < \infty)P_y(T_y^{(1)} = n)$, where $P_y(T_y^{(1)} < \infty) = \rho_{yy}$. So $=  \rho_{yy}\sum_{n \geq 1}P_y(T_y^{(1)} = n) =  \rho_{yy}P_y(T_y^{(1)} < \infty) =  \rho_{yy}^2$ Therefore to return twice, it just needs to happen once twice in separate MCs - so you get the square of rho. 
-	* Repeating: $P_y(T_y^{(k)} < \infty) = \rho_{yy}^k$ for time homogeneous MCs
-* SMP: interarrival times $\Delta_y^{(k)} = T_y^{(k)} T_y^{(k-1)},\; k \geq 1$ with $T_y^{(0)} = 0$, once you return to y, its as if we are starting over and these are iid variables. So all have distribution of $\Delta_y^{(1)} = T_y^{(1)} - 0 = T_y$
-	* So $T_y^{(k)}  = \sum_{j=1}^k \Delta_y^{(j)}$, then $P_y(T_y^k < \infty) = P(\sum_{j=1}^k \Delta_y^{(j)} < \infty) = P_y(\Delta_y^{(j)} < \infty  \;\forall\; 1 \leq j \leq k) = P_y(T_y < \infty)^k = \rho_{yy}^k$
-* Definition: If $y \in S$ such that $\rho_{yy} < 1$, then $\rho_{yy}^k \rightarrow 0$ as $k \rightarrow 0$ and say y is a transient state. $\rho_{yy} = 1 \implies$ chain returns to y infinitely many times with probability 1 - say y is a recurrent state.
 
 ### Special Markov Chains
 
@@ -331,7 +326,7 @@ date: 01/06/2019
    * Q: How long does the game take - expected playing time conditional on different starting points?
    * Need to compute $g(x) = E_xV_A$ with A = [1,4] - the set of absorbing states. $g(0) = 0,\;g(4) = 0$ since we are already at the absorbing states (if we used T, they would equal 1).
    * $g(1)  = E[V_A|X_0 = 1]=E[V_A|X_1=0,X_0=1]0.6 +  E[V_A|X_1=2,X_0=1]0.4=(1+g(0))(0.6) + (1+g(2))(0.4)=1+0.4g(2)$
-   *  $g(2) = 1+0.6g(1) + 0.4g(3)$, $g(3) = 1+0.6g(2)+0.4g(4) - 1+0.6g(2)$. Solving the system we get g(1) = 33/13, g(2) = 50/13, g(3) = 43/13
+   * $g(2) = 1+0.6g(1) + 0.4g(3)$, $g(3) = 1+0.6g(2)+0.4g(4) - 1+0.6g(2)$. Solving the system we get g(1) = 33/13, g(2) = 50/13, g(3) = 43/13
 9. Repeated coin toss
    * We toss a fair coin repeatedly and independently recording results as $X_n \in \{H,T\}, n \geq 1$. What is the expected # of times before we see the pattern HTH?
    * Attempt 1: define $Y_n = (X_n, X_{n-1}, X_{n-2})$, Transition probability P(HHT, HTT) = 1/2 and P(HHT,TTT) = 0 for some examples. Say $X_{-1}=X_{-2}=T$ or Y0 = TTT as a good starting state.
@@ -347,6 +342,95 @@ date: 01/06/2019
      * g(3) = 0
      * Note the plus 1 ensures we are taking the minimum amount of time required to get to each stage. Solving we get g(0) = E(time until HTH) =10.
 
+## Long Term Behavior of MCs
+
+### Definitions and Theorems
+
+* Time of kth return: $T_{y}^{1}=T_{y}$ and k > 1, $T_{y}^{k}=\min \left\{n>T_{y}^{k-1}: X_{n}=y\right\}$. The probability that we return k times is $P_{y}\left(T_{y}^{k}<\infty\right)=\rho_{y y}^{k}$
+* Transient: $\rho_{y y}<1$ and $\rho_{y y}^{k} \rightarrow 0 \text { as } k \rightarrow \infty$. The number of time periods that the process will be in state y $\sim geom(\frac{1}{1-\rho_{yy}})$
+* Recurrent: $\rho_{y y}=1$ and $\rho_{y y}^{k}=1$ (absorbing state the strongest example of recurrence). Recurrent states visited infinitely often.
+* Communication: x communicates with y if $\rho_{x y}=P_{x}\left(T_{y}<\infty\right)>0$
+* If $\rho_{x y}>0, \text { but } \rho_{y x}<1$, x is transient. If x recurrent and $\rho_{x y}>0, \text { then } \rho_{y x}=1$
+* Closed: impossible to leave closed set, $p(i, j)=0$ for $i \in A, j \notin A$
+* Irreducible: set B irreducible if whenever $i, j \in B$ i and j communicate. The whole MC is irreducible if all states communicate with each other.
+* Theorem 1.7: If C is a finite closed and irreducible set, then all states in C are recurrent. 
+* Lemma 1.9. If x is recurrent and $x \rightarrow y$, then y is recurrent.
+* Lemma 1.11. $E_{x} N(y)=\rho_{x y} /\left(1-\rho_{y y}\right) =\sum_{n=1}^{\infty} p^{n}(x, y)$. Recurrence defined by $E_{y} N(y)=\infty$, expected # of time periods that process is in state y is infinite.
+* Stationary Distribution: If $\pi p = \pi$, then $\pi$ is called a stationary distribution. If the distribution at time 0 is the same as the distribution at time 1, then by the Markov property it will be the distribution at all times
+* Doubly stochastic: transition matrix whose columns sum to 1
+* Detailed balance condition: $\pi(x) p(x, y)=\pi(y) p(y, x)$
+* Period: The period of a state is the largest number that will divide all the n $\geq$ 1 for which $p^{n}(x, x)>0$
+* Lemma 1.17. If $\rho_{x y}>0 \text { and } \rho_{y x}>0$, then x and y have the same period - periodicity is a class property. If $p(x, x)>0$ then x has period 1.
+* Define I: p is irreducible, A: aperiodic (all states have periood 1), R: all states recurrent, S: stationary distribution $\pi$ exists
+* Convergence Theorem: $p^{n}(x, y) \rightarrow \pi(y)$ as $n \rightarrow \infty$ for I, A, S
+* Ergodic: State i is positive recurrent if i is recurrent and, starting in i, the expected return time to i is finite. Positive recurrent, aperiodic states are called ergodic.
+* Limiting Probabilities: An irreducible, ergodic MC has limit independent of i $\pi_{j}=\lim _{n \rightarrow \infty} P_{i j}^{n}$, where $\pi_j$ is the solution to the system  $\pi_{j}=\sum_{i=0}^{\infty} \pi_{i} P_{i j}, \quad j \geq 0 \text{ s.t. }\sum_{j=0}^{\infty} \pi_{j}=1$. Note $\pi_j$ also the long run proportion of time that the process will be in state j
+
+### Return Times
+
+* Notation (see Durrett): $\rho_{xy} = P_x(T_y < \infty) = P(T_y < \infty | X_0=x)$ probability you ever return to y
+* Time homogeneous case
+	* Kth return times: For say K = 2, $P_y(T_y^{(2)} < \infty)$ - probability that if we start at y, we will come back at least twice.
+	* $P_y(T_y^{(2)} < \infty) = \sum_{n \geq 1} P(T_y^{(1)} = n , T_y^{(2)} < \infty | X_0 =y) = \sum_{n \geq 1} P(T_y^{(2)} < \infty | X_0 =y, T_y^{(1)} = n )P_y(T_y^{(1)} = n ) $. First time must be finite, then the probability that the second time must also be finite. Conditioning on $X_0 =y, T_y^{(1)}$ implies at time n we are at y, so we start a new MC once we have reached n. We can forget about $X_0 = y$ since it is now redundant by the SMP. 
+	* In the language of SMP: $(X_{T_y^{(1)}})_{m \geq 0} =^d (X_m)_{m \geq 0} | X_0 =y$
+	* So $P_y(T_y^{(2)} < \infty) = \sum_{n \geq 1} P_y(T_y^{(1)} < \infty)P_y(T_y^{(1)} = n)$, where $P_y(T_y^{(1)} < \infty) = \rho_{yy}$. So $=  \rho_{yy}\sum_{n \geq 1}P_y(T_y^{(1)} = n) =  \rho_{yy}P_y(T_y^{(1)} < \infty) =  \rho_{yy}^2$ Therefore to return twice, it just needs to happen once twice in separate MCs - so you get the square of rho. 
+	* Repeating: $P_y(T_y^{(k)} < \infty) = \rho_{yy}^k$ for time homogeneous MCs
+* SMP: interarrival times $\Delta_y^{(k)} = T_y^{(k)} T_y^{(k-1)},\; k \geq 1$ with $T_y^{(0)} = 0$, once you return to y, it's as if we are starting over and these are iid variables. So all have distribution of $\Delta_y^{(1)} = T_y^{(1)} - 0 = T_y$
+	
+	* So $T_y^{(k)}  = \sum_{j=1}^k \Delta_y^{(j)}$, then $P_y(T_y^k < \infty) = P(\sum_{j=1}^k \Delta_y^{(j)} < \infty) = P_y(\Delta_y^{(j)} < \infty  \;\forall\; 1 \leq j \leq k) = P_y(T_y < \infty)^k = \rho_{yy}^k$
+
+### Classifying States
+
+* Definition: If $y \in S$ such that $\rho_{yy} < 1$, then $\rho_{yy}^k \rightarrow 0$ as $k \rightarrow 0$ and say y is a transient state. $\rho_{yy} = 1 \implies$ chain returns to y infinitely many times with probability 1 - say y is a recurrent state.
+
+* Example: An absorbing state is recurrent. $P_{X,X} = 1$ - once you are there you stay there.
+
+* Let number of visits to Y equal $N_Y := \sum_{n \geq 1} 1(X_n=y)$ not counting time n=0. Condition on $X_0 = y$ how many time will we return to y, $1 + N_Y \sim \begin{cases}geom(1-\rho_{yy} & \text{if y transient} \\ \infty & \text{if y recurrent} \end{cases}$. Note $1 - \rho_{yy}$ is probability of never returning again. In particular, $E_YN_Y =  \begin{cases}\frac{\rho_{yy}}{1 - \rho_{yy}} & \text{ y transient} \\ \infty & recurrent\end{cases} = E_y \sum _{n\geq 1}1(X_n = y) = \sum_{n \geq 1} P_y(X_n =y) = \sum P^n_{y,y}$. What we have shown is Y is transient iff $ \sum P^n_{y,y} = E_YN_Y < \infty$. Serves as another definition of transience. 
+	* Example: Gambler's Ruin. State space is the number of dollars you have, 0 and N are absorbing states, 0.6 probability of going down, 0.4 to go up taking steps of 1 at a time. 0, N recurrent / absorbing. For $k \in \{1,2,...,N-1\}$:
+		* State 1: $P_1(T_1 = \infty) \geq P_{1,0} = 0.6 > 0 \implies 1$ is transient. At N-1, $P_{N-1}(T_{N-1} = \infty) \geq 0.4 > 0$
+		* $P_k(T_k = \infty) \geq P_{k,k-1}P_{k-1,k-2}...P_{1,0} = 0.6^k > 0 \implies $ k is transient. 
+	
+* Proposition 1: Suppose S is finite, $S \in \{1,2,...,N\}\rightarrow P$ N x N matrix and suppose $P_{X,Y} \geq p_0 > 0, \; \forall x,y \in S$ Then all states are recurrent. 
+	* Proof: Let $x \in S$ arbitrary, need to show $P_X(T_X = \infty) = 0$, where $P_X(T_X = \infty) = 1- \rho_{xx}$. Let's consider the probability of starting from X is at least n $P_X(T_X > n) = P_X(X_1 \neq x, ..., X_n \neq x) = P_X(X_n \neq x | X_1 \neq x,...,X_{n-1} \neq x)P(X_1 \neq x,...,X_{n-1} \neq x)$. Now we can use the Markov property.
+	* Then $P_X(X_n \neq x | X_1 \neq x,...,X_{n-1} \neq x)P(X_1 \neq x,...,X_{n-1} \neq x)$ bounded above (at most) $max_{y \neq x}(1 - P_{y,x})  \leq 1 - p_0$. Applying this inductively, $P_X(T_X > n) \leq (1-p_0)^n$. Probability than you avoid going to x n-times in a row is going to 0 exponentially fast. OTOH, bounded below by $P_X(T_X = \infty)$ which implies that $P_X(T_X = \infty) = 0$ (by are upper bound converging on an arbitrarily small number). 
+	
+* Definition: (Following Durrett) Say x communicates with y, written $x \rightarrow y$, if starting from X $\rho_{xy} = P_X(T_Y < \infty) > 0$. Say x and y communicate if $x \rightarrow y,\; y\rightarrow x$ write $x \leftarrow y$. Note this is a transitive property $x \rightarrow y,\; y \rightarrow z \implies x \rightarrow z$. Transitive relation on the state space, allowing us to break the state space into chunks.
+	
+	![Screen Shot 2020-01-26 at 11.22.17 AM](/Users/spencerbraun/Documents/Notes/Stanford/STATS217/Screen Shot 2020-01-26 at 11.22.17 AM.png)
+	
+	
+	* Motivating example: see drawing (Durrett 17). 2 and 3 are transient - as soon as they leave these states there are no arrows back to them. Very strong case of transience, just need a positive probability that they never return but here that probability is 1 - a guarantee. 1 and 5 communicate with each other. $4 \rightarrow 6 \rightarrow 7$. $2 \rightarrow $ all others, but no other state communicates with 2. $3 \rightarrow 1,5,4,6,7$ (all except 2). $2 \rightarrow 3$. In summation, blocks of 1,5 recurrent (R1), 2,3 transient (T), 4,6,7 recurrent (R2). Note also, x does not communicate with y for all x in R1 and all y in R2. Within the components, $x \rightarrow y$ for all x,y in R1 or x,y in R2. 
+	
+* Definition: A set $A \subset S$ is "closed" if it is impossible to get out - $P_{x,y} = 0 \forall x \in A, y \in A^C$. 
+	
+	* In example, closed sets are $\{1,5\} = R1,\; \{4,6,7\} = R2$. Also $R1 \cup R2$ and $R1 \cup R2 \cup \{3\}$ are closed. Additionally the whole state space S is closed.
+	
+* Definition: A set $A \subset S$ is irreducible if $x \rightarrow y$ for all x,y in A.
+	
+	* In example, R1 and R2 are the irreducible sets.
+	
+* **Theorem 1 (1.7)**: If $C \subset S$ is finite, closed, irreducible, then all states in C are recurrent. (Note S may be infinite and theorem still holds)
+
+  * Proof follows from following two lemmas:
+  * Lemma 1.9: If x is recurrent, and $x \rightarrow y$, then y is recurrent. 
+  	* Proof: By Lemma 1.6, $y \rightarrow x$. Let j,l be powers s.t. $p^j(y,x) >0,\; p^l(x,y) > 0$. Now let's take $\sum_{k=0}^\infty p^{j+k+l}(y,y) \geq  p^j(y,x)\left(\sum_{k=0}^\infty p^{k}(x,x) \right)p^l(x,y)$ with left and right terms positive and middle infinite. Recall $E_xN_x = \sum_{n \geq 1}p^n(x,x,) = \infty$ for $N_x = \sum_{n \geq 1} 1(X_n =x)$ and recurrent x (alternate defn of recurrence). Then $\sum_{k=0}^\infty p^k(y,y) = \infty \implies$ y is recurrent.
+  * Lemma 1.10: In a finite closed set there has to be at least one recurrent state.
+  	* Proof: By contradiction, let's assume all states are transient. 
+  	* Lemma: Expected number of visits to y starting from x = $E_xN_y = \frac{\rho_{xy}}{1 - \rho_{yy}}$
+  	* By this lemma, since all states transient $E_xN_y < \infty,\; \forall x,y \in C$. Since C is finite, $\infty > \sum_{y \in C}E_xN_y = \sum_{y \in C} \sum_{n=1}^\infty p^n(x,y)$. Swapping sums, $\sum_{n=1}^\infty  \sum_{y \in C} p^n(x,y) = \sum_{n=1}^\infty 1$  because C is closed, so we will definitely land on a y in C. Then saying $\infty > \sum_{n=1}^\infty 1 = \infty$, which is a contradiction.
+
+* **Decomposition Theorem 1.8**: If S is finite, then can express S as a disjoint union $S = T \cup R1 \cup...\cup Rk$ where T is the set of all transient states, and $R1,..., Rk$ closed, irreducible sets of recurrent states.
+	
+	* Theorem 1.5: Let $x \in S$ if there exists $y \in S$ s.t. $x \rightarrow y, \rho_{xy}$ and $\rho_{yx} < 1$ then x is transient. Proof: Let $m = min\{k; p^k(x,y) > 0\}$, ie. the minimum number of states in which it is possible to go from x to y. There exists $y_1,...,y_{m-1} \ in S$ distinct steps s.t. $p(x,y_1),p(y_1,y_2),...,p(y_{m-1},y_m) > 0$ since otherwise could find a shorter path. $P_X(T_X = \infty)$ (starting from x, the probability that we never return), is at least $p(x,y)...p(y_{m-1},y)P_y(T_x = \infty)$ (lower bound since this is one such way we could never return to x). Then note  $p(x,y)...p(y_{m-1},y) > 0$ and $P_y(T_x = \infty) = 1 - \rho_{yx} > 0$ - thus x is transient.
+	* Lemma 1.6: If x is recurrent and $x \rightarrow y$ then $\rho_{yx} = 1$ - ie. we must eventually return to x from y, since if it were less than 1 x would be transient.
+	* Decomposition Proof: Assuming theorem 1. Let $T = \{x \in S\}$ s.t. there exists $y \in S$ with $x \rightarrow y$ but y does not communicate with x, then by Thm 1.5, x must be transient for all x in T. Remains to divide $S\setminus T = S \cap T^C$ in closed irreducible sets of recurrent states. Let $x \in S \setminus T$ arbitrary and $C_x = \{y \in S: x \rightarrow y\}$. Now find all of the state that x can communicate with, this is $C_x$ and we want to show it is one of these closed irreducible sets.
+		* Claim 1: $C_x$ is closed. If it were not closed, then there would be some state with a transition from inside set to outside. For some $y \in C_x \implies x \rightarrow y$ and $y \rightarrow z$ for $z \notin C_x$, then by transitivity $x \rightarrow z$. Then by definition $z \in C_x$, leading to a contradiction.
+		* Claim 2: $C_x$ is irreducible - any state communicates with any other in $C_x$. Let $y,z \in C_x$ arbitrary. By Lemma 1.6, $y \rightarrow x$, since $x \notin T$ and $x \rightarrow y$. Then $y \rightarrow x \rightarrow z$, so $y \rightarrow z \implies C_x$ irreducible, since y,z arbitrary. 
+		* Put $R1 = C_x$. Saw R1 closed, irreducible. If $T = T \cup R1$, we are done. Otherwise, pick some $x' \in S\setminus(T\cup R1)$ and repeat to find $R2 = C_{x'}$. Terminates in $S = T \cup R1 \cup ... \cup Rk$ since S is finite. All states in $R1 \cup ...\cup Rk$ are recurrent by Theorem 1. 
+
+### Limiting and Stationary Distributions
+
+* Definition: A probability distribution $\pi$ on S is a **stationary distribution** if $\pi p = \pi$ for $\pi$ = row vector. In other words, $\pi(y) = \sum_{x \in S} \pi(x)p(x,y) \;\; \forall y \in S$. 
 
 ## Probability Reference
 
