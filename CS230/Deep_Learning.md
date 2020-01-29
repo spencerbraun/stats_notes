@@ -96,6 +96,65 @@
 * Often can just sample some portion of the data from devices as a statistical sample to monitor things. Cloud vs edge doesn’t affect the day 1 accuracy of the system, but if the system is designed to continue to accumulate data and improve will help keep the system working.  Builds a defensive moat to ward off competitors.
 * QA: In ML, our problems are statistical more than software bugs. The testing is not binary, right or wrong, but some % accuracy on the test set. Always important to ensure you meet some accuracy criteria.
 
+## Adversarial Examples and GANs
+
+### Attacking Networks with Adversarial Networks
+
+* Given NN pretrained on ImageNet, we want to find an input image that will be classified as an iguana. 
+  * Rephrasing what we want: y_hat = y_iguana, some vector for iguana prediction. 
+  * Define the loss function, then optimize the input image. Use the an image to run network forward, compute loss, backprop and update our weights. After many iterations the image will be predicted to be iguana.
+  * But will the forged image x look like an iguana? We have optimized the pixels that lead the model to predict iguana, this is not the same as something human recognizable as iguana. If our image is 32 x 32 x 3, and each has 256 potential values, space of possible input images is huge $256^{32\times32\times3}$, while space of real images is a small subset. The space of images classified as iguanas will overlap with recognizable pictures of iguanas, but most of that space is random noise to humans.
+* Now say we want to find an input image of a cat but classified as iguana in our pretrained NN.
+  * Rephrasing - similar to last problem but want x to look like a cat. x should be close to $x_{cat}$, an image of an actual cat that is classified as cat.
+  * Add term to loss function - a regularization that minimizes the distance $\lambda||x - x_{cat}||_2^2$ 
+  * Then optimizing over new loss function, we get an image that still appears to be a cat - pixels will still be close to the cat image.
+  * There is another space of images that look real to humans, a superset of real images. It overlaps with the space of images classified as iguanas, including outside of the space of real images.
+
+### Defenses Against Adversarial Examples
+
+* White box - attacker has access to the model parameters, layers, architecture, these are the examples involving iguana.
+* Black box - attacker does not have knowledge of the network, a more typical real world example.
+  * Could try to recreate the model and generate adversarial examples - tranferability of adversarial example
+  * Ping the model to learn about it before producing adversarial example. Slow tweaks to cat image to see how robust / what it focuses on - a sort of approximation of the gradient.
+* Create a SafetyNet - a model whose only goal is to detect perturbation. Downsides, slowly inference time, optimization problem is more complicated
+* Train on correctly labeled adversarial examples - label the adversarial examples as cat in training 
+* Adversarial training - loss function has some reguarization for an adversarial x. However this will be slow to train, if we bring on adversarial examples for every training example - we basically have an extra loop to train over.
+* Need to understand why NN are vulnerable to adversarial examples
+  * Goal is to design a method to generate adversarial examples quickly
+  * Take logistic regression $x = \begin{bmatrix}x_1\\\vdots\\x_6\end{bmatrix} \rightarrow \sigma \rightarrow \hat{y} = \sigma(Wx + b)$
+  * We trained the network and got $w = \{1,3,-1,2,2,3\}, b=0$. Can we slightly modify x while drastically modifying $\hat{y}$?
+  * Propose generate $x^* = x + \varepsilon w^T$. Epsilon since we want small perturbation, $\frac{\partial \hat{y}}{\partial x} \propto w^T$ . Take $x = [1,-1,2,0,3,-2]$
+  * Get $x^* = \begin{bmatrix}1\\-1\\2\\0\\3\\-2\end{bmatrix} + \begin{bmatrix}0.2\\0.6\\-0.2\\0.4\\0.4\\0.6\end{bmatrix} = \begin{bmatrix}1.2\\-0.4\\1.8\\0.4\\3.4\\-1.4\end{bmatrix} $ Then $\hat{y}^* = \sigma(wx^* + b) = \sigma(np.dot(w,w) + wx + b) = \sigma(1.6) = 0.83$
+  * The impact of the perturbation increases with the dimensionality of the problem. The np.dot term is the sum of weights, as dimensions increase the sum will increase- our output gets pushed further by small changes. 
+  *  Fast gradient sign method: Could also take $x^* = x + \varepsilon sign(w)$. Now we can take this function and easily generate adversarial examples to train on. 
+  * Generally $x = x + \epsilon \,sign(\nabla_x J(w,x,y))$
+
+### GANs
+
+* We have sample data of real images, they have a certain distribution.
+* We have a sample of generated data, with another distribution. We want to force this distribution close to the true images.
+* The idea is to play a game G/D. Feed random code into generator G network. In general this would just produce a random image
+* We build a database of real images, and use another network called the Discriminator D, and use this network to train G
+* We send real and generated images to D - it is a binary classifier distinguishing real and generated images. In training D, label generated and real images and train as we normally do. The initial image distributions are quite different and it is easy for D to distinguish
+* If we backprop all the way through G, G will learn to make the prediction of D wrong. Iterate until G fools D, but D should also be improving as the generated images improve. 
+* Run GD on batches of real + fake data.
+
+### GAN Training
+
+* Cost of discriminator is binary cross entropy. CE term 1 says D should correctly label real data as 1, and term 2 says D should label generated data as 0.
+* Cost of generator - maximize cost of D. $J^{(G)} = - J^{(D)}$, but only consider term 2 since term 1 does not depend on G at all.
+* Saturating cost for the generator - $J^{(G)} \approx log(1-x)$, early in the training D is much better than G. Then D(G(z)) is close to 0, and the gradients are very low from $log(1-x)$. We want to modify the cost so that it is non saturating. We can say minimizing $log(1-x) \iff max(log(x)) \iff min(-log(x))$. These are roughly equivalent, except $-log(x)$  has high gradients early in the training. 
+* Another method - train D and G a different number of times. If D stops improving, G will also slow in improving. Could then update D k times for each time we update G
+* See GanHacks on GitHub for many more ways to train GANs. GANs are hard to train and take many optimization tweaks.
+
+### GAN Examples
+
+* Cycle GAN - Convert horses to zebras on images and vice versa
+* Data? There are no paired images, so we collect horses and zebra images separately
+* Architecture - given horse H -> Generator1(H2Z) -> G1(H) -> Discriminator1. We still haven’t introduced the contraint that the generated zebra must be the same as the horse. Take G1(H) -> Generator2(Z2H) -> G2(G1(H)) -> Discriminator2. Minimize distance between H and G2(G1(H))
+* Then for zebra to horse Z -> Generator2 -> G2(Z) -> Discriminator2 and G2(Z) -> Generator1 -> G1(G2(Z))
+* 5 loss functions - 2 for G’s, 2 for D’s, and a cycle loss function used as a regularizer 
+
 # Coursera Modules
 
 ## C1 - Neural Networks and Deep Learning
@@ -529,3 +588,142 @@
 * In high dimensions - actually most points of zero gradients are not local optima but are saddle points. This is because you would need all p dimensions forming a cup or cap together, but much more likely to have some dimensions with positive and others with negative derivatives. 
 * Problem of plateaus - areas of zero for a large portion of a surface. This means it will take a long time to find a way towards an area of more extreme gradient. 
 
+### Module 3 - Tuning, Batch Normalization, Programming Frameworks
+
+##### Hyperparameter Tuning
+
+* $\alpha, \beta, \beta_1,\beta_2, \epsilon$, # layers, # hidden units, learning rate decay, mini-batch size
+* Importance: 1 - learning rate. 2 - beta, hidden units, mini batch size, 3 - # layers, learning rate decay
+* Best tuning method - use random values, do not use grid search. We have a large search space, we do not know in advance which hyperparameters will be most important for your application. A lot of pairwise options, fixing one hyperparameter does not make sense, since may often get similar output for fixing one hyperparameter.
+* Also work coarse to fine - first sample space coarsely, if there is a region that looks good, sample more finely within this smaller space.
+* This does not mean sampling uniformly at random - we have to consider the scale of values. Say picking # of hidden units, 50 -100 is a reasonable search area. Number of layers, could look at just 2-4. In both examples could sample uniformly at random within this range.
+* For learning rate, lambda could range 0.0001 - 1 - if we sampled uniformly at random, 99% of values would be between 0.1 - 1. Instead makes more sense to sample from the log scale, so we dedicate more resources to searching within orders of magnitude. In python `r = -4 * np.random.rand()` and `alpha = 10**r`, producing alpha range from $10^{-4} - 10^0$. Generally set `r =range(a,b)` to get $10^a - 10^b$ range for alpha.
+* Beta for exponentially weighted averages. $\beta = 0.9....0.999$ equivalent to using last 10 values vs last 1000 values. Makes sense to explore range of $1-\beta = 0.1....0.0001$ and now can apply the same method as for the learning rate, though the values of the left and right are swapped. `r = range(-3,-1)` and $1-\beta = 10^r$. Why is this so important - as beta approaches 1, the sensitivity to that change increases $\beta = 0.999 \rightarrow 0.9995$ goes from average over 1000 to average over last 2000 values.
+
+##### Tuning in Practice
+
+* Re-test hyperparameters occasionally - intuitions within a single application do get stale, changes to anything from hardware to software can cause the need to retune
+* Often people are babysitting one model - on day 0 initialize params at random, then day 1 try throwing in some tweaks, every day you modulate some values. This is what happens without the computation ability to train many models in parallel
+* Otherwise train models in parallel set to different values of hyperparameters and look at their ability to learn over time.
+* Panda - the babysitting approach, have few offspring and carefully curate. Caviar - train in parallel, like fish having many offspring.
+* Choosing between them depends on your computational resources - Caviar is great if you can afford it.
+
+##### Batch Normalization
+
+* Makes your NN much more robust to choice of hyperparameters
+* Normalizing features in NN can speed up learning as we have seen. Turn the contours from elongated to much more circular / round.
+* In a deeper model. can we normalize the values of $a^{[l]}$  so as to train $w^{[l+1]},\; b^{[l+1]}$ faster? This is what batch normalization does - we normalize $Z^{[l]}$
+* Given some intermediate values in NN, $z^{(1)},...,z^{(m)}$ for layer $\ell$. Computer the mean $\mu = \frac{1}{m}\sum_i z^{(i)}$, $ \sigma^{2}=\frac{1}{m} \sum_{i}\left(z^{(i)}-\mu\right)^{2}$ then normalized z $z^{(i)}_{norm} = \frac{z^{(i) - \mu}}{\sqrt{\sigma^2 + \epsilon}}$ (eps for sigma = 0, just in case). 
+* Don’t want hidden units to always have mean 0, var 1 so instead define $\tilde{z^{(i)}} = \gamma z_{norm}^{(i)} + \beta$ where $\gamma, \beta$ are learnable parameters of the model. Use GD or some other algo, update these parameters like all other parameters of the NN. If for example $\gamma = \sqrt{\sigma^2 + \epsilon}$ and $\beta = \mu$,  we would invert this equation and $\tilde{z}^{(i)} = z^{(i)}$. Now for later computations in the network, use $\tilde{z}^{[l](i)}$ instead of ${z}^{[l](i)}$
+* This allows us to construct the range of values for z that we want, while the hidden units have standardized means and variances, not necessarily 0 and 1 respectively. 
+* In practice take $x \rightarrow z^{[l]} \rightarrow \beta^{[l]},\gamma^{[l]}\rightarrow \tilde{z}^{[l]} \rightarrow a^{[l]} = g^{[l]}(\tilde{z}^{[l]}) \rightarrow z^{[l+1]}$ etc
+* Parameters, all W and b, now also $\beta^{[l]},\gamma^{[l]}$, then have to find gradients, optimization algorithm, to train.
+* Working with mini-batches - $X^{\{1\}} \rightarrow z^{[1]} \rightarrow BN \rightarrow \tilde{z}^{[1]}...$ all for one mini-batch. Then repeat for the next minibatch, at each iteration, just using the data from the batch.
+* Note: $z^{[l]} = W^{[l]}a^{[l-1]} + b^{[l]}$, but the batch norm will subtract out the b term! So with BN we can eliminate b terms st $z^{[l]} = W^{[l]}a^{[l-1]}$ and $\tilde{z}^{[l]} = \gamma^{[l]}z^{[l]}_{norm} + \beta^{[l]}$
+* Finally note $\beta^{[l]},\gamma^{[l]}$ size $(n^{[l]} \times 1)$
+
+##### How Batch Norm Works
+
+* Makes weights deeper in the network more robust to changes to earlier layers
+* Say we have trained NN on images of black cats, and now want it to recognize a variety of colored cats. Want more generalization - data distribution changing = covariate shift. May need to retrain learning algorithm
+* In a deep NN, from perspective of middle layer, gets some values $a^{[l-1]}_{1-n}$, but those are also dependent on prior values. These values are changing all the time and suffer from covariate shift. BN reduces the amount that the distribution of the prior a's shift around. The mean and variance of these layers stay the same, even as the values shift. 
+* Additionally, batch norm has a regularization effect. Each mini batch is scaled by the mean / var of just that mini batch, which mean it contains some noise from the sample.
+	* The scaling process is then also noisy, so similar to dropout, adds noise to each activation in the hidden layers. By using larger minibatches, the regularization effect decreases since samples are lessed biased. Not really a good option for intended regularization, but important to realize it has this effect regardless
+
+##### Batch Norm at Test Time
+
+*  At test time, may not have a mini batch to take a mean or variance over. With one example, you do not have these sample stats
+*  Instead estimate mean and variance using exponentially weighted average across minibatches
+*  Say have $\mu^{\{i\}[l]}$ for minibatch i in layer l. These are your $\theta_i$ in exponentialyl weighted average and get an overall $\mu$. Do similar for variance $\sigma^2$. Then at test time, plug these into $z_{\text {norm }}^{(i)}=\frac{z^{(i)}-\mu}{\sqrt{\sigma^{2}+{\varepsilon}}}$
+
+##### Softmax for Multiclass
+
+* Formula: $a^{[L]}=\frac{e^{Z^{L}}}{\sum_{i=i}^{4} t_{i}}$
+* Softmax regression is a generalization of logistic regression to multiple classes, say recognizing cats, dogs, chicks, coded 1,2,3 and 0 for other.
+* C = # of classes, in example 4 for C in [0,1,2,3]. Number of units in output layer = C, ie. $n^{[L]}= C$
+* Each unit in the last layer has a different conditional probability, eg $P(cat|x),P(dog|x)...$
+* In last layer, compute $z^{[L]} = w^{[L]}a^{[L-1]} + b^{[L]}$. Then compute the softmax activation, for $t = e^{z^{[L]}}$ where t is also (4,1). Then $a^{[L]}  =\frac{e^{Z^{L}}}{\sum_{i=i}^{4} t_{i}} = \frac{t}{\sum_{i=i}^{4} t_{i}}$ where $\sum_{i=i}^{4} t_{i}$ is the sum of t's across the 4 elements of Z. 
+* Output of NN will be $a^{[L]}$ is (4,1), 4 different probabilities expressing the conditional probability for each category. This is the first activation we have seen that takes in vectors and outputs vectors, instead of mapping $\R \rightarrow \R$
+
+##### Training a Softmax NN
+
+* Example: $
+z^{[L]}=\left[\begin{array}{c}
+{5} \\
+{2} \\
+{-1} \\
+{3}
+\end{array}\right] \quad t=\left[\begin{array}{c}
+{e^{5}} \\
+{e^{2}} \\
+{e^{-1}} \\
+{e^{3}}
+\end{array}\right]$and $g^{[L]}\left(z^{[L]}\right)=\left[\begin{array}{c}{e^{5} /\left(e^{5}+e^{2}+e^{-1}+e^{3}\right)} \\ {e^{2} /\left(e^{5}+e^{2}+e^{-1}+e^{3}\right)} \\ {e^{-1} /\left(e^{5}+e^{2}+e^{-1}+e^{3}\right)} \\ {e^{3} /\left(e^{5}+e^{2}+e^{-1}+e^{3}\right)}\end{array}\right]=\left[\begin{array}{c}{0.842} \\ {0.042} \\ {0.002} \\ {0.114}\end{array}\right]$. Soft since we do not map the last vector to a vector with a single 1 and rest 0 - we have a confidence level to our prediction.
+* Loss function: $L(\hat{y}, y) = -\sum_{j=1}^C y_j log(\hat{y}_j)$
+  * Say target y = [0,1,0,0]. Then $y_1=y_3=y_4=0$ and left with $-y_2log(\hat{y}_2) = -log(\hat{y_2}). To minimize, need $\hat{y_2}$ large, so we take the MLE for maximize the likelihood for $y_2$.
+  * Cost function is same form as always - average over loss 
+* Gradient Descent - key equation for backprop $dz^{{L}}  = \hat{y} - y = \frac{\partial J}{\partial z^{{L}}}$
+
+##### Tensorflow
+
+* Many programming frameworks. Choosing one - easy of programming, running speed, OSS w/ good governance
+* Cost function J to min, $J = w^2 - 10w + 25 = (w-5)^2$. This one is simple, but many will not be.
+```python
+import numpy as np
+import tensorflow as tf
+
+coefficient = np.array([[1.],[-10.],[25.]])
+
+# define vars and training func
+w = tf.Variable(0, dtype=tf.float32)
+x = tf.placeholder(tf.float32, [3,1]) # for our training data, var whose value we assign later. 
+cost = tf.add(tf.add(w**2, tf.multiply(-10, w)),25)
+# cost = w**2 - 10*w + 25 also works
+# cost = x[0][0]*w**2 + x[1][0]*w + x[2][0] if we have data to use here
+train = td.train.GradientDescentOptimizer(0.01).minimize(cost)
+
+init = tf.global_variables_initializer()
+session = tf.Session() #can use with tf.Session() as session:
+session.run(init)
+sess.run(w)
+
+# run 1 step of GD
+#session.run(train)
+session.run(train, feed_dict=[x:coefficients]) # this gets the data into the trainin function
+print(session.run(w))
+
+# run 1000 steps of GD
+for i in range(1000):
+  #session.run(train)
+  session.run(train, feed_dict=[x:coefficients])
+  
+print(session.run(w))
+```
+## C3 - Structuring Machine Learning Projects
+
+### Module 1 - ML Strategy (1)
+
+##### Orthogonalization
+
+* Understanding what to tune to see certain effects
+* Want adjustment to affect a single aspect of your model.
+* Chain of assumptions: fit training set well on cost function, fit dev set well on cost function, fit test set well, system performs in real world.
+* Different knobs to tune for each part of this chain - say for training, tune bigger network, etc. For dev set, regularization, bigger training set. For test set, bigger dev set. For real world performance, change dev set or cost function.
+* Early stopping, while useful, is a messy knob that simultaneously affects the training and dev set performance.
+
+##### Setting a Goal
+
+* Single number evaluation metric - helps determine if you are moving in the right or wrong direction. 
+  * Say you are measuring precision, of positive predictions how many are TP, and recall, of all true in data what % were correctly recognized. If one method has better precision other has better recall, what to do?
+  * Define a new evaluation metric that combines them - F1 score = average of P and R (formally, $\frac{2}{1/P + 1/R}$, harmonic mean). 
+  * Say tracking performance of different models in different geographies - while detail may be useful eventually, want to track overall average to have a single metric
+* Satisficing and Optimizing metrics
+  * Care about accuracy and running time of a model. Could combine them into a single metric to optimize, but very different units and meanings.
+  * Could choose a classifier that max’s accuracy subject to a run time constraint. Accuracy is an optimizing metric then and run time is a satisficing metric - just has to be good enough, not optimized. Lots of trade offs, say accuracy and false positives, etc.
+  * For N metrics - choose 1 optimizing, N-1 satisficing.
+* Train / dev / test distributions
+  * 
+
+##### Comparison to Human Performance
+
+##### ML Flight Simulator

@@ -243,10 +243,38 @@
 ### Subset Selection
 
 * Prediction accuracy: the least squares estimates often have low bias but large variance, may be improved by taking on some bias via shrinkage and selection. Interpretation: With a large number of predictors, we often would like to determine a smaller subset that exhibit the strongest effects.
-* Best subset regression finds for each $k \in \{0, 1, 2,...,p\}$ the subset of size k that gives smallest residual sum of squares
+* Best / all subset regression finds for each $k \in \{0, 1, 2,...,p\}$ the subset of size k that gives smallest residual sum of squares. 
+  * The null model has the full variance of the dataset - just predicted by the mean. The number of models increases around the middle of subset size k. The smaller k’s have clear winners, but by middle k’s the models are bunch up in performance. Good to note since the “ideal” subset is not particularly differentiated from other model choices.
 * Forward stepwise selection starts with the intercept, and then sequentially adds into the model the predictor that most improves the fit. Computational: for large p we cannot compute the best subset sequence, but we can always compute the forward stepwise sequence. Statistical: forward stepwise is a more constrained search, and will have lower variance, but perhaps more bias.
 * Backward-stepwise selection starts with the full model, and sequentially deletes the predictor that has the least impact on the fit. The candidate for dropping is the variable with the smallest Z-score. Backward selection can only be used when N>p, while forward stepwise can always be used.
+* Could view subset size a tuning parameter for all of these methods. For each size we have the “best” model, then pick the right size.
+* Generally need to perform model assessment, could use validation and test sets. Validation use for choosing k, then test set for reporting the performance of the chosen model, since otherwise using one test/validation set includes some bias in selection. With insufficient data, we turn to CV.
 * Forward-stagewise regression (FS) is even more constrained than forward stepwise regression. At each step the algorithm identifies the variable most correlated with the current residual. It then computes the simple linear regression coefficient of the residual on this chosen variable, and then adds it to the current coefficient for that variable. This is continued till none of the variables have correlation with the residuals (the least square fit when N > p). Unlike forward-stepwise regression, none of the other variables are adjusted when a term is added to the model. As a consequence, forward stagewise can take many more than p steps to reach the least squares fit - slow fitting.
+
+### Model Performance - CV + Bootstrap
+
+* K-fold CV - divide the data into K equal parts (5,10), for each k fit the model with parameter $\lambda$ to the other K-1 parts, computing the error in predicting the kth part. The total CV error: $C V(\lambda)=(1 / K) \sum_{k=1}^{K} E_{k}(\lambda)$
+  * For best subset selection, say, these subsets will be different. The subset of 3 fit to the k in 1,2,3 could be different from the one fit on 2,3,4. But the idea is we are finding the best subset number - not the actual make-up of the subset. The best model within a K may not be too far from another model.
+  * Once we have selected the subset size, we go back to the full data set, fit the full sequence of models and choose the model for the tuned subset size. The actual model comes from the full data
+  * We tend to prefer 10 to 5 for K for this reason - fitting to 9/10 of the data is closer to fitting to your full training set. 
+  * Could go all the way with LOOCV, but computationally difficult (at least for best subset, though not necessarily for something like ridge). LOOCV could also have too high variance compared to K-fold, but the best method depends on the goal and situation.
+* Boostrap Approach
+  * Can use bootstrap for prediction error estimation. We get a full size training sample since we sample with replacement. 
+  * For each bootstrap sample, estimate errors using only observations excluded from the boostrap sample.
+  * Pretends the training sample is the population distribution, draws a sample, and the population is the full training sample.
+  * Can be much more computationally expensive, but often can have slightly better results
+* CV Issues
+  * Example: 1) Have 5000 predictors, find 200 predictors having the largest correlation with class labels. 2) Then carry about nearest centroid classification using those 200 predictors
+    * Wrong approach is to apply CV to step 2 - need to apply CV to 1 and 2. 
+  * Need a CV and test set - if we run CV and get a CV error, it will be slightly biased downwards. If our model has many tuning parameters, we will have to CV multiple times - we have overfit the data for fitting the models and for CV. We need to report our methods error on the test set, a dataset reserved for final evaluation, and of course this could still overreport performance since future datasets may not be the same as today's.
+  * If we have little data, a separate test set may be expensive. Could instead use nested CV, using say K-fold, select lambda and train model using selected lambda on the 9/10, test on the 1/10. Grows exponentially in computation needed
+  * Example: Does CV really work?
+    * Null situation, N = 20 p = 500, where labels independent of data - expect 50% error rate since no signal
+    * Take a stump - univaritate classifier that is a single split minimizes the misclassification error. Among all features, pick the feature and best split point to minimize error by a single division.
+    * Fit to entire training set, by chance we can find a split that fits data well. In 5-fold CV expect good separation on this feature too. Does this mean CV is useless?
+    * With very high number of noise variables, these things will happen by chance. Running this process many times, on average get 50% misclassification but the error rate has high variance - from 0.2 to 0.8. Have to realize with small data can have huge variance, but CV does not produce biased estimate.
+    * In practice, just have one number, the CV error, not the full variance of the CV error. In practice, often use variance from the 10 folds but this tends to be too optimistic. Somewhat of an open question about how to improve on that. The ten folds are independent but the estimates are correlated since they rely on overlapping observations - we have bias in our estimates.
+* 1 SE Rule - find model with the CV minimum, then take the simplest model within the 1 SE bounds of this best model.
 
 ### Shrinkage
 
@@ -254,19 +282,27 @@
 
 * $\hat{\beta}^{\text {ridge }}=\underset{\beta}{\operatorname{argmin}}\left\{\sum_{i=1}^{N}\left(y_{i}-\beta_{0}-\sum_{j=1}^{p} x_{i j} \beta_{j}\right)^{2}+\lambda \sum_{j=1}^{p} \beta_{j}^{2}\right\}$ or equivalently $\hat{\beta}^{\text {ridge }}=\underset{\beta}{\operatorname{argmin}} \sum_{i=1}^{N}\left(y_{i}-\beta_{0}-\sum_{j=1}^{p} x_{i j} \beta_{j}\right)^{2}$  st $\sum_{j=1}^{p} \beta_{j}^{2} \leq t$
 * Here $\lambda \geq 0$ is a complexity parameter that controls the amount of shrinkage: the larger the value of $\lambda$, the greater the amount of shrinkage. 
-* Ridge solutions dependent on scale - should standardize inputs! Note $\beta_0$ is not in penalty term, otherwise adding a constant to Y would effect results non linearly.
+* Ridge solutions dependent on scale - should standardize inputs! Note $\beta_0$ is not in penalty term, otherwise adding a constant to Y would affect results non linearly. Easiest way is to center variables - remove mean from X and y.
 * In matrix notation, take centered inputs $x_{i j}-\bar{x}_{j}$ less the constant. Using centered X, $\operatorname{RSS}(\lambda)=(\mathbf{y}-\mathbf{X} \beta)^{T}(\mathbf{y}-\mathbf{X} \beta)+\lambda \beta^{T} \beta$ and the solutions are $\hat{\beta}^{\text {ridge }}=\left(\mathbf{X}^{T} \mathbf{X}+\lambda \mathbf{I}\right)^{-1} \mathbf{X}^{T} \mathbf{y}$
+  * In this form we can simply take the gradient, $-2X^T(y - X\beta) + 2\lambda \beta=0$ and solve.
+* There is always a value of $\lambda$ that reduces the MSE more than the OLS estimator.
+  * $y \sim X\beta + \varepsilon$, then some value of lambda > 0 minimizes $E||\beta -\hat{\beta}_\lambda||_2^2$
 * Note by adding a constant to $X^TX$, it is always non-singular and is always invertible. In the case of orthonormal inputs, ridge edstimates are just scaled LS estimates $\hat{\beta}^{\text {ridge }}=\hat{\beta} /(1+\lambda)$
 * Effective degrees of freedom: $\begin{aligned}
   \mathrm{df}(\lambda) &=\operatorname{tr}\left[\mathbf{X}\left(\mathbf{X}^{T} \mathbf{X}+\lambda \mathbf{I}\right)^{-1} \mathbf{X}^{T}\right] 
   =\operatorname{tr}\left(\mathbf{H}_{\lambda}\right) 
   =\sum_{j=1}^{p} \frac{d_{j}^{2}}{d_{j}^{2}+\lambda}
   \end{aligned}$ for singular values d.
+  * When lambda is 0, the df is the number of predictors in the model. When lambda infinity, all the coefficients are 0, so df=0. 
+  * In the linear model, we get $\hat{y} = Hy$ where H is a projection operator. The trace of H gives you the number of parameters in the model. Use similar idea for df here - $df(\lambda) = tr(H_\lambda)$
 
 ##### Lasso
 
 * $\hat{\beta}^{\text {lasso }}=\underset{\beta}{\operatorname{argmin}}\left\{\frac{1}{2} \sum_{i=1}^{N}\left(y_{i}-\beta_{0}-\sum_{j=1}^{p} x_{i j} \beta_{j}\right)^{2}+\lambda \sum_{j=1}^{p}\left|\beta_{j}\right|\right\}$ or equivalently $\hat{\beta}^{\text {lasso }}=\underset{\beta}{\operatorname{argmin}} \sum_{i=1}^{N}\left(y_{i}-\beta_{0}-\sum_{j=1}^{p} x_{i j} \beta_{j}\right)^{2}$ st $\sum_{j=1}^{p}\left|\beta_{j}\right| \leq t$
 * Small t -> coefficients shrink to 0, form of subset selection. Larger t, end up with LS estimates.
+* Acts in a nonlinear manner on the outcome unlike ridge. It sets some coefficients to 0 for large enough penalty - acts in between subset selection and ridge regularization. Can think of it as a convex relaxation of the subset size constraint.
+* Can think of ridge as the OLS line with a smaller slope, The lasso is the OLS line with a parallel shift downwards, setting negative values to zero - kinked.
+* For ridge and lasso imporant to standardize predictors to mean zero and SD 1. If all predictors are in the same units, could just center but not scale.
 
 ### Regression Restriction Comparisons
 
@@ -275,3 +311,66 @@
 * Consider penalty $\lambda \sum_{j=1}^{p}\left|\beta_{j}\right|^{q}$; each $\left|\beta_{j}\right|^{q}$ can be a log-prior density for $\beta_j$. The lasso, ridge regression and best subset selection are Bayes estimates with different priors.
 * This generic penalty constructs different constraint contours, but little values for q > 2 and between 0 and 1 becomes non convex.
 * Elastic-net Penalty - compromise between ridge and lasso: $\lambda \sum_{j=1}^{p}\left(\alpha \beta_{j}^{2}+(1-\alpha)\left|\beta_{j}\right|\right)$. Has constraint contour like lasso with slightly rounded edges.
+
+### Derived Input Direction Methods
+
+##### PC Regression
+
+* Principal components depend on the scaling of the inputs, so typically we first standardize them.
+* If M = p, we would just get back the usual least squares estimates; for M<p we get a reduced regression.
+* We see that principal components regression is very similar to ridge regression: both operate via the principal components of the input matrix. Ridge regression shrinks the coefficients of the principal components, shrinking more depending on the size of the corresponding eigenvalue; principal components regression discards the p − M smallest eigenvalue components.
+
+##### Partial Least Squares
+
+* Also depends on the scaling of the inputs, so typically we first standardize them to mean 0, var 1
+* As with principal-component regression, if we were to construct all M = p directions, we would get back a solution equivalent to the usual least squares estimates; using M<p directions produces a reduced regression.
+* It can be shown that partial least squares seeks directions that have high variance and have high correlation with the response, but typically the variance dominates making it close to PCR. 
+* If the input matrix X is orthogonal, then partial least squares finds the least squares estimates after m = 1 steps.
+
+### Comparison of Selection and Shrinkage
+
+* For minimizing prediction error, ridge regression is generally preferable to variable subset selection, principal components regression and partial least squares.
+* PLS, PCR and ridge regression tend to behave similarly. Ridge regression may be preferred because it shrinks smoothly, rather than in discrete steps. Lasso falls somewhere between ridge regression and best subset regression, and enjoys some of the properties of each.
+
+## Chapter 4: Linear Methods for Classification
+
+* Logit transformation: $\log \frac{\operatorname{Pr}(G=1 | X=x)}{\operatorname{Pr}(G=2 | X=x)}=\beta_{0}+\beta^{T} x$
+
+### Linear Regression of Indicator Matrix
+
+*  $\hat{\mathbf{Y}}=\mathbf{X}\left(\mathbf{X}^{T} \mathbf{X}\right)^{-1} \mathbf{X}^{T} \mathbf{Y}$. Could view it as estimate of conditional expectation, but can exceed the domain of probability densities.
+* We  could construct targets for each class $t_k$, and try to reproduce the correct target for an observation fit via OLS. As number of classes K increases, classes can be masked by others - linear model misses linear boundaries completely. 
+* A loose but general rule is that if K ≥ 3 classes are lined up, polynomial terms up to degree K − 1 might be needed to resolve them.
+
+### Linear Discriminant Analysis
+
+* From Bayes’ Theorem, $\operatorname{Pr}(G=k | X=x)=\frac{f_{k}(x) \pi_{k}}{\sum_{\ell=1}^{K} f_{\ell}(x) \pi_{\ell}}$
+* Suppose we model each class density as multivariate Gaussian. Linear discriminant analysis (LDA) arises in the special case when we assume that the classes have a common covariance matrix $\Sigma_k = \Sigma \; \forall k$.
+* In comparing two classes k and l, it is sufficient to look at the log-ratio, and we see that $\log \frac{\operatorname{Pr}(G=k | X=x)}{\operatorname{Pr}(G=\ell | X=x)} = \begin{array}{l}
+  {\log \frac{\pi_{k}}{\pi_{\ell}}-\frac{1}{2}\left(\mu_{k}+\mu_{\ell}\right)^{T} \boldsymbol{\Sigma}^{-1}\left(\mu_{k}-\mu_{\ell}\right)} 
+  {\quad+x^{T} \boldsymbol{\Sigma}^{-1}\left(\mu_{k}-\mu_{\ell}\right)}
+  \end{array}$
+* Linear discriminant functions: $\delta_{k}(x)=x^{T} \boldsymbol{\Sigma}^{-1} \mu_{k}-\frac{1}{2} \mu_{k}^{T} \boldsymbol{\Sigma}^{-1} \mu_{k}+\log \pi_{k}$, equivalent to the decision rule using $G(x)=\operatorname{argmax}_{k} \delta_{k}(x)$
+* Need to estimate the Gaussian parameters from the training data since they are unknown. 
+  * $\hat{\pi}_{k}=N_{k} / N$
+  * $\hat{\mu}_{k}=\sum_{g_{i}=k} x_{i} / N_{k}$
+  * $\hat{\mathbf{\Sigma}}=\sum_{k=1}^{K} \sum_{g_{i}=k}\left(x_{i}-\hat{\mu}_{k}\right)\left(x_{i}-\hat{\mu}_{k}\right)^{T} /(N-K)$
+* Choose the cut-point that empirically minimizes training error for a given dataset.
+* With more than two classes, LDA is not the same as linear regression of the class indicator matrix, and it avoids the masking problems associated with that approach
+* Without assumption of equal variance matrices, get QDA when the quadratic  terms no longer cancel between discriminant functions. The estimates for QDA are similar to those for LDA, except that separate covariance matrices must be estimated for each class. When p is large this can mean a dramatic increase in parameters.
+
+##### LDA computations
+
+* Diagonalize $\hat{\mathbf{\Sigma}} \text { or } \hat{\mathbf{\Sigma}}_{k}$, using eigendecomposition $\hat{\mathbf{\Sigma}}_{k}=\mathbf{U}_{k} \mathbf{D}_{k} \mathbf{U}_{k}^{T}$
+
+### Reduced Rank LDA
+
+* The K centroids in p-dimensional input space lie in an affine subspace of dimension ≤ K − 1, and if p is much larger than K, this will be a considerable drop in dimension.
+* Project $X^*$ onto the centroid spanning subspace since we only care about relative distances to centroids - we need only consider data in a subspace of dimension at most K-1
+* We could make subspace even smaller by finding the PCs of the centroids themselves.
+* Fisher: Find the linear combination $Z = a^TX$ st the between class variance is maximized relative to the within class variance. The between class variance is the variance of the class means of Z, and the within class variance is the pooled variance about the means.
+* For W, common covariance matrix (within class covariance), the between-class variance of Z is $a^{T} \mathbf{B} a$ and within class variance is $a^{T} \mathbf{W} a$ where $B+W =T$, total covariance matrix of X. Fisher’s problem amounts to maximizing the Rayleigh quotient, $\max _{a} \frac{a^{T} \mathbf{B} a}{a^{T} \mathbf{W} a}$ 
+
+### Logistic Regression
+
+### Separating Hyperplanes
