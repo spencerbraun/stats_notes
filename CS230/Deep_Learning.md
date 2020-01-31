@@ -680,7 +680,7 @@ x = tf.placeholder(tf.float32, [3,1]) # for our training data, var whose value w
 cost = tf.add(tf.add(w**2, tf.multiply(-10, w)),25)
 # cost = w**2 - 10*w + 25 also works
 # cost = x[0][0]*w**2 + x[1][0]*w + x[2][0] if we have data to use here
-train = td.train.GradientDescentOptimizer(0.01).minimize(cost)
+train = tf.train.GradientDescentOptimizer(0.01).minimize(cost)
 
 init = tf.global_variables_initializer()
 session = tf.Session() #can use with tf.Session() as session:
@@ -787,6 +787,13 @@ print(session.run(w))
 
 ##### Learning from Multiple Tasks
 
-* Transfer learning - 
+* Transfer learning - train the NN for a certain task, say image recognition. Then swap in a new dataset, say radiology images and y’s diagnoses. We retrain the NN on the new dataset - may just retrain the last layer if small dataset, or train all layers if large dataset. If you retrain the whole network, the original training is called pretraining, and the retraining on the specific data is fine-tuning.
+* Take knowledge learned on image recognition and applied to specific application - a lot of the low level features are shared. 
+* Transfer learning makes sense when we have a lot of data we could transfer from and little data we want to transfer to. We can learn a lot of useful features from the image classification, then use those features for radiology. If we have a lot of radiology data, then unlikely that transfer learning will improve performance at all. 
+* To tranfer from A to B - want A and B to have the same input x, have a lot more data for task A than B, low level features from A could be helpful for learning B.
+* Multi-task learning - try to have one NN do several things at the same time. Self driving cars need to detect pedestrians, cars, signs, lights, etc. Can stack these outputs into a vector, Y is a (4 x m) matrix, 4 for features to classify and m for training examples. 
+  * To train $\hat{y}_{(4 \times 1)}^{(i)} = \frac{1}{m}\sum_{i=1}^m\sum_{j=1}^4L(\hat{y}^{(i)}_j, y_j^{(i)})$. Different from soft max since one image can have multiple labels.
+  * Also works when some of the training data is not fully labeled - some features labeled but maybe don’t know if there is a stop sign. Change the inner sum to sum over values of j with 0/1 label - if unknown just omitted 
+  * Makes sense to do when training on a set of tasks with shared lower level features, amount of data for each task is similar, can train a big enough neural network to do well on all the tasks. Could have trained one NN for each task, but multi task can suffer if you cannot make a big enough network. Transfer learning is used in practice more often than multi-task.
 
 ##### End-to-end Deep Learning
