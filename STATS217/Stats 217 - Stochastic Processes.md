@@ -450,10 +450,22 @@ date: 01/06/2019
 	* This looks like the LLN, but this is more general. We have a sequence not iid with Markov dependency, but we are averaging a fixed number of variables that is a function of a MC.
 	*  $\sum_{x \in S} f(x)\pi(x) = E(f(x))$ for $x \sim \pi$
 	*  If we take $f = 1_A, \; A \subset S$ we have $\frac{1}{n}\sum_{m=1}^n I(X_n \in A)$, the proportion of time spent in A up to time n. $\frac{1}{n}\sum_{m=1}^n I(X_n \in A) \rightarrow \sum_{x \in A} \pi(x) = \pi(A)$, the stationary measure for that subset of states. The stationary distrbution of $\begin{bmatrix}0 & 1 \\ 1 & 0\end{bmatrix}$ does not converge, but we can use this theorem to see its stationary distribution of (1/2,1/2) in a useful way.
-* Theorem: Suppose S (finite or infinite) is irreducible and all states are recurrent, the number of visits to y up to time n, $N_n(y) = \sum_{m=1}^n 1(X_n = y)$. From ergodic theorem we know $\frac{N_n(y)}{n} \rightarrow \pi(y)$ but we also can say $\frac{N_n(y)}{n} = \frac{1}{E_yT_y}$, the reciprocal of the expected return time. The expected return time is sort of a period, so the reciprocal of a period gives you a frequency. If you take a long time to return on average, you will spend a lower proportion of time in that state.
-	* In particular, together with ergodic frequency interpretation, if the chain has a stationary distribution $\pi$, then $\pi(y) = \frac{1}{E_yT_y}$. From this we can conclude $\pi$ is a unique stationary distribution. 
+* Theorem 1.21: Suppose S (finite or infinite) is irreducible and all states are recurrent, the number of visits to y up to time n, $N_n(y) = \sum_{m=1}^n 1(X_n = y)$. From ergodic theorem we know $\frac{N_n(y)}{n} \rightarrow \pi(y)$ but we also can say $\frac{N_n(y)}{n} \rightarrow \frac{1}{E_yT_y}, \; \forall y \in S$ converges a.s., the reciprocal of the expected return time. The expected return time is sort of a period, so the reciprocal of a period gives you a frequency. If you take a long time to return on average, you will spend a lower proportion of time in that state.
+	* In particular, together with ergodic frequency interpretation, if the chain has a stationary distribution $\pi$, then $\pi(y) = \frac{1}{E_yT_y}$. From this we can conclude $\pi$ is a unique stationary distribution, since we found a unique formula for $\pi$.
 	* For a MC with S irreducible and all states recurrent, there is a unique stationary distribution given by $\pi(y) = \frac{1}{E_yT_y}$.
+	* Idea of proof: Just case $E_yT_y < \infty$. Suppose $X_0 = y$, by the SMP the interarrival times (the time between arrivals to state y) $\tau_1,\tau_2,... \overset{iid}{\sim} T_y$. By strong LLN, $\frac{T_y^k}{k} = \frac{1}{k}\sum_{j=1}^k T_y \overset{a.s.}{\rightarrow} E_yT_y$. Can check $T_y^{N_n(y)}$, at time n you may be somewhere else but a short time ago you were at y, so $T_y^{N_n(y)} \approx n$ for large n. So we conclude $\frac{T^k_y}{k} \approx \frac{n}{N_n(y)}$ for n,k large, seen by substituting this random time $N_n(y)$ for k. 
 * Sometimes we are looking at a fully irreducible MC, but we can also look at separated irreducible sets as their own MCs and apply our theorems there
+
+### Classes of Markov Chains
+##### Detailed Balance Condition 
+* Reversible chains satisfy the DBC
+* Recall a pmf $\pi$ on S is a stationary distribution for a MC with transition matrix P if $(1)\;\pi=\pi p$, $ \pi(y) = \sum_{x \ in S} \pi(x) p(x,y),\; \forall y \in S$. A pmf $\pi$ is said to satisfy a DBC if $(2)\;\pi(x) p(x,y) = \pi(y) p(y,x) ,\; \forall x,y \in S$. 
+* If $\pi$ is a mass distribution on the state space, p tells you has this mass moves to other states. Given some amount of sand, the amount moved from x to y is the same amount moved from y to x. For each pair, we exchange the same amount. 
+* Claim: $(2) \implies (1)$. If (2) holds, for any y, $\sum_{x \in S} \pi(x) p(x,y)$ (the amount of sand coming into y) = $\sum_{x \in S} \pi(y) p(y,x) = \pi(y) \sum_{x \in S} p(y,x)$. By the fact that p is a stochastic matrix $\pi(y) \sum_{x \in S} p(y,x) = \pi(y)$. The total equation here says the amount of sand coming into y is the amount that was there before. 
+* Example: Ehrenfest Chain (Gas through permeable membrane)
+	* With 3 balls, 2 urns $\begin{bmatrix} 0&1&0&0 \\1/3 &0&2/3&0 \\ 0& 2/3&0&1/3 \\  0&0&1&0 \end{bmatrix}$. Put $\pi(0) = c$ (TBD). Check DBC $\pi(0) p(0,1) = \pi(1) (1,0)$: we get $c \times 1 = \pi(1) \frac{1}{3} \implies \pi(1) = 3c$. 
+	* System: $\pi(0) p(0,1) = \pi(1) (1,0),\\ \pi(1) p(1,2) = \pi(2) (2,1), \\ \pi(2) p(2,3) = \pi(3) (3,2)$. 
+	* We get $\pi(2) = 3c, \; \pi(3) = c$. Take $c = \frac{1}{8}, \pi = (\frac{1}{8},\frac{3}{8},\frac{3}{8},\frac{1}{8})$
 
 
 ## Probability Reference
