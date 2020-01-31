@@ -721,9 +721,72 @@ print(session.run(w))
   * Care about accuracy and running time of a model. Could combine them into a single metric to optimize, but very different units and meanings.
   * Could choose a classifier that max’s accuracy subject to a run time constraint. Accuracy is an optimizing metric then and run time is a satisficing metric - just has to be good enough, not optimized. Lots of trade offs, say accuracy and false positives, etc.
   * For N metrics - choose 1 optimizing, N-1 satisficing.
-* Train / dev / test distributions
-  * 
+* Train / dev / test sets
+  * Say you are working across many regions. Should not simply split regions into dev or test - want dev and test to come from the same distribution
+  * Dev set + single eval metric is like setting a target - the iteration process is meant to hit a bullseye for this combo. If dev set not representative, then could waste a lot of time
+  * Try to get test / dev data you expect to get in the future and consider important to do well on.
+  * Could see that your dev / test sets don’t match real world user data, say blurrier photos, etc. Would need to alter these datasets to perform better on production environment
+* Could have a metric that incorrectly ranks algorithms - maybe one performs better on classification error but let’s through inappropriate images. Need to change our error definition - don’t want to treat these kinds of errors equally. Add a weighting against bad images for example.
+* Orthogonalize the problem - think about how to define a metric to evaluate classifiers, place the target. As a separate process, how do we do well on this metric, hit the target.
 
 ##### Comparison to Human Performance
 
-##### ML Flight Simulator
+* Often accuracy increases over time until it surpasses human level performance but then leveling off. It approaches the Bayes error
+* Possible there may not be much more room to improve beyond human level, but also a harder task to improve
+* As long as ML algo is worse than human performance, you can get labeled data from humans, gain insight from manual error analysis, analyze bias and variance, but once humans cannot help with the task it is harder to improve.
+* Avoidable Bias
+  * Say humans have near perfect accuracy on a task. Say training error is 8%, may want to improve performance on the training set and focus on reducing bias. 
+  * Instead imagine human performance is actually 7.5% error. Then bias is low compared to humans, and we may want to focus on variance of dev set.
+  * The training / dev errors are relative to humans (a proxy Bayes error) - different steps are taken based on this comparison.
+  * Difference between Bayes error and training error = Avoidable bias. Difference between training and dev error is the variance. 
+  * Reducing avoidable bias - train bigger model train longer or better optimization algos, try different NN architecture / hyperparameter search
+  * Reducing training - dev variance - more training data, regularization, data augmentation, NN architecture / hyperparameter search
+* How to define human level error - if a team of experienced doctors can achieve the lowest bound for a human, then the Bayes error must be less than that. So using the best possible human performance is a good goal to shoot for. But of course this depends on the application of the production system.
+* Your estimate for Bayes error changes how much avoidable bias you believe exists and where you focus your attention.
+* Surpassing Human Level Performance - Training and dev error below best human performance - have we overfit? Is Bayes error actually lower?
+
+### Module 2 - ML Strategy (2)
+
+##### Error Analysis
+
+* Manually examining the mistakes the NN is making when below human performance
+* If classifier is bad on say dog pictures, is it worth adding effort to make it better. Perform analysis by taking 100 mislabeled dev set examples and count how many are dogs. If 5/100 are dogs, spending time on this problem will have a small effect on our overall error. There is a low ceiling on the improvement. If 50/100 of the examples are dogs, then we could cut our error rate in half by working on this problem.
+* Can evaluate multiple ideas in parallel - improve performance on blurry images, fix specific kinds of misclassification, etc. 
+* Create a table, rows are the individual images, and columns are the ideas to improve NN. Then count what percent of images are attrubuted to each error category. Can also add error categories as we are evaluating. But helps show where the biggest improvements could come from.
+* Incorrectly labeled examples - the human label for Y in our dataset is incorrect. 
+  * In the training set, not a big deal - DL algos are robust to random errors in the training set. But they are less robust to systematic errors, so want to make sure its not a certain skew. 
+  * In the dev set, can add this as a column in our error analysis table to double check. If it makes a significant difference in the dev set may want to relabel, but otherwise may not be a good use of your time. If our system has 10% error and 6% of those errors are due to incorrect labels, then overall 0.6% error caused by incorrect labels - not a large amount. If same percent of 2% overall error, would be more worthwhile. 
+  * Correcting dev/test set exampels - apply the same process to dev and test set. Make sure to look at examples algo got right as well as wrong - FP and FN. Train and dev/test  can come from slightly different distributions, but keep dev and test tightly aligned.
+* Good idea to build a system quickly then iterate to improve. Set a dev/test set and metric, build the system, use bias/variance analysis and error analysis to find the next priority. There can be a lot of problems in tackling a DL problem but not obvious without an initial system what to prioritize. This may be less relevant if you have significant prior experience in an area or are following specific literature.
+
+##### Mismatched Data Sets
+
+* Training and testing on different distributions - could grab all kinds of data from the web, users, etc, but your goal is to categorize user uploaded data. Can have a dilemma between small training dataset and large dataset from a different distribution.
+
+* One option is to take all of the data, randomly shuffle them, then split into training, dev, test. Advantage that all 3 sets from the same distribution, but dev set will have large proportion from the web instead of the goal we are actually focused on.
+
+* Instead, better to take all of the augmented web data, then maybe half of the user data. Dev and test sets are all user data - this sets the correct target for task we want to do well on. Disadvantage that training distribution is now different, but this is ok.
+
+* Very common for teams to buy data, take data from other applications, etc and drop into the training set. The dev/test sets reserved for the current application data we have. May even place all of our best data into dev and test. 
+
+* Bias and Variance
+
+  * When training and dev come from different distributions, performance differences between trianing and dev may not reflect a high variance model - could have different levels of difficulty. Can create a training-dev set - same distribution as training set but not used for training, this is used for the error analysis. If errors are train - 1, train-dev 9, dev - 10 - we have a variance problem between our train and train-dev. If the gap is between train-dev and dev, not a variance problem, data mismatch problem. Finally, dev - test gaps tells us about the degree of overfitting to the dev set, since come from the same distribution
+
+  * Sometimes the training data is much harder than the dev/test distribution, so error can decrease. Can create a general table: comparison of rows 1-2 is avoidable bias, 2-3 variance. Across columns we look at data mismatch
+
+    |                                  | General data       | Specific data in dev/test |
+    | -------------------------------- | ------------------ | ------------------------- |
+    | Human level                      | Human Level        | Human Level               |
+    | Error on examples trained on     | Training Error     | Training Error            |
+    | Error on examples not trained on | Training-Dev Error | Dev/Test error            |
+
+* When you find mismatch, good to carry out error analysis to understand the differences between sets. Could collect more data similar to dev/test sets for training.
+
+* Could also make training set more similar via artificial data synthesis - eg. adding car noise to clean speech samples. If have much more speech data than car noise, don’t want to just repeat the car noise to fit the length of training data - could be overfitting. Similarly for images, if you just synthesize new images you might overfit.
+
+##### Learning from Multiple Tasks
+
+* Transfer learning - 
+
+##### End-to-end Deep Learning

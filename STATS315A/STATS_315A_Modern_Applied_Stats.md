@@ -303,26 +303,41 @@
 * Acts in a nonlinear manner on the outcome unlike ridge. It sets some coefficients to 0 for large enough penalty - acts in between subset selection and ridge regularization. Can think of it as a convex relaxation of the subset size constraint.
 * Can think of ridge as the OLS line with a smaller slope, The lasso is the OLS line with a parallel shift downwards, setting negative values to zero - kinked.
 * For ridge and lasso imporant to standardize predictors to mean zero and SD 1. If all predictors are in the same units, could just center but not scale.
+* Degrees of freedom for lasso is harder. Can use the more general definition $df(\hat{y}) = \sum_i Cov(y_i, \hat{y}_i / \sigma^2)$ - average covariance over a point in the data and its fitted value
+  * Covariance on repeated training samples. If a method overfits, prediction closer to y in data and covariance is high. If we use the null model then covariance will be quite small. 
+  * For ridge regression, have y and $\hat{y}_\lambda = H_\lambda y$, then want the $Cov(\hat{y}_\lambda,y) = Cov(H_\lambda y,y)=\sigma^2 H_\lambda $ for $y \sim(f, \sigma^2I)$. So the sum of the covariances is $Tr(\sigma^2H_\lambda)$, which is what we found before, so this is a generalization of the ridge dfs
+  * Take size of the active set (# of parameters fit in lasso / size of subset) $\hat{k}_\lambda$ is unbiased in the df - $E(\hat{k}_\lambda) = df(\lambda)$
+  * This is not true for best subset, searched over a state space. In Lasso, we not only get a subset but we also get shrinkage in the  coefficients. This is enough to bring the degrees of freedom down to k.
+* Notice in the lasso coefficient graph - coefficients start growing at different times. In ridge, all coefficients started growing once we alter the shrinkage factor. 
+* Homotopy path of the lasso is piecewise linear. In between where active set changes get a piecewise linear function, notice knots on graph. When the set changes, all of the coefficients change across variables in the model. This means you can compute the whole lasso path in the same time as the least squares fit - lars algorithm. We know the order in which to add predictors.
 
 ### Regression Restriction Comparisons
 
 * Ridge regression does a proportional shrinkage. Lasso translates each coefficient by a constant factor $\lambda$, truncating at zero. This is called “soft thresholding”
+* Both ridge and lasso, centering allows us to forget the intercept.
 * Both methods find the first point where the elliptical contours hit the constraint region. Unlike the disk, the diamond has corners; if the solution occurs at a corner, then it has one parameter $\beta_j$ equal to zero.
-* Consider penalty $\lambda \sum_{j=1}^{p}\left|\beta_{j}\right|^{q}$; each $\left|\beta_{j}\right|^{q}$ can be a log-prior density for $\beta_j$. The lasso, ridge regression and best subset selection are Bayes estimates with different priors.
+* Family of Shrinkage Estimators: Consider penalty $\lambda \sum_{j=1}^{p}\left|\beta_{j}\right|^{q}$; each $\left|\beta_{j}\right|^{q}$ can be a log-prior density for $\beta_j$. The lasso, ridge regression and best subset selection are Bayes estimates with different priors.
 * This generic penalty constructs different constraint contours, but little values for q > 2 and between 0 and 1 becomes non convex.
-* Elastic-net Penalty - compromise between ridge and lasso: $\lambda \sum_{j=1}^{p}\left(\alpha \beta_{j}^{2}+(1-\alpha)\left|\beta_{j}\right|\right)$. Has constraint contour like lasso with slightly rounded edges.
+* Elastic-net Penalty - compromise between ridge and lasso: $\lambda \sum_{j=1}^{p}\left(\alpha \beta_{j}^{2}+(1-\alpha)\left|\beta_{j}\right|\right)$. Has constraint contour like lasso with slightly rounded edges. Of course you get another parameter alpha, but often don’t need a fine search over it like you do for lambda.
+* If you do ridge with identical predictors, they end up sharing the coefficient equally. Lasso does not - two variables identical in the model, could split a coefficient any number of ways, ambivalent about the linear combination. If you have predictors in groups, and want the group to be selected, elastic-net removes some of the arbitrariness of lasso selection among correlated groups.
 
 ### Derived Input Direction Methods
 
 ##### PC Regression
 
 * Principal components depend on the scaling of the inputs, so typically we first standardize them.
+* For X data matrix and $\tilde{X}$ the data matrix with centered columns. The largest PC direction v max’s $\hat{Var}(Xv) = \frac{1}{N}v^T\tilde{X}^T\tilde{X} v$ subject to $||v||_2 =1$. Then $z_1 = \tilde{X}v_1$ is the largest eigenvector of the coviance matrix. $z_2 = \tilde{X}v$ where we want the variance between z1 and z2 to be zero. So take $\frac{1}{N}v^T\tilde{X}^T\tilde{X} v = \frac{d^2}{n_1}v_1^Tv = 0$. Do the full eigendecomposition and get the PCs. All of the PCs defined by eigenvector equations $\frac{1}{N} \tilde{\mathbf{X}}^{T} \tilde{\mathbf{X}} \mathbf{v}_{j}=d_{j}^{2} \mathbf{v}_{j}, \quad j=1, \ldots, p$. Also note that the SVD of the centered X provides the PCs of X.
+* PCR - regress y on z1,...zj. Since all zj are orthogonal, it is just a sum of univariate regressions.
 * If M = p, we would just get back the usual least squares estimates; for M<p we get a reduced regression.
+* Implicit assumption that the response will change more in the direction that the x’s change most.
 * We see that principal components regression is very similar to ridge regression: both operate via the principal components of the input matrix. Ridge regression shrinks the coefficients of the principal components, shrinking more depending on the size of the corresponding eigenvalue; principal components regression discards the p − M smallest eigenvalue components.
+  * Ridge: for $\tilde{X} = UDV^T,\; Z = \tilde{X}V = UD$ - the left singular vectors scaled by the singular values gives you Z. We are regressing on Z, so scaling by D does not matter, so can just use U, an orthonormal basis. So $\hat{y}_\lambda = \sum_{j=1}^p u_j \frac{d_j^2}{d_j^2 + \lambda}\langle u_j,y\rangle$ - gives more weight to leading PCs but then shrinkage increases. Bigger lambda, shrinkage squeezes more.
+  * For PCR: $\hat{y} = \sum_{j=1}^k u_j \langle u_j, y \rangle$ - gives weight 1 to the first k components, weight 0 to the rest. As we shrink k, number of PCs included, more will drop out.
 
 ##### Partial Least Squares
 
 * Also depends on the scaling of the inputs, so typically we first standardize them to mean 0, var 1
+* Akin to PCR but takes the response into account instead of using an unsupervised preprocessing. Fit univariate coefficients then construct z = sum of coefs times x_i. This is the first z, z1. Then regression of y on z1, to get coef beta1. Then orthogonalize y and x’s wrt z1 - nothing left of z1 in any portion of the data. Then repeat the process.
 * As with principal-component regression, if we were to construct all M = p directions, we would get back a solution equivalent to the usual least squares estimates; using M<p directions produces a reduced regression.
 * It can be shown that partial least squares seeks directions that have high variance and have high correlation with the response, but typically the variance dominates making it close to PCR. 
 * If the input matrix X is orthogonal, then partial least squares finds the least squares estimates after m = 1 steps.
@@ -339,7 +354,16 @@
 ### Linear Regression of Indicator Matrix
 
 *  $\hat{\mathbf{Y}}=\mathbf{X}\left(\mathbf{X}^{T} \mathbf{X}\right)^{-1} \mathbf{X}^{T} \mathbf{Y}$. Could view it as estimate of conditional expectation, but can exceed the domain of probability densities.
-* We  could construct targets for each class $t_k$, and try to reproduce the correct target for an observation fit via OLS. As number of classes K increases, classes can be masked by others - linear model misses linear boundaries completely. 
+*  Response variable g that takes values in an unordered set of size k. We encode the response in an indicator matrix Y n x k - one hot encoding. We regress this matrix of indicators on X. For the kth column get a linear model $f_{k}(x)=\beta_{k 0}+\beta_{k}^{T} x \quad k=1, \ldots, K$
+*  The decision boundaries - get ${k \choose 2}$ boundaries where $\{x: f_k(x) = f_l(x)\}$
+*  We fit $min_B ||Y-XB||_F = min\sum_{k=1}^K ||y_k - X\beta_k||_2^2$ - have a coefficient for each of the responses instead of a coefficient vector. 
+*  Note $E(Y|X=x)$ for a given one hot encoding Y for a class is the vector of conditional probabilities across possible classes.
+*  We  could construct targets for each class $t_k$, and try to reproduce the correct target for an observation fit via OLS.
+   * Could write the frobenius norm also as $\sum_{i=1}^N||y_i = B^Tx_i||^2_2$
+   * Classifying to closest target equivalent to highest probability for class
+*  As number of classes K increases, classes can be masked by others - linear model misses linear boundaries completely. Falls out as a curiosity of using least squares and a linear model for this problem.
+   * Reduce this problem down to 1 dimension by projecting on a line through the three classes. The rug plot shows the fitted regression line relative to that line. The green and orange points have lines with non zero slopes - the likelihood varies. But the middle blue class has a line without slope and never is the most likely. The problem goes away if we fit quadratic functions, but we shouldn’t need quadratics because something like LDA can fit easily with linear functions. This is a problem as in higher dimensions we may not see we have this problem at all.
+   * We shouldn’t have to introduce non-linearity to remove an artifact from our method - best to use a method without an artifact at all.
 * A loose but general rule is that if K ≥ 3 classes are lined up, polynomial terms up to degree K − 1 might be needed to resolve them.
 
 ### Linear Discriminant Analysis
@@ -357,7 +381,7 @@
   * $\hat{\mathbf{\Sigma}}=\sum_{k=1}^{K} \sum_{g_{i}=k}\left(x_{i}-\hat{\mu}_{k}\right)\left(x_{i}-\hat{\mu}_{k}\right)^{T} /(N-K)$
 * Choose the cut-point that empirically minimizes training error for a given dataset.
 * With more than two classes, LDA is not the same as linear regression of the class indicator matrix, and it avoids the masking problems associated with that approach
-* Without assumption of equal variance matrices, get QDA when the quadratic  terms no longer cancel between discriminant functions. The estimates for QDA are similar to those for LDA, except that separate covariance matrices must be estimated for each class. When p is large this can mean a dramatic increase in parameters.
+* Without assumption of equal variance matrices, get QDA when the quadratic terms no longer cancel between discriminant functions. The estimates for QDA are similar to those for LDA, except that separate covariance matrices must be estimated for each class. When p is large this can mean a dramatic increase in parameters.
 
 ##### LDA computations
 

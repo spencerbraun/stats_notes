@@ -432,6 +432,19 @@ date: 01/06/2019
 ### Limiting and Stationary Distributions
 
 * Definition: A probability distribution $\pi$ on S is a **stationary distribution** if $\pi p = \pi$ for $\pi$ = row vector. In other words, $\pi(y) = \sum_{x \in S} \pi(x)p(x,y) \;\; \forall y \in S$. 
+	* For a time homogeneous MC with transition matrix P
+	* $\pi$ is a left eigenvector of P with associated eigenvalue 1
+* Example: Social Mobility Chain
+	* $X_n \in S = \{L, M, U\}$ social class of nth generation of a family / lineage. We have transition matrix $\begin{bmatrix}0.7 & 0.2 & 0.1\\ 0.3 & 0.5 & 0.2 \\ 0.2 & 0.4 & 0.4 \end{bmatrix}$. Given initial distribution $\pi^0$ (a) does $\pi^n \rightarrow $ limiting distribution and (b) what is it?
+	* Finding the stationary distribution - just a linear algebra problem of finding an eigenvector. Solve $\pi p=\pi$ for $\pi = (a,b,c)$. Equations $1)\, a+b+c = 1 \\ 2)\, 10a = 7a + 3b + 2c \\ 3)\, 10b = 2a + 5b + 4c \\4), 10c = a + 2b + 4c$. We have more equations than unknowns, but system will be consistent because the rows sum to 1. 
+	* Solve the system. Could express this as $\pi(p - I) = 0,\; \pi \begin{bmatrix}1\\1\\1\end{bmatrix} = 1$, so plugging in $\pi\left(p - I |  \begin{bmatrix}1\\1\\1\end{bmatrix}\right) = (0,0,0,1)$, but one of these 4 columns in p - I is redundent, so can remove the third column say. In our system $(a,b,c) \begin{bmatrix}x & y & 1 \\ a & b & 1 \\ c & d & 1\end{bmatrix} = (0,0,1)$ (plugging in numbers from our equation). Our matrix is invertible since we got rid of the dependent column, so we can solve by taking the last row of $M^{-1}$. We get $\pi = (\frac{22}{47},\frac{16}{47},\frac{9}{47}) - this is the stationary distribution. 
+* When does a stationary distribution exist?
+* Theorem: If S is **finite and irreducible** then there exists a unique stationary distribution $\pi$ and moreover $\pi(x) > 0$ for all $x \in S$
+	* In the Gambler's ruin not all states were positive in the limit - just the absorbing states have probability. This is not an irreducible chain
+* When do we have $\pi^n$, the distribution of the pmf of $X_n$, converging to the stationary distribution $\pi$?
+	* Irreducibility guarantees existence of stationary distribution but not enough to guarantee a distribution in the limit
+	* By decomposition theorem, we know $\pi^n(x) \rightarrow 0,\; \forall x \in T$, so it suffices to consider the $lim \,\pi^n$ on the closed irreducible sets R1,...,Rk. Once $X_n \in Rj$ for some j does $pi^n$ converge to the stationary distribution for Rj? No!
+	* Example: 2 states 1 and 2, $\begin{bmatrix}0 & 1 \\ 1 & 0\end{bmatrix}$. This matrix has a left eigenvector with eigenvalue 1 $\pi = (1/2, 1/2)$, the stationary distribution by our theorem above, since finite and irreducible. But the distribution of $X_n$ never converges - $p^n(1,2) = \begin{cases} 1 & \text{n odd} \\ 0 & \text{n even}\end{cases}$. Conditional on $X_0 = 1,\; \pi^n(1) \begin{cases} 0 & \text{n odd} \\ 1 & \text{n even}\end{cases}$ and this sequence does not converge to $\pi(1) = 1/2$. We have a stationary distribution but not a limiting distribution. But the stationary distribution does tell us the **proportion of time** spent in any one state  - $\pi$ does give limiting proportion of time spent at each state. 
 
 ## Probability Reference
 
