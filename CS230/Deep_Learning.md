@@ -797,3 +797,13 @@ print(session.run(w))
   * Makes sense to do when training on a set of tasks with shared lower level features, amount of data for each task is similar, can train a big enough neural network to do well on all the tasks. Could have trained one NN for each task, but multi task can suffer if you cannot make a big enough network. Transfer learning is used in practice more often than multi-task.
 
 ##### End-to-end Deep Learning
+
+* Redesigning systems to work without taking all intermediate steps. With a smaller dataset, the prior pipeline may work better, but with large data, the end to end learning works more efficiently. 
+* Take an image in a camera, could try to design some system mapping image to identity, but the person could approach in any number of ways.
+* Instead apply one piece of software to detect the face in the image, then crop the image to center the face, then feed the face to the NN to verify identity. Break complicated sequence into simplier modules.
+* This works because we have access to a lot of data for the 2 subtasks - there is a lot of labeled data for recognizing faces, and separately a lot of data for determining identity. By contrast learning everything at once, we don’t have global teams working on this problem.
+* E2E lets the data speak - reflects more what is in the data than human preconception - eg. used to break down language into phonemes, but why force the learning algo to learn phonemes. 
+* On the other hand requires large amount of data and excludes potentially useful hand-designed components. When you have a ton of data, may not need designed features but without it, human knowledge may improve a model.
+* Key question - do you have sufficient data to learn a function of the complexity needed to map x to y. The function needed to map a hand directly to the age of a child requires a ton of data.
+* Not E2E self driving - take image, radar, lidar, then detect cars, pedestrians, etc. Then plan the route given these objects, and execute steering/breaking. The first part is easily done with deep learning, but the route is usually done through motion planning algorithms, and steering through a control system. 
+* You can use DL to learn individual components, then carefully choose x and y depending on what tasks you can get data for. But E2E for self-driving seems extremely difficult and is less promising.

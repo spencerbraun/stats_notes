@@ -61,6 +61,11 @@
 * Detailed balance condition: $\pi(x) p(x, y)=\pi(y) p(y, x)$
   * A stronger condition than the stationary distribution. In this case the detailed balance condition says that the amount of sand going from x to y in one step is exactly balanced by the amount going back from y to x.
 
+## Reversibility
+
+* Theorem 1.15: Fix n and let $Y_{m}=X_{n-m} \text { for } 0 \leq m \leq n$. Then $Y_m$ is a Markov chain with transition probability $\hat{p}(i, j)=P\left(Y_{m+1}=j | Y_{m}=i\right)=\frac{\pi(j) p(j, i)}{\pi(i)}$. 
+  * In english, if we watch the process $X_{m}, 0 \leq m \leq n$ backwards, then it is a MC. For transition probability $p(i,j)$ with stationary distribution $\pi(i)$ and Let Xn be a realization of the Markov chain starting from the stationary distribution, $P\left(X_{0}=i\right)=\pi(i)$
+
 ## Limit Behavior
 
 * Period: The period of a state is the largest number that will divide all the n $\geq$ 1 for which $p^{n}(x, x)>0$
@@ -85,7 +90,10 @@
 * Ergodic: State i is positive recurrent if i is recurrent and, starting in i, the expected return time to i is finite. Positive recurrent, aperiodic states are called ergodic.
 * Limiting Probabilities: An irreducible, ergodic MC has limit independent of i $\pi_{j}=\lim _{n \rightarrow \infty} P_{i j}^{n}$, where $\pi_j$ is the solution to the system  $\pi_{j}=\sum_{i=0}^{\infty} \pi_{i} P_{i j}, \quad j \geq 0 \text{ s.t. }\sum_{j=0}^{\infty} \pi_{j}=1$. Note $\pi_j$ also the long run proportion of time that the process will be in state j
 
+## Exit Times
 
+* **Theorem 1.29**. Let $V_{A}=\inf \left\{n \geq 0: X_{n} \in A\right\}$. Suppose $C=s-A$ is finite, and that $P_{x}\left(V_{A}<\infty\right)>0$ for any x in C. If g(a) = 0 for all a in A, and for x in C  we have $g(x)=1+\sum_{y} p(x, y) g(y)$, then $g(x)=E_{x}\left(V_{A}\right)$.
+  * 
 
 # Pinsky
 
