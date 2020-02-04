@@ -63,7 +63,7 @@
 
 ## Reversibility
 
-* Theorem 1.15: Fix n and let $Y_{m}=X_{n-m} \text { for } 0 \leq m \leq n$. Then $Y_m$ is a Markov chain with transition probability $\hat{p}(i, j)=P\left(Y_{m+1}=j | Y_{m}=i\right)=\frac{\pi(j) p(j, i)}{\pi(i)}$. 
+* **Theorem 1.15**: Fix n and let $Y_{m}=X_{n-m} \text { for } 0 \leq m \leq n$. Then $Y_m$ is a Markov chain with transition probability $\hat{p}(i, j)=P\left(Y_{m+1}=j | Y_{m}=i\right)=\frac{\pi(j) p(j, i)}{\pi(i)}$. 
   * In english, if we watch the process $X_{m}, 0 \leq m \leq n$ backwards, then it is a MC. For transition probability $p(i,j)$ with stationary distribution $\pi(i)$ and Let Xn be a realization of the Markov chain starting from the stationary distribution, $P\left(X_{0}=i\right)=\pi(i)$
 
 ## Limit Behavior

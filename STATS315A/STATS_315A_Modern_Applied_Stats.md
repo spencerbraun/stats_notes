@@ -355,7 +355,7 @@
 
 *  $\hat{\mathbf{Y}}=\mathbf{X}\left(\mathbf{X}^{T} \mathbf{X}\right)^{-1} \mathbf{X}^{T} \mathbf{Y}$. Could view it as estimate of conditional expectation, but can exceed the domain of probability densities.
 *  Response variable g that takes values in an unordered set of size k. We encode the response in an indicator matrix Y n x k - one hot encoding. We regress this matrix of indicators on X. For the kth column get a linear model $f_{k}(x)=\beta_{k 0}+\beta_{k}^{T} x \quad k=1, \ldots, K$
-*  The decision boundaries - get ${k \choose 2}$ boundaries where $\{x: f_k(x) = f_l(x)\}$
+*  The decision boundaries - get ${k \choose 2}$ boundaries where $\{x: f_k(x) = f_l(x)\}$.
 *  We fit $min_B ||Y-XB||_F = min\sum_{k=1}^K ||y_k - X\beta_k||_2^2$ - have a coefficient for each of the responses instead of a coefficient vector. 
 *  Note $E(Y|X=x)$ for a given one hot encoding Y for a class is the vector of conditional probabilities across possible classes.
 *  We  could construct targets for each class $t_k$, and try to reproduce the correct target for an observation fit via OLS.
@@ -369,31 +369,65 @@
 ### Linear Discriminant Analysis
 
 * From Bayes’ Theorem, $\operatorname{Pr}(G=k | X=x)=\frac{f_{k}(x) \pi_{k}}{\sum_{\ell=1}^{K} f_{\ell}(x) \pi_{\ell}}$
-* Suppose we model each class density as multivariate Gaussian. Linear discriminant analysis (LDA) arises in the special case when we assume that the classes have a common covariance matrix $\Sigma_k = \Sigma \; \forall k$.
+* $f_k(x)$ is our density when G = k. $\pi_k = Pr(G = k)$ - the marginal probability that G equals k. If we know both of these for 1,...,k, then we know everything about the joint distribution between G and X. $P_X(G=k) = P_X(X=x|G=k)P(G=k) = f_k(x)\pi_k$
+* Then by Bayes, $P(G_k|X=x) = \frac{P_X(G=k, X=x)}{P(X=x)} = \frac{f_k(x)\pi_k}{\sum_{l=1}^kf_l(x)\pi_l}$ where the marginal is just summing over all k to get rid of it from the joint. However the density estimation is hard, and in high dimensions it is especially hard. Generative models - if you have the formula for the densities easy to generate the boundaries.
+* Take the log ratio of the conditional probabilties - if this log ratio is 0, then we have equal probability and determines the decision boundary. Think of two normal bells overlapping - we take the boundary as the intersection of the densities - but notice that some will be misclassified where the density of one slips below the other.
+* Suppose we model each class density as multivariate Gaussian. Linear discriminant analysis (LDA) arises in the special case when we assume that the classes have a common covariance matrix $\Sigma_k = \Sigma \; \forall k$. 
+* MVN: $f_{k}(x)=\frac{1}{(2 \pi)^{p / 2}|\Sigma|^{1 / 2}} e^{-\frac{1}{2}\left(x-\mu_{k}\right)^{T} \Sigma^{-1}\left(x-\mu_{k}\right)}$ 
 * In comparing two classes k and l, it is sufficient to look at the log-ratio, and we see that $\log \frac{\operatorname{Pr}(G=k | X=x)}{\operatorname{Pr}(G=\ell | X=x)} = \begin{array}{l}
   {\log \frac{\pi_{k}}{\pi_{\ell}}-\frac{1}{2}\left(\mu_{k}+\mu_{\ell}\right)^{T} \boldsymbol{\Sigma}^{-1}\left(\mu_{k}-\mu_{\ell}\right)} 
   {\quad+x^{T} \boldsymbol{\Sigma}^{-1}\left(\mu_{k}-\mu_{\ell}\right)}
-  \end{array}$
+  \end{array} = \delta_{k}(x)-\delta_{\ell}(x)$ where $\delta_{k}(x)=\log \pi_{k}-\frac{1}{2} \mu_{k}^{T} \Sigma^{-1} \mu_{k}+x^{T} \Sigma^{-1} \mu_{k}$. The convenient assumptions give us a nice linear form for the function.
 * Linear discriminant functions: $\delta_{k}(x)=x^{T} \boldsymbol{\Sigma}^{-1} \mu_{k}-\frac{1}{2} \mu_{k}^{T} \boldsymbol{\Sigma}^{-1} \mu_{k}+\log \pi_{k}$, equivalent to the decision rule using $G(x)=\operatorname{argmax}_{k} \delta_{k}(x)$
+* This is the population model, but obviously we need to plug in estimates from our data. The covariance matrix needs to be invertible, then we multiply by $\mu_k$ and get linear coefficients for x. Have a sample $x_i,g_i, \; i \in 1,...,n$, for the covariance matrix need to take into account that it is the same estimate across all classes. Say $S_k = \frac{1}{n_k}\sum_{g_i=k}(x_i - \hat{\mu}_k)(x_i - \hat{\mu}_k)^T$ for $n_k$ obs in class k. Then $\hat{\Sigma} = \sum_{k=1}^K \pi_kS_k$ - pooled within class covariance matrix.
 * Need to estimate the Gaussian parameters from the training data since they are unknown. 
   * $\hat{\pi}_{k}=N_{k} / N$
   * $\hat{\mu}_{k}=\sum_{g_{i}=k} x_{i} / N_{k}$
   * $\hat{\mathbf{\Sigma}}=\sum_{k=1}^{K} \sum_{g_{i}=k}\left(x_{i}-\hat{\mu}_{k}\right)\left(x_{i}-\hat{\mu}_{k}\right)^{T} /(N-K)$
-* Choose the cut-point that empirically minimizes training error for a given dataset.
+* Choose the cut-point that empirically minimizes training error for a given dataset. For two classes, we can just subtract one discriminant function from the other and categorize based on positive or negative value, eg classify to class 2 if $x^{T} \hat{\Sigma}^{-1}\left(\hat{\mu}_{2}-\hat{\mu}_{1}\right)>\frac{1}{2}\left(\hat{\mu}_{2}+\hat{\mu}_{1}\right)^{T} \hat{\Sigma}^{-1}\left(\hat{\mu}_{2}-\hat{\mu}_{1}\right)-\log \frac{N_{2}}{N_{1}}$. Note that the discriminant direction minimizes overlap in distribution for Gaussian data - skew projection, see that the density overlap is minimized in this direction. The $\hat{\mu}_{2}-\hat{\mu}_{1}$ is a point between the two mean vectors then modulated by the relative prize $\log \frac{N_{2}}{N_{1}}$ - if one class is much bigger than the other, want to scale the density to favor the bigger class and minimize total number of misclassified data. The presence of $\Sigma$ makes it a skew projection instead of a standard projection.
 * With more than two classes, LDA is not the same as linear regression of the class indicator matrix, and it avoids the masking problems associated with that approach
+* We can enrich the LDA - augment the two variables with their squares and cross product - go from $\R^2 \rightarrow \R^5$. You get some weird correlation and you can project the linear $\R^5$ boundaries back down to $\R^2$ to get quadratic boundaries. They can perform pretty well. Of course, not really necessary since we can turn to QDA with more flexible assumptions.
 * Without assumption of equal variance matrices, get QDA when the quadratic terms no longer cancel between discriminant functions. The estimates for QDA are similar to those for LDA, except that separate covariance matrices must be estimated for each class. When p is large this can mean a dramatic increase in parameters.
+* Doing it with augmented LDA vs QDA - get very similar boundaries, or at very least similar misclassification rates. Generally look at the marginals of the variable, do they look roughly Gaussian, probably can fit this model. Otherwise perhaps look for other methods or transform the data to look more Gaussian (of course remember the transformation come test time) - Gaussiam copula model.
 
 ##### LDA computations
 
 * Diagonalize $\hat{\mathbf{\Sigma}} \text { or } \hat{\mathbf{\Sigma}}_{k}$, using eigendecomposition $\hat{\mathbf{\Sigma}}_{k}=\mathbf{U}_{k} \mathbf{D}_{k} \mathbf{U}_{k}^{T}$
 
-### Reduced Rank LDA
+##### Regularized DA
+
+* With big number of parameters, problematic to estimate covariance matrices
+* QDA: shrink the separate covariances towards the common covariance matrix by parameter $\alpha$. For $\alpha=1$ get QDA and for $\alpha=0$ get LDA.
+* May even be $\hat{\Sigma}$ is still too hard just for LDA. Shrink the pool covariance matrix towards a scalar covariance matrix - a scaled version of I, can only do if vars are in the same units. $\gamma$ parameter determines level of shrinkage, like a ridge version of DA.
+* Vowel data - the full $\alpha=1$ has bigger misclassification rate, but just below 1 we get best performance. Regularization solving some instability in using separate covariance matrices.
+
+##### Reduced Rank LDA
 
 * The K centroids in p-dimensional input space lie in an affine subspace of dimension ≤ K − 1, and if p is much larger than K, this will be a considerable drop in dimension.
 * Project $X^*$ onto the centroid spanning subspace since we only care about relative distances to centroids - we need only consider data in a subspace of dimension at most K-1
-* We could make subspace even smaller by finding the PCs of the centroids themselves.
+* We could make subspace even smaller by finding the PCs of the centroids themselves. Say we have three centroids that are nearly collinear - instead of projecting into $\R^3$, we aren’t going to lose much if we project onto $\R^1$ instead.
 * Fisher: Find the linear combination $Z = a^TX$ st the between class variance is maximized relative to the within class variance. The between class variance is the variance of the class means of Z, and the within class variance is the pooled variance about the means.
 * For W, common covariance matrix (within class covariance), the between-class variance of Z is $a^{T} \mathbf{B} a$ and within class variance is $a^{T} \mathbf{W} a$ where $B+W =T$, total covariance matrix of X. Fisher’s problem amounts to maximizing the Rayleigh quotient, $\max _{a} \frac{a^{T} \mathbf{B} a}{a^{T} \mathbf{W} a}$ 
+
+##### Comparing DA Methods
+
+* Say we have two classes, look at P(G=1|x) vs x. Can have a horrible bumpy function, but all we really want to know is where is it above 0.5. Estimating this with a smooth function will be highly biased - but could have the same classifications since below or above 0.5 is all that matters for this classification.
+
+##### Example: Classification of Microarray Samples
+
+* Four varieties of tumors - BL, EWS, NB, RMS - 4 classes. Small dataset but 2300 genes, very wide data. LDA not possible, pooled covariance is 2300 x 2300 - rank is very low.
+* Row is gene, column sample, grouped by classes. We can see from the image there is some grouping within classes. The paper fit a NN, and way too many parameters. Used bagging on the NN which is why there are many learning curves. Ended with 0 training and test error. They fit the network on a projection onto PCs - Hastie got same performance with ridge logistic regression - similarly depends on PCs.
+* Class centroid plot - centered the classes. Then with shrinkage, the blue lines are centroids that remained in the model for genes, while genes without blue shrunk out of model
+
+##### Shrunken Centroids
+
+* Have within class centroids and overall centroid
+* For each class and component, take the deviation between component for kth class less the overall mean for variable j standardized by sj, the pooled variance for that gene.
+* Shrinkage is soft-thresholding - just like Lasso. If positive, shrink it down by an amount delta, if negative shrink it up by delta. But if it crosses zero in the transform, it is set to 0.
+* For a test sample $x^*$ with p components, the discriminant score for class k $\delta_{k}\left(x^{*}\right)=\log \pi_{k}-\frac{1}{2} \sum_{j=1}^{p} \frac{\left(x_{j}^{*}-\bar{x}_{j k}^{\prime}\right)^{2}}{s_{j}^{2}}$ then map to class with largest discriminant function. If for variable j, all shrunk to the overall centroid, then we can throw variable j out of the model since it contributes nothing new to the model.
+* As shrinkage increases on genes, get better performance until a threshold where the genes really matter, then error shoots up with more shrinkage.
+* The shrinkage also highlights the important genes, those that survived in the model. Interestingly, there were different sets of genes that survived for each of the classes.
+* The ridge model worked very well, but a little inconvenient bc did not perform feature selection. This method focuses more on simplicity with feature selection.
 
 ### Logistic Regression
 

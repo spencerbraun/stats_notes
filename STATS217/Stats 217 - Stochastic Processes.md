@@ -462,16 +462,48 @@ date: 01/06/2019
 	* Idea of proof: Just case $E_yT_y < \infty$. Suppose $X_0 = y$, by the SMP the interarrival times (the time between arrivals to state y) $\tau_1,\tau_2,... \overset{iid}{\sim} T_y$. By strong LLN, $\frac{T_y^k}{k} = \frac{1}{k}\sum_{j=1}^k T_y \overset{a.s.}{\rightarrow} E_yT_y$. Can check $T_y^{N_n(y)}$, at time n you may be somewhere else but a short time ago you were at y, so $T_y^{N_n(y)} \approx n$ for large n. So we conclude $\frac{T^k_y}{k} \approx \frac{n}{N_n(y)}$ for n,k large, seen by substituting this random time $N_n(y)$ for k. 
 * Sometimes we are looking at a fully irreducible MC, but we can also look at separated irreducible sets as their own MCs and apply our theorems there
 
-### Classes of Markov Chains
-##### Detailed Balance Condition 
+## Classes of Markov Chains
+### Detailed Balance Condition 
 * Reversible chains satisfy the DBC
 * Recall a pmf $\pi$ on S is a stationary distribution for a MC with transition matrix P if $(1)\;\pi=\pi p$, $ \pi(y) = \sum_{x \ in S} \pi(x) p(x,y),\; \forall y \in S$. A pmf $\pi$ is said to satisfy a DBC if $(2)\;\pi(x) p(x,y) = \pi(y) p(y,x) ,\; \forall x,y \in S$. 
 * If $\pi$ is a mass distribution on the state space, p tells you has this mass moves to other states. Given some amount of sand, the amount moved from x to y is the same amount moved from y to x. For each pair, we exchange the same amount. 
 * Claim: $(2) \implies (1)$. If (2) holds, for any y, $\sum_{x \in S} \pi(x) p(x,y)$ (the amount of sand coming into y) = $\sum_{x \in S} \pi(y) p(y,x) = \pi(y) \sum_{x \in S} p(y,x)$. By the fact that p is a stochastic matrix $\pi(y) \sum_{x \in S} p(y,x) = \pi(y)$. The total equation here says the amount of sand coming into y is the amount that was there before. 
-* Example: Ehrenfest Chain (Gas through permeable membrane)
+* Example (See Durrett Page 30, Ex 1.27): Ehrenfest Chain (Gas through permeable membrane)
 	* With 3 balls, 2 urns $\begin{bmatrix} 0&1&0&0 \\1/3 &0&2/3&0 \\ 0& 2/3&0&1/3 \\  0&0&1&0 \end{bmatrix}$. Put $\pi(0) = c$ (TBD). Check DBC $\pi(0) p(0,1) = \pi(1) (1,0)$: we get $c \times 1 = \pi(1) \frac{1}{3} \implies \pi(1) = 3c$. 
 	* System: $\pi(0) p(0,1) = \pi(1) (1,0),\\ \pi(1) p(1,2) = \pi(2) (2,1), \\ \pi(2) p(2,3) = \pi(3) (3,2)$. 
 	* We get $\pi(2) = 3c, \; \pi(3) = c$. Take $c = \frac{1}{8}, \pi = (\frac{1}{8},\frac{3}{8},\frac{3}{8},\frac{1}{8})$
+	* Note the DBC is a condition for every pair of states for all x,y in S. We only checked it for 3 pairs, but for this chain, for any x,y with $|x - y| > 1$, the DBC is 0=0 which trivially holds. So it just remains to check for (x,y) in $\{(0,1)(1,2),(2,3)\}$.
+	* For N balls, could just guess and check $\pi(x) = 2^{-N}{N \choose x}$ (binomial distribution). Seems binomial from specific case, so then just check the identity for $0 \leq x \leq N-1, \; \pi(x)p(x,x+1) = \pi(x+1)p(x+1, x)$
+* Birth and Death Chains: a general class of examples with DBCs 
+	* S is ordered, say as a $\{0,1,2,...\}$, transitions only between neighbors or stay put.
+	* Examples: simple random walk on S, Ehrenfest chain, Gambler's ruin
+* Simple Random Walks on an Undirected Graph
+	*	G = (V,E), S = V. For x,y in V, $p(x,y) = \begin{cases} \frac{1}{deg(x)} & if \; y \sim x \\ 0 & otherwise\end{cases}$, where y ~ x indicates neighboring vertices. Take $p(1,2) = 1/2, p(3,4) = 1/3, p(4,3) = 1, p(1,4) = 0$
+	*	Note 3 has the highest degree of 3, so would expect chain to spend the most time at 3 and least at 4. Guess $\pi(x) = c\times deg(x)$ and check if DBC hold. 
+	*	For x,y in V, if x is not connected to y, $\pi(x)p(x,y) = \pi(y)p(y,x) \implies 0=0$
+	*	If x ~ y, then $\pi(x)p(x,y) = c \times deg(x) \frac{1}{deg(x)} =c$. Since this is for arbitrary y and x, switching them also returns c, satisfying the DBC.
+	*	Now take c st $\pi$ is a pmf. Then $c = \frac{1}{\sum_{x \in V} deg(x)} = \frac{1}{2|E|}$ since we count every edge twice by summing over degrees.
+	*	See Durrett Examples 1.33, 1.34 (Knight's Random Walk)
+	*	Taking the example, $\pi = \frac{1}{8}(2,2,3,1)$. If G were regular, the degree of x equals d (all nodes have same degree), then $\pi$ is uniform on V.
+
+### Doubly Stochastic MCs
+* Transition matrix p is doubly stochastic if the columns and rows sum to 1: $p, p^T$ both stochastic.
+* For example, SRW on a regular graph. In this case P is actually a symmetric matrix: $p = \frac{1}{d}A$ where A is the adjacency matrix with entries $A(x,y) = \begin{cases} 1 & x ~y \\ 0 & else\end{cases}$. Since it is an undirected graph, this makes it symmetric - any symmetric matrix is going to be doubly stochastic.
+* **D Theorem 1.14**: If P is doubly stochastic N x N, then $\pi(x) = \frac{1}{N}$ (uniformly distributed) is a stationary distribution
+	* Proof: Check $\pi p = \pi$. Then $(\pi p ) (y)= \sum_{x \in S} \pi(x) p(x,y) = \frac{1}{N} \sum_{x \notin S} p(x,y) \frac{1}{N} = \pi(y) $
+
+###  Reversibility
+* Let $X_n$ be a MC with stationary distribution $\pi$ and suppose $X_0 \sim \pi$ (so $X_n \sim \pi \; \forall n$). Fix n and put $Y_m = X_{n-m},\; 0 \leq m \leq n$. Time reversed process - just looking at this chain backwards.
+* **Theorem 1.15**: Let's assume $\pi(x) > 0 \; \forall x \in S$. Then $Y_m$ is a MC with $Y_0 \sim \pi$ and transition probabilities $\hat{p}(x,y) = \frac{\pi(y) p(y,x)}{\pi(x)}$. To go the other direction we are adjusting by the ratio of stationary probabilities.
+	* Proof: First, we do not even know it is a MC. NTS $P(Y_{m+1} = y_{m+1}|Y_m = y_m,...,Y_0=y_0) = \frac{\pi(y_{m+1}) \hat{p}(y_{m+1},y_m)}{\pi(y_m)}$ - this shows the markov property since it has forgetten its history until the last step.
+$$P(Y_{m+1} = y_{m+1}|Y_m = y_m,...,Y_0=y_0) = \frac{P(X_{n-m+1} = y_{m+1},...,X_n=y_0)}{P(x_{n-m} = y_m,...,X_n=y_0)}\\= \frac{\pi(y_{m+1} p(y_{m+1},y_m) Pr(X_{n-m+1} = y_{m-1},...,X_n=y_0|X_{n-m}=y_m)}{\pi(y_m)Pr(X_{n-m+1} = y_{m-1},...,X_n=y_0|X_{n-m}=y_m)}\\
+\text{Cancelling:} =\frac{\pi(y_{m+1}) \hat{p}(y_{m+1},y_m)}{\pi(y_m)}$$
+* If p, $\pi$ satisfy DBCs then $\hat{p}(x,y) =p(x,y)$ and so $(Y_m)_{m=0}^n \overset{d}{=} (X_m)_{m=0}^n$ for any n. Say MC is reversible
+
+### Metropolis-Hastings Algorithm
+
+* Goal: compute (approximate) $E(f(Y))$ for $Y \sim \pi$ some complicated pmf. We may not have a nice formula st we can compute $\sum_{x \in S}f(x)\pi(x)$. 
+* Idea: design an irreducible MC with $\pi$ as its stationary distribution. By the ergodic theorem, if we run the MC from time 1 to n $\frac{1}{n} \sum_{m=1}^n f(X_m) \overset{a.s.}{\rightarrow} E(f(Y))$
 
 
 ## Probability Reference
