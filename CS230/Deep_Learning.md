@@ -155,6 +155,19 @@
 * Then for zebra to horse Z -> Generator2 -> G2(Z) -> Discriminator2 and G2(Z) -> Generator1 -> G1(G2(Z))
 * 5 loss functions - 2 for G’s, 2 for D’s, and a cycle loss function used as a regularizer 
 
+## AI for Healthcare
+
+* Often have imbalanced datasets - some pathologies must more prevalent than others. As we increase the prevalence of disease in data, the algorithm performs better.
+* We can weight the loss function - say for logisitic regression, can add larger weight to disease class.
+* Noisy label challenge - two radiologists would have different answers for an x-ray. One might be right in reality or it may be a matter of interpretation. This is actually ok for DL tasks - increasing the # of training examples can drastically increase accuracy even learning from the noisy examples - smooths out the noise 
+* Correcting noise via self training - noisy label -> train classifier -> predict for every example in the training set -> use the prediction of classifier to train a new classifier. Can apply the classifier to many datasets to create the new classifier.
+* On image tasks, pretty common to pretrain on ImageNet then modify by training on medical images.
+
+### Case Study
+
+* Data augmentation often useful but not in every situation. In MNIST, if you rotate a 6, it becomes a 9, but the label is still a 6. Will confuse the model. Similar with character recognition. 
+* For transfer learning, may want to freeze the early layers since their weights should directly relate to your task - its the later higher level layers that we want to retune to the specific task as well as modify the output to our purposes.
+
 # Coursera Modules
 
 ## C1 - Neural Networks and Deep Learning
@@ -807,3 +820,205 @@ print(session.run(w))
 * Key question - do you have sufficient data to learn a function of the complexity needed to map x to y. The function needed to map a hand directly to the age of a child requires a ton of data.
 * Not E2E self driving - take image, radar, lidar, then detect cars, pedestrians, etc. Then plan the route given these objects, and execute steering/breaking. The first part is easily done with deep learning, but the route is usually done through motion planning algorithms, and steering through a control system. 
 * You can use DL to learn individual components, then carefully choose x and y depending on what tasks you can get data for. But E2E for self-driving seems extremely difficult and is less promising.
+
+## C4 - Convolutional Neural Networks
+
+### Module 1 - Foundations of CNNs
+
+##### Computer Vision
+
+* Image classification, object detection, neural style transfer
+* If you work with larger images, can have 1000 x  1000 x 3 image - now have 3 million input features. Dimensions become enormous
+
+##### Edge Detection
+
+* Vertical edge detection on a grayscale image, say 6 x 6
+* Construct a 3 x 3 filter $\left[\begin{array}{ccc} 1 & 0 & -1 \\1 & 0 & -1 \\1 & 0 & -1 \end{array}\right]$. We use `*` to denote convolution. We take the filter and convolve over the image, taking the element-wise product and adding together. This is the entry in a new 4 x 4 matrix. For the second element, shift our filter one step to the right, calculate the sum of element-wise products and fill in. Repeat.
+* In Python `conv-forward`, in tf `tf.nn.conv2d`, keras `conv2D`, etc.
+* Why is this vertical edge detection? Say we have image, filter, and convolved image: $$\begin{array}{|c|c|c|c|c|c|}
+  \hline 10 & {10} & {10} & {0} & {0} & {0} \\
+  \hline 10 & {10} & {10} & {0} & {0} & {0} \\
+  \hline 10 & {10} & {10} & {0} & {0} & {0} \\
+  \hline 10 & {10} & {10} & {0} & {0} & {0} \\
+  \hline 10 & {10} & {10} & {0} & {0} & {0} \\
+  \hline 10 & {10} & {10} & {0} & {0} & {0} \\
+  \hline
+  \end{array} \times \begin{array}{|c|c|c|}
+  \hline 1 & {0} & {-1} \\
+  \hline 1 & {0} & {-1} \\
+  \hline 1 & {0} & {-1} \\
+  \hline
+  \end{array} = \begin{array}{|c|c|c|c|}
+  \hline 0 & {30} & {30} & {0} \\
+  \hline 0 & {30} & {30} & {0} \\
+  \hline 0 & {30} & {30} & {0} \\
+  \hline 0 & {30} & {30} & {0} \\
+  \hline
+  \end{array}$$ - clearly has a strong vertical edge. Can think of our filter as light, middle shade, dark shade. We end up with a light region right in the middle, corresponding to the detected edge right down the middle of the image - otherwise products cancel out in the sum. A vertical edge is a 3 x 3 region where there are bright pixels on the left and dark pixels on the right.
+* If we flipped the image but used the same filter, we end up with negative 30s instead of positive - dark segment in the middle. Similar to our vertical filter, we can construct a horizontal filter $\begin{array}{|c|c|c|}
+  \hline 1 & {1} & {1} \\
+  \hline 0 & {0} & {0} \\
+  \hline-1 & {-1} & {-1} \\
+  \hline
+  \end{array}$
+* Given a more interesting task:
+
+$$\begin{array}{|c|c|c|c|c|c|}
+\hline 10 & {10} & {10} & {0} & {0} & {0} \\
+\hline 10 & {10} & {10} & {0} & {0} & {0} \\
+\hline 10 & {10} & {10} & {0} & {0} & {0} \\
+\hline 0 & {0} & {0} & {10} & {10} & {10} \\
+\hline 0 & {0} & {0} & {10} & {10} & {10} \\
+\hline 0 & {0} & {0} & {10} & {10} & {10} \\
+\hline
+\end{array} \times \begin{array}{|c|c|c|}
+\hline 1 & {1} & {1} \\
+\hline 0 & {0} & {0} \\
+\hline-1 & {-1} & {-1} \\
+\hline
+\end{array} = \begin{array}{|c|c|c|c|}
+\hline 0 & {0} & {0} & {0} \\
+\hline 30 & {10} & {-10} & {-30} \\
+\hline 30 & {10} & {-10} & {-30} \\
+\hline 0 & {0} & {0} & {0} \\
+\hline
+\end{array}$$ 
+
+* We can also learn these filter weights, can also detect more complex orientations, allowing more robust learning of low level features
+
+##### Padding
+
+* For n x n image and f x f filter, we get (n - f + 1 x n - f + 1), but we may not want our image to shrink every time we do this. It also treats our pixels unequally - a corner only gets included in one convolution while middle included in many. 2 big problems - shrinking image over layers and discarding edge information
+* To fix them, we pad the image with extra pixels. Turn the 6 x 6 into 8 x 8, convolved with 3 x 3, we get another 6 x 6 image. Padding with 0 values. We get an image (n + 2p - f + 1) x (n + 2p - f + 1)
+* Valid conv - no padding. Same conv. - pad so that output size is same as input size. This means $p = \frac{f-1}{2}$, note that f is usually odd. Typically want a central pixel
+
+##### Strided Convolutions
+* Stride of 2 say, we take the element-wise product as usually, but instead of moving the filter one step, we move it over 2 steps. For a 7x7 image with 3x3 image, we are just taking three convolutions of first row. Same goes for jumping to new rows - we move it down 2 steps. Our output is then 3 x 3
+* Take n x n with f x f filter, padding p and stride s, the output is $\frac{n+2p-f}{s} + 1 \times \frac{n+2p-f}{s} + 1$. 
+* We take the floor of these dimensions if non integral. We do not take partial convolutions - filter must lie entirely within image + padding
+
+##### Convolutions over Volumes
+* RGB image has additional dimension - 6 x 6 x 3. Now our filter must also have another dimension 3 x 3 x 3. The end dimension of the filter is always the dimension of the channels (colors).
+* Output is 2D 4 x 4 since the filter is covering all color dimensions at once. Filter has 27 numbers and do the same element-wise multiplication and sum to get a single number for the output matrix.
+* Could have different 3 x 3 filters across colors or the same - will change the feature we are detecting. 
+* Multiple filters
+	* Combine what we are trying to detect at a given time. We take say a vertical edge filter, then also convolve by a 2nd edge detector. Now we have 2 4 x 4 output matrices, and we can stack these - 4 x 4 x 2 output volume. Can say $(n \times n \times n_c) \times (f \times f \times n_c) \rightarrow n -f + 1 \times n-f+1 \times n_c'$
+
+##### One Layer CNN
+* Image + filter -> ReLU((4 x 4) + b) -> (4 x 4). Perform for each filter, then stack our final outputs. 
+* This is a single layer of a CNN. Can think of the first 4 x 4 output as W x a, Then (4 x 4) + b equivalent to Z, then passed into activation. 
+* With 10 filters that are 3 x 3 x 3 in one layer of a NN, how many parameters does that layer have? Well filter 1 has 3 x 3 x 3 + bias = 28 params. Over 10 filters, total of 280 parameters. Fewer parameters than FC units means less prone to overfitting
+* Notation: $f^{[l]}$ = filter size, $p^{[l]}$ = padding, $s^{[l]}$ = stride. 
+* Input: $n^{[l-1]}_H \times n^{[l-1]}_W \times n_c^{[l-1]} $
+* Output: $n^{[l]}_H \times n^{[l]}_W \times n_c^{[l]} $
+* Volume size for layer (output): $n^{[l]}_H = \frac{n^{[l-1]}_H + 2p^{[l]} - f^{[l]}}{s^{[l]}} + 1$, same for $n^{[l]}_W$
+* Number of filters: $n_{c}^{[l]}$
+* Each filter is: $f^{[l]} \times f^{[l]} \times n_{c}^{[l-1]}$
+* Activations: $a^{[l]} = n^{[l]}_H \times n^{[l]}_W \times n_c^{[l]}$ or with matrix in BGD, $A^{[l]} = m \times n^{[l]}_H \times n^{[l]}_W \times n_c^{[l]}$
+* Weights: $f^{[l]} \times f^{[l]} \times n_{c}^{[l-1]} \times n_c^{[l]}$ since $n_c^{[l]}$ is the number of filters in layer l
+* Bias: $n_{c}^{[l]}-\left(1,1,1, n_{c}^{[l]}\right)$
+* Generally in a many layer network - the size of the image shrinks while the number of channels grows
+* In a larger network usually combine types of layers - convolution, pooling, and fully connected layers (FC).
+
+##### Pooling Layers
+* Say we take a 4 x 4, f = 2, s = 2 we get a 2 x 2 with no overlap from convolutions. 
+* Max pooling, take the max from each of these 4 regions in the 4 x 4. Often used simply because it works well in practice. We can also do it with overlapping convolutions, take the max instead of element-wise products.
+* If you have a 3D input, then the output will have that extra dimension as well - perform pooling on each channel separately.
+* Average pooling - instead of taking the max's we take the average. Used less but sometimes used to collapse dimensions 7 x 7 x 100 -> 1 x 1 x 100
+* So for pooling, we have hyperparameters filter size, stride, and max / average. 
+* Could add extra hyperparameter for padding, but generally never used.
+* Input is $n_H \times n_W \times n_C$ and output is $\frac{n_H-f}{s} + 1 \times \frac{n_W-f}{s} + 1 \times n_c$
+* There are no parameters to learn by pooling - it is a fixed function. 
+
+##### CNN Example
+* Image 32 x 32 x 3 for digit recognition. We will build something similar to LeNet - 5
+* Conv layer: f = 5, s = 1, p = 0. Output 28 x 28 x 6 from 6 filters (CONV1)
+* Pool Layer: max pooling, f=2, s=2. Output: 14 x 14 x 6 (POOL1)
+* We call CONV1 + POOL1 = Layer 1
+* Conv layer: f = 5, s = 1, 16 filters. Output: 10 x 10 x 16 (CONV2)
+* Pool Layer: f = 2, s = 2. Output: 5 x 5 x 16 (POOL2)
+* Layer 2 = CONV2 + POOL2
+* Fatten POOL2 into 400 x 1 vector
+* Fully connected layer: FC3, fully connected 120 units, where $w^{[3]} = (120,400)$
+* Add another FC: 84 units (FC4). Feed this to softmax unit with 10 outputs.
+
+##### Why Convolutions?
+* Parameter sharing
+	* If we made FC from images, could have 3000 units in one layer connected to 5000 in the next. Instead we just have ~150 in a convolutional layer.
+	* A feature detector useful in one part of the image is probably useful in other parts - in this way we share parameters over different positions in the input. True for low and high level features.
+* Sparsity of connections
+	* In each layer each output value depends only on a small number of inputs. A single value in an output matrix is just a collection of say 9 inputs. 
+	* Translation invariance - if we shifted pixels over a bit, CNN is still pretty robust, since we are looking locally and applying the same filter over and over.
+
+### Module 2 - Deep Convolutional Model Case Studies
+
+##### Classic Networks
+
+* LeNet-5
+	* Goal was to recognize handwritten digits, grayscale images 32 x 32 x 1
+	* Conv: Use 6 5x5 filters, s = 1 -> 28 x 28 x 6
+	* Avg Pool: f = 2, s = 2, output: 14 x 14 x 6
+	* Conv: 16 filters that are 5 x 5. Output: 10 x 10 x 16
+	* Avg Pool:  f = 2, s = 2,  Output: 5 x 5 x 16
+	* FC: 120 -> FC: 84 -> y_hat with 10 possible values (would use softmax today)
+	* Small by modern standards - 60k parameters.
+	* Notice the height and width tend to decrease over layers (no padding) but channels increase. Also structure of conv, pool, conv, pool, fc, fc, output is a classic architecture.
+* AlexNet
+	* Inputs 227 x 227 x 3 images
+	* Conv: 11 x 11 filters, s = 4. Ouput: 55 x 55 x 96
+	* Max Pool: f = 3, s = 2
+	* More Conv and Pool with same parameters. Gets down to a 6 x 6 x 256 -> 9216 FC nodes. Ends in a softmax
+	* Similar to LeNet but much bigger. This one has 60m parameters. Also used ReLU activation which helped a lot. 
+* VGG
+	* Conv layers f = 3 and s = 1, same convolutions
+	* Max Pool layers f = 2, s = 2
+	* The layers get longer as number of filters increase, since this determines the third dimension. The pooling layers cause the image to shrink by 2 at each pool, but conv keep dimensions the same except for the third dimension.
+	* Has around 138m parameters. Roughly doubling number of filters at each conv layer.
+
+##### ResNets
+* Residual block - instead of running an output of l through the next linear -> ReLU -> linear block we give $a^{[l]}$ a shortcut. Now $a^{[l+2]} = g(z^{[l+2]} + a^{[l]})$
+* Injected after the linear part but before the ReLU part. Using residual blocks allows you to train much deeper networks
+* We add these skip connections to a regular network to get many residual blocks stuck together. 
+* Usually, training error has a u shape vs the number of layers in reality, despite the monotonic decline that is expected from theory. With a resnet, we get the proper monotonic decline
+* The skip connections helps with vanishing and exploding gradient problems.
+* Note $a^{[l+2]} = g(z^{[l+2]} + a^{[l]}) = g(w^{[l+2]}a^{[l+1]} + b^{[l+2]} + a^{[l]})$ - $w^{[l+2]} = 0$, that whole term goes away and you just get $a^{[l]}$. Easy to get $a^{[l+2]}=a^{[l]}$, then adding those extra layers between them leaves a fallback value to learn. If the hidden units actually learn something useful, then they can improve on $a^{[l]}$ but shouldn't hurt if they cannot.
+* Also note that we assume $z^{[l+2]}, a^{[l]}$ have same dimensions - so usually keep the dimensions constant in the res block so this works. If you changed dimensions could add $W_sa^{[l]}$ instead that transforms the dimensions correctly.
+* Can add to a CNN with 3 x 3 same conv layers to preserve dimensions. Whenever we have pooling layers, need to make the dimension adjustment. 
+
+##### 1x1 Convolutions
+* A 1x1 filter on 6 x 6 x 1 image ends up just scaling the original image by the number in the filter. But if you have a 6 x 6 x 32, your filter is 1 x 1 x 32 to get 6 x 6 x (# of filters) output. So it multiplies each of 32 channels by a scalar, summing and applying a ReLU. 
+* With multiple filters, rebuilding different slices. Like a FC network, applies to each position. Also called "Network in Network"
+* Why is this useful? To shrink H or W just pool. But to shrink the # of channels, use y filters that are 1 x 1. Then the output of the image will be H x W x y. If we keep the number of channels the same, then we are just adding some non-linearity that allows for learning a more complex function.
+
+##### Inception Network
+* Given a 28 x 28 x 192 volume. Use 1 x 1 convolution to output 28 x 28 x 64. But what if you also want to try a 3 x 3? We can do both and stack them - the H and W stay the same but can change the channel dimension. 
+* Can max pool also, but need to use pooling to keep the 28 x 28 dimensions.
+* Input some volume, and get any # of channels as the output without having to pick any filter size - just do them all and stack. 
+* However the computational cost does increase. Just implementing the 5 x 5, same, 32 filter: have 32 filters, each 5 x 5 x 192 and you need to compute 28 x 28 x 32 to get the output - this is 120 m computations.
+* We can reduce this using a 1 x 1 convolution: go from 28 x 28 x 192 -> 28 x 28 x 16 -> use 5 x 5 filter -> 28 x 28 x 32. The 1x1 is called a "bottle neck" layer.
+	* First computation is 28 x 28 x 16 x 192 = 2.4 m, and second part is 28 x 28 x 32 x 5 x 5 x 16 = 10m. So now we have roughly 1/10 of the computations needed before.
+* With max pooling, we add a same parameter to ensure we add padding to get the same dimensions. Then need a 1x1 to shrink the number of channels.
+* Once we feed the activations through a 1x1, the larger filters we desire (3x3, 5x5 etc) after the 1x1s, we can just concat the whole stack again. Then can repeat these inception blocks to create a full inception network.
+* Finally, can add some sidebranches that try to take a hidden layer and make a prediction through a softmax. Helps ensure the features computated even in the hidden units aren't too bad - can have a regularizing effect.
+
+##### Transfer Learning
+* Can download weights that someone else has trained on their architecture. Then use this as the initializiation for your problem and get much faster training.
+* Get rid of the last softmax layer, then attach your own with the categories you care about. Freeze the early hidden layers and just train the softmax layer.
+* This can help get good performance even with a small dataset. Should be easy to do inside the DL framework using. 
+* Could also freeze some of the early layers and continue training the last few layers. Either use the last few weights as initialization or throw those away and start over. Depends on how much data you have - the more you have the more layers you can train.
+* With a lot of data, can train the whole NN, just leaving the original weights as initialization. Basically you should almost always do transfer learning unless you have a very large dataset.
+
+##### Data Augmentation
+* Mirroring on vertical axis. Random cropping, though some error since you can take bad crops. Rotation shearing, rotation, local warping.
+* Color shifting - add to the RGB channels different distortions. Can draw the additions at random from some distribution. May use PCA color augmentation - find the colors that are most important.
+* With a very large dataset, can have a CPU thread constantly loading images off the HD, then implement the distortion in the thread. The threads form a mini-batch and we pass it directly to the training
+
+##### State of Computer Vision
+
+* Data vs hand engineering - on a scale of lots of data to little data, image recognition is behind other tasks like speech recognition. Object detection is even further behind.
+* When there is more data, we can have a simpler architecture, less hand engineering. With less data, we need more hand-engineering and hacks.
+* The learning algorithm has two sources of knowledge - the labeled data and hand engineered features/ architectures. Without the data we push harder on the other. Transfer learning is also useful in this case.
+* Tips for benchmarks / competitions
+  * Ensembling - train several networks independently and average the outputs ($\hat{y}$). Good for benchmarks but super costly for real production
+  * Multi-crop at test time - run classifier on multiple versions of test images and average the results. 10-crop for example.
+* Always consider open source architectures and papers and implementations / transfer learning weights
