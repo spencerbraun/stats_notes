@@ -474,10 +474,10 @@ date: 01/06/2019
 	* We get $\pi(2) = 3c, \; \pi(3) = c$. Take $c = \frac{1}{8}, \pi = (\frac{1}{8},\frac{3}{8},\frac{3}{8},\frac{1}{8})$
 	* Note the DBC is a condition for every pair of states for all x,y in S. We only checked it for 3 pairs, but for this chain, for any x,y with $|x - y| > 1$, the DBC is 0=0 which trivially holds. So it just remains to check for (x,y) in $\{(0,1)(1,2),(2,3)\}$.
 	* For N balls, could just guess and check $\pi(x) = 2^{-N}{N \choose x}$ (binomial distribution). Seems binomial from specific case, so then just check the identity for $0 \leq x \leq N-1, \; \pi(x)p(x,x+1) = \pi(x+1)p(x+1, x)$
-* Birth and Death Chains: a general class of examples with DBCs 
+* **Birth and Death Chains**: a general class of examples with DBCs 
 	* S is ordered, say as a $\{0,1,2,...\}$, transitions only between neighbors or stay put.
 	* Examples: simple random walk on S, Ehrenfest chain, Gambler's ruin
-* Simple Random Walks on an Undirected Graph
+* Simple Random Walks on an **Undirected Graph**
 	*	G = (V,E), S = V. For x,y in V, $p(x,y) = \begin{cases} \frac{1}{deg(x)} & if \; y \sim x \\ 0 & otherwise\end{cases}$, where y ~ x indicates neighboring vertices. Take $p(1,2) = 1/2, p(3,4) = 1/3, p(4,3) = 1, p(1,4) = 0$
 	*	Note 3 has the highest degree of 3, so would expect chain to spend the most time at 3 and least at 4. Guess $\pi(x) = c\times deg(x)$ and check if DBC hold. 
 	*	For x,y in V, if x is not connected to y, $\pi(x)p(x,y) = \pi(y)p(y,x) \implies 0=0$
@@ -488,7 +488,7 @@ date: 01/06/2019
 
 ### Doubly Stochastic MCs
 * Transition matrix p is doubly stochastic if the columns and rows sum to 1: $p, p^T$ both stochastic.
-* For example, SRW on a regular graph. In this case P is actually a symmetric matrix: $p = \frac{1}{d}A$ where A is the adjacency matrix with entries $A(x,y) = \begin{cases} 1 & x ~y \\ 0 & else\end{cases}$. Since it is an undirected graph, this makes it symmetric - any symmetric matrix is going to be doubly stochastic.
+* For example, SRW on a regular graph. In this case P is actually a symmetric matrix: $p = \frac{1}{d}A$ where A is the adjacency matrix with entries $A(x,y) = \begin{cases} 1 & x \sim y \\ 0 & else\end{cases}$. Since it is an undirected graph, this makes it symmetric - any symmetric matrix is going to be doubly stochastic.
 * **D Theorem 1.14**: If P is doubly stochastic N x N, then $\pi(x) = \frac{1}{N}$ (uniformly distributed) is a stationary distribution
 	* Proof: Check $\pi p = \pi$. Then $(\pi p ) (y)= \sum_{x \in S} \pi(x) p(x,y) = \frac{1}{N} \sum_{x \notin S} p(x,y) \frac{1}{N} = \pi(y) $
 
@@ -502,8 +502,24 @@ $$P(Y_{m+1} = y_{m+1}|Y_m = y_m,...,Y_0=y_0) = \frac{P(X_{n-m+1} = y_{m+1},...,X
 
 ### Metropolis-Hastings Algorithm
 
-* Goal: compute (approximate) $E(f(Y))$ for $Y \sim \pi$ some complicated pmf. We may not have a nice formula st we can compute $\sum_{x \in S}f(x)\pi(x)$. 
-* Idea: design an irreducible MC with $\pi$ as its stationary distribution. By the ergodic theorem, if we run the MC from time 1 to n $\frac{1}{n} \sum_{m=1}^n f(X_m) \overset{a.s.}{\rightarrow} E(f(Y))$
+* Goal: compute (approximate) $E(f(Y))$ for $Y \sim \pi$ some complicated pmf on set S. We may not have a nice formula st we can compute $\sum_{x \in S}f(x)\pi(x)$. 
+* Idea: design an irreducible MC on S with $\pi$ as its stationary distribution. By the ergodic theorem, if we run the MC from time 1 to n $\frac{1}{n} \sum_{m=1}^n f(X_m) \overset{a.s.}{\rightarrow} E(f(Y))$
+* Sampling algorithm to get at a difficult distribution using the ergodic theorem
+* Start with a proposed jump distribution $Q(x,y)$ - this won't be our eventual transition matrix, but we design this to either transition with Q or do nothing. Accept a transition with probability $R(x,y) = min\{\frac{\pi(y)Q(y,x)}{\pi(x)Q(x,y)}, 1\}$ (threshold at one to ensure valid probability). Then transition matrix p(x,y), for $x \neq y,\; p(x,y) = Q(x,y)R(x,y)$. We accept a move according to Q with probability R(x,y) else stay put.
+* So $p(x,x) = R(x,x)Q(x,x) + \sum_{y \neq x} (1- R(x,y))Q(x,y) = Q(x,x) + \sum_{y \neq x} (1- R(x,y))Q(x,y)$ to make out probabilies sum to 1. First term - either we accept Q and move, or right term we reject Q and stay put.
+* Claim: $p,\pi$ satisfy DBCs - in particular $\pi$ is the stationary distribution for p.
+	* Proof: Pick arbitrary pair of states, $x,y \in S$. WLOG we may assume $\pi(y)Q(y,x) > \pi(x)Q(x,y)$. We then have $\pi(x)p(x,y) = \pi(x)Q(x,y)R(x,y) = \pi(x)Q(x,y)$. The reverse $\pi(y)p(y,x) = \pi(y)Q(y,x)R(y,x) = \pi(y)Q(y,x)\frac{\pi(x)Q(x,y)}{\pi(y)Q(y,x)} =  \pi(x)Q(x,y)$ The whole art of the algorithm is in designing Q.
+* Example:  M-H for Geometric distribution. S = [0,1,2,...], $\pi(x) = \theta^x(1-\theta)$, for some $\theta \in (0,1)$. Since the distribution is easy, we wouldn't use M-H so this is just illustrative. View $\pi$ as a pmf on $\Z$ by putting $\pi(x) = 0, \forall x < 0$
+	* Take Q to be the transition matrix SRW on $\Z$ (can also take it to be the reflecting random walk). $Q(x,y) = \begin{cases} 1/2 & \text{for } (x-y)=1 \\ 0 & else\end{cases}$, and acceptance probability $R(x,y) = min\{1,\frac{\pi(y)}{\pi(x)}\}$ since Q is symmetric so we get cancellation in the ratio.
+	* For x > 0 transition to the left, $p(x, x-1) = \frac{1}{2}R(x,x-1) = \frac{1}{2}$ since $\pi(x)$ decreases with x. Transition to the right $p(x,x+1) = \frac{1}{2}\theta$
+	* $p(x,x) = \frac{1- \theta}{2}$. For x = 0, $\pi(-1) = 0 \implies p(0,-1) = 0,\; p(0,1) = \theta/2,\; p(0,0) = 1 - \frac{\theta}{2}$
+	* Is this irreducible? Yes, see transitions to neighbors are all positive. $p(x,y) > 0,\; \forall x,y$ neighbors ($|x-y| = 1$), so we can get from x to y in |x-y| steps with positive probability, ie. all states communicate with all others. By claim (accept / reject condition satisfies DBC) and ergodic theorem: $\frac{1}{n}\sum_{m=1}^n f(X_m) \overset{a.s.}{\rightarrow} E(f(Y))$ for $Y \sim geom(\theta),\; X_n$ MC with transition matrix p.
+	* The point is to get to a p we can compute and is irreducible, something we can work with more easily.
+* Example: More complicated $\pi$. Say V is a large finite set, say atoms in a crystal. S is set of all configurations of +1,-1 on V: $S = \{+1, -1\}^V =  \{\sigma: V\rightarrow \{+1,-1\}\}$, size $2^V$ - enormous state space. We have a Hamiltonian function $H: S \rightarrow \R$, with $H(\sigma)$ giving the energy of this configuration $\sigma$. We have pmf $\pi(\sigma) = \frac{1}{Z}exp(-\beta H(\sigma)), \; \beta > 0$ parameter, inverse temperature. Z = normalizing constant, given by $\sum_{\sigma \in S} e^{-\beta H(\sigma)}$, $Z(\beta)$, partition function. 
+	* Gibbs measure. Simplified model of atom spin up or down, tend to align with their neighbors. A configuration will be more likely if it has lower energy. $\beta$ is a parameter that tunes how important it is to minimize energy, for $\beta$ very small, close to the uniform distribution for $\pi$, while large $\beta$ makes it important to minimize the energy. 
+	* To model a 2D ferromagnet, have a grid with $\Lambda = \{-L, -L+1, ...,L\}^2$ defining its sites. Each site gets a label +1 or -1. Our state space is the set of all possible labelings. $H(\sigma) = -\sum_{x\ sim y} \sigma(x)\sigma(y)$, since $\sigma(x)\sigma(y) = +1$ for $\sigma(x)=\sigma(y)$ else -1.
+	* Problem: $Z(\beta) = \sum_{\sigma \in \{+1, -1\}^V} e^{\beta\sum_{x \sim y} \sigma(x)\sigma(y)}$ is a gigantic sum - cannot compute
+	* M-H: For $\sigma \in S$ and $x \in V$ write $\sigma^x$ for the configuration you get for taking sigma and flipping the value at site x to the opposite sign, so they only disagree on one atom.  $\sigma^x(y) = \begin{cases}\sigma(y) & x \neq y \\ -\sigma(y) & x = y \end{cases}$. Draw $X \in V$ uniformly at random and flip spin at X. Proposed jump distribution $Q(\sigma,\sigma^y) = \frac{1}{(2L+1)^2}, \; y \in V$.
 
 
 ## Probability Reference

@@ -55,16 +55,27 @@
 * Define: $q(i)=P\left(X_{0}=i\right)$ 
 * Stationary Distribution: If $\pi p = \pi$, then $\pi$ is called a stationary distribution. If the distribution at time 0 is the same as the distribution at time 1, then by the Markov property it will be the distribution at all times
   * That after all the transfers are made, the amount of sand that ends up at each site is the same as the amount that starts there. Not necessarily from x to y and y to x - transfers around the whole system.
-
 * Definition 1.2. A transition matrix p is said to be doubly stochastic if its COLUMNS sum to 1
 * **D Theorem 1.14**. If p is a doubly stochastic transition probability for a Markov chain with N states, then the uniform distribution, $\pi(x)=1 / N$ for all x, is a stationary distribution.
-* Detailed balance condition: $\pi(x) p(x, y)=\pi(y) p(y, x)$
-  * A stronger condition than the stationary distribution. In this case the detailed balance condition says that the amount of sand going from x to y in one step is exactly balanced by the amount going back from y to x.
 
-## Reversibility
+## Detailed Balance Condition
+
+* $\pi(x) p(x, y)=\pi(y) p(y, x)$
+* A stronger condition than the stationary distribution. In this case the detailed balance condition says that the amount of sand going from x to y in one step is exactly balanced by the amount going back from y to x.
+
+* Birth and death chains are defined by the property that the state space is some sequence of integers and it is impossible to jump by more than one.
+* Random walks on graphs: an adjacency matrix A.u; v/, which is 1 if there is an edge connecting u and v and 0 otherwise. Then $p(u, v)=\frac{A(u, v)}{d(u)}$ and $\pi(u) p(u, v)=c A(u, v)=c A(v, u)=\pi(v) p(u, v)$
+
+### Reversibility
 
 * **Theorem 1.15**: Fix n and let $Y_{m}=X_{n-m} \text { for } 0 \leq m \leq n$. Then $Y_m$ is a Markov chain with transition probability $\hat{p}(i, j)=P\left(Y_{m+1}=j | Y_{m}=i\right)=\frac{\pi(j) p(j, i)}{\pi(i)}$. 
   * In english, if we watch the process $X_{m}, 0 \leq m \leq n$ backwards, then it is a MC. For transition probability $p(i,j)$ with stationary distribution $\pi(i)$ and Let Xn be a realization of the Markov chain starting from the stationary distribution, $P\left(X_{0}=i\right)=\pi(i)$
+  * When $\pi$ satisfies DBC, $\hat{p}(i, j)=\frac{\pi(j) p(j, i)}{\pi(i)}=p(i, j)$
+
+### Metropolis Hastings
+
+* MC q(x, y), and a move is accepted with probability $r(x, y)=\min \left\{\frac{\pi(y) q(y, x)}{\pi(x) q(x, y)}, 1\right\}$
+* We get transition probability $p(x, y)=q(x, y) r(x, y)$. We run the chain for a long time until reaches equilibrium, then take samples at widely separated times. For an irreducible finite S chain, Theorem 1.22 guarantees $\frac{1}{n} \sum_{m=1}^{n} f\left(X_{m}\right) \rightarrow \sum_{x} f(x) \pi(x)$
 
 ## Limit Behavior
 
@@ -79,7 +90,7 @@
   * R: all states recurrent, 
   * S: stationary distribution $\pi$ exists
 * **D Theorem 1.19 Convergence Theorem**: $p^{n}(x, y) \rightarrow \pi(y)$ as $n \rightarrow \infty$ for I, A, S
-* **Theorem 1.20 (Asymptotic Frequency).** Suppose I and R. R. If $N_n(y)$ be the number of visits to y up to time n, then $\frac{N_{n}(y)}{n} \rightarrow \frac{1}{E_{y} T_{y}}$
+* **Theorem 1.20 (Asymptotic Frequency).** Suppose I and R. If $N_n(y)$ be the number of visits to y up to time n, then $\frac{N_{n}(y)}{n} \rightarrow \frac{1}{E_{y} T_{y}}$
   * The average probability of visiting y converges to the 1 over the expected min time to return to y starting from y.
   * If state space is infinite, we can have $E_{y} T_{y}=\infty$ and the limit is 0
 * **Theorem 1.21**. If I and S hold, then $\pi(y)=1 / E_{y} T_{y}$ and hence the stationary distribution is unique.
@@ -92,8 +103,19 @@
 
 ## Exit Times
 
+* **Theorem 1.28**: Given a set F, let $V_{F}=\min \left\{n \geq 0: X_{n} \in F\right\}$. Consider a Markov chain with state space S. Let A and B be subsets of S, so that $C=S-(A \cup B)$ is finite. Suppose $h(a) = 1$ for $a \in A, \; h(b)= 0$ for $b \in B$ and that for x in C we have $h(x)=\sum_{y} p(x, y) h(y)$. If $P_{x}\left(V_{A} \wedge V_{B}<\infty\right)>0$ for all x in C, then $h(x)=P_{x}\left(V_{a}<V_{b}\right)$
 * **Theorem 1.29**. Let $V_{A}=\inf \left\{n \geq 0: X_{n} \in A\right\}$. Suppose $C=s-A$ is finite, and that $P_{x}\left(V_{A}<\infty\right)>0$ for any x in C. If g(a) = 0 for all a in A, and for x in C  we have $g(x)=1+\sum_{y} p(x, y) g(y)$, then $g(x)=E_{x}\left(V_{A}\right)$.
-  * 
+  * g(x) is the expected time to some exit state starting in state x. For some exit state (absorbing) g(x) = 0, while for non absorbing states, g(x) = 1 + f(g(x)), ie. we add one since we have to take at least one step to exit, then have some system of equations dependent on other g(x) values.
+  * This Theorem gives us a way to guess and verify the answer while ensuring that our solution is unique.
+
+## Infinite State Spaces
+
+* Positive recurrent: x is said to be positive recurrent if $E_{x} T_{x}<\infty$
+* Null recurrent: if a state is recurrent but not positive recurrent, meaning $P_{x}\left(T_{x}<\infty\right)=1$ and $E_{x} T_{x}=\infty$, it is null recurrent
+  * In a reflecting random walk - p < 1/2 0 is PR, p = 1/2 0 is NR, p > 1/2 0 is transient
+  * In reflecting random walk, null recurrence thus represents the borderline between recurrence and transience. This is what we think in general when we hear the term.
+* **Theorem 1.30**: For an irreducible chain the following are equivalent: (i) Some state is positive recurrent. (ii) There is a stationary distribution . (iii) All states are positive recurrent.
+  * Think from Theorem 1.21, $\pi(x)=\frac{1}{E_{x} T_{x}}$ then for null recurrent $E_{x} T_{x}=\infty$, $\pi(x) = 0$
 
 # Pinsky
 
