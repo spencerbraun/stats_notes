@@ -535,6 +535,8 @@
 * Learning slows for tiny gradients, takes too large steps for large.
 * Weight Initialization Fix: Say we have 4 inputs in X. $z = w_1x_1 + ...w_nx_n$ - for larger n we want smaller w’s to balance out. Can set $Var(w_i) = 1/n$. In practice, set $W^{[l]} = $ `np.random.randn(slope)*np.sqrt(2/n^{[l-1]})` (better to set variance to 2 instead of 1). This is the fix generally for ReLU
 * For tanh, we tend to use Xavier initialization: $\sqrt{\frac{1}{n^{[l-1]}}}$ or $\sqrt{\frac{2}{n^{[l-1]}+n^{[l]}}}$. These initializations for variances can be tuned as well.
+* In practice, Xavier initialization rule $var(W^{[l]}) = \frac{2}{n^{[l-1]}n^{[l]}}$ for tanh activations (like setting the variance in np.random.randn, we use this in the initialization).
+* He Initialization, used for ReLU activations: uses $var(W^{[l]}) = \frac{4}{n^{[l-1]}n^{[l]}}$. With ReLU cannot make the same linear approximation we used in tanh.
 
 ##### Gradient Approximation and Checking
 

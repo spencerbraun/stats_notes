@@ -406,8 +406,16 @@
 * The K centroids in p-dimensional input space lie in an affine subspace of dimension ≤ K − 1, and if p is much larger than K, this will be a considerable drop in dimension.
 * Project $X^*$ onto the centroid spanning subspace since we only care about relative distances to centroids - we need only consider data in a subspace of dimension at most K-1
 * We could make subspace even smaller by finding the PCs of the centroids themselves. Say we have three centroids that are nearly collinear - instead of projecting into $\R^3$, we aren’t going to lose much if we project onto $\R^1$ instead.
+* We see in the example, in the first few coordinates there is good class separation and not much beyond that - looking at 9 vs 10 is quite messy. Then we can project into that smaller space.
 * Fisher: Find the linear combination $Z = a^TX$ st the between class variance is maximized relative to the within class variance. The between class variance is the variance of the class means of Z, and the within class variance is the pooled variance about the means.
 * For W, common covariance matrix (within class covariance), the between-class variance of Z is $a^{T} \mathbf{B} a$ and within class variance is $a^{T} \mathbf{W} a$ where $B+W =T$, total covariance matrix of X. Fisher’s problem amounts to maximizing the Rayleigh quotient, $\max _{a} \frac{a^{T} \mathbf{B} a}{a^{T} \mathbf{W} a}$ 
+* B is defined as $B = M^TD_{\pi}M$ , $M_{(K \times p)} = \begin{bmatrix}\bar{x}_1^T\\\bar{x}_2^T\\\vdots\\\bar{x}_K^T\end{bmatrix}$, D diagonal matrix of $\pi_l$. W = the pooled variance, assumed constant for the classes. Want between to be big and within to be small.
+* Reformulated as $max\, a^TBa$ st $a^TWa = 1$ - becomes a generalized eigenvalue problem. $a^* = W^{1/2}a,\;a^{*T}a^*=1$. So $a^TBa \rightarrow a^{*T}W^{-1/2}BW^{-1/2}a^* = a^{*T}Ba^*$
+* Dimension reduction allows visualization and can improve classification performance. Do dimension reduction, perform LDA in this space. Training error may not be monotonic since we are not optimizing on this metric - we are focused on B and W.
+* Null error rate - classify via the distribution of the priors. For 11 class vowel data, this is over 90%
+* Looking at the vowel task, linear regression performs worse likely due to the masking of the classes.
+* While old school, this is still useful in Gaussian estimation processes, simplifies classification once we have started modeling using Gaussians
+* We can also generalize this idea of the Rayleigh quotient for the problem at hand. Some measure that combines a dual objective - punish one metric and reward another.
 
 ##### Comparing DA Methods
 
@@ -431,4 +439,63 @@
 
 ### Logistic Regression
 
+* Intercept tends to be bundled into X. Logit nice to squeeze probabilities between 0 and 1, but also has nice properties for certain applications
+* Conditioning on the X's, so the loglikelihood just works with the randomness in the Y's. Y = 1 or 0 sets one term in the sum to zero. Non-linear in beta, but is convex, so we can use a Newton algorithm to optimize. This is equivalent to IRLS - iteratively reweighted least squares.
+* IRLS - Initialize beta, set all but intercept to 0, set linearezed responses (residual on the y scale). We repeat weighted linear regression to get all of the betas
+* Historically, took empirical probability $r_i$, could take $log \frac{r_1}{1-  r_i}$ - empirical logits -> linear regression. Cannot optimize so took the taylor series approximation for $log(y_i)$
+* What do the weights do - similar to the $\delta$-method for variance approx. Given RV z and $var(z) = \sigma^2$. Say we want var(f(z)) for some transformation. Do some TS approx of f(z) around the mean of z  -$f(z) \approx f(\mu_z) + f'(\mu_z)(z-\mu_z)+...$ so $Var(f(z)) \approx [f'(\mu_z)]^2var(z)$
+* So the variance of logit of y $ = p(1-p)\frac{1}{[p(1-p)]^2}$ - so we are in effect weighting by the inverse of the variance.
+* Newton Method: $l(p) = \sum_{i=1}^n y_i log\frac{p_i}{1-p_i}  + log(1-p_i) = y^TX\beta - log(1 + e^{X^T\beta})$ since $(1-p(x_i)) = \frac{1}{1+e^{X^T\beta}}$. How we get to the gradient of l(p) wrt beta. Hessian is a diagonal matrix with elements $w_{i}=p_{i}\left(1-p_{i}\right)$.
+* Score equations - since x has a 1's columns in there, the sum of y's = sum of p's there. 
+* Asymptotic $Cov(\hat{\beta}) = (X^TWX)^{-1}. From asymptotic theory of MLE, relies on fact that the model is correct though - need a linear model for this to be true.
+* When the Newton algorithm converges, it is an approximation of the asymptotic log likelihood and we can just read off the statistics from there.
+* If the 2 classes are linearly separable, solution is undefined - MLE tries to achieve probabilties of 0,1 and for this some beta must go to pos/min infinity. The point where you start bending $log(\frac{p}{1-p})\beta_o + \beta_1x$. Slope becomes infinite for the bend. If nearly separable, the variance explodes for the coefficients.
+* Called a forward or genertive model vs LDA which is backwards or discriminative.
+* Inference is similar to linear regression. The SEs are from the weighted least square procedure, the z-score is treating this as a Gaussian and doing a normal t-test. Except here there is no global $\sigma^2$
+* Deviance: $dev(y, \hat{p}) = -2l(\hat{\beta})$, would be the RSS in the linear model. 
+* Null hypothesis: first q components of beta are non-zero. Then $\operatorname{dev}\left(y, \hat{p}_{0}\right)-\operatorname{dev}\left(y, \hat{p}_{1}\right) \sim \chi_{p-q}^{2}$ and we get chi-square distributions instead of F-distributions. 
+* The Chi-Square statistic $\sum_{i=1}^{n} w_{i}\left(z_{i}-x_{i}^{T} \hat{\beta}\right)=\sum_{i=1}^{n} \frac{\left(y_{i}-\hat{p}_{i}\right)^{2}}{\hat{p}_{i}\left(1-\hat{p}_{i}\right)}$  - squared residuals divided by the variance. Can get there from the delta method and the residuals.
+* If you don't trust these asymptotics, can simply use the bootstrap to get a better approximaton of the true variance.
+
+##### Case Control Sampling
+* Case control intercept correction - add in log odds of the true proportion in the population less the log odds of the sample ratio. Sampling more controls than cases reduces the variance of the parameter estimates up to a point of 5/1 where the reduction drops off. Useful for add click through rates that are very small - can just take a null sample 10:1 and not worry about taking more than that.
+* Disease D we are targeting. Assuming logistic model is correct. We go out and sample separately from disease and non-disease groups. Z is indicator that you are in the sample - given disease, the probability of being in the sample is independent - doesn't depend on x, can just be a static $\pi_0$
+* See odds ratios for similar types of work.
+
+##### Multiple Logistic Regression
+
+* Make one class a base class (arbitrary) and take log odds of each class against the base. Model j - 1 logits (since the jth will be the base class vs the base class and equal 1). 
+* Changing the base classes - MLE unchanged, change the coefficients by adjusting 
+* With p >> n, linear models often sufficient - often still too flexible and we need to regularize with ridge or lasso penalty. Since trying to maximize log likelihood we subtract off the penalty.
+* With p > n, the data is separable, so we have a problem fitting as we had before. Adding a positive lambda ensures a solution exists, so regularization is simply necessary for finding a solution.
+* With penalties for the two class case, can use IRLS algo for ridge and LARS similar algo for Lasso. Modular algorithms that can fit a large variety of models.
+* With penalties, there is symmetric representation of the model instead of setting base class to 0 - end up with the softmax $$P(G=j | x)=e^{\eta_{j}(x)} / \sum_{\ell=1}^{K} e^{\eta_{\ell}(x)}$$ for $\eta_{j}(x) \sim \log P(G=j | x)=x^{T} \beta_{j}$
+* The mean minimizes the sum of squares - so with a quadratic ridge penalty, we subtract off the mean from each $\beta_j$. For $\ell_1$ we use the median
+
+### Risk Estimates
+
+* Risk for new observation $\hat{\eta}\left(x_{0}\right)=x_{0}^{T} \hat{\beta}$. and $\hat{\operatorname{Pr}}\left(Y=1 | X=x_{0}\right)=e^{\hat{\eta}\left(x_{0}\right)} /\left(1+e^{\hat{\eta}\left(x_{0}\right)}\right)$. 
+* To classify new obs, threshold at 0.5, but in practice we adjust using ROC. ROC is conducted on the test data set, FP vs TP graph
+* Sensitivity : TP rate, Specificity: TN rate = 1- FP rate
+* AUC measures the performance without any indication of how the classifier will be used. You could use partial AUC if there is a range of FP rates you will tolerate.
+* $\begin{array}{l|l|l}
+  \hline \text { Name } & {\text { Definition }} & {\text { Synonyms }} \\
+  \hline \text { False Pos. Rate } & {\text { FP/N }} & {\text { Type I Error, } 1-\text { Specificity }} \\
+  {\text { True Pos. Rate }} & {\text { TP/P }} & {1-\text { Type II Error, Power, Sensitivity, Recall }} \\
+  {\text { Pos. Pred. Value }} & {\text { TP/P' }} \\
+  {\text { Neg. Pred. Value }} & {\text { TN/N' }} \\
+  \hline
+  \end{array}$
+
+* F measure combines precision and recall, harmonic mean: $$F=2 \cdot \frac{\text { Precision } \cdot \text { Recall }}{\text { Precision }+\text { Recall }}$$
+
+### Naive Bayes
+* If your goal is classification, you can put up with a lot of bias. Care only about placing in correct class. This has high bias but we get to have low variance in return.
+* Naive Bayes $logit\frac{P(y=1x)}{P(y=0 | x)} = \alpha + \sum_{j=1}^p \beta_j(x_i)$ to GAM. The Naive Bayes is actually producing a GAM, though the fitting is done differently. Naive Bayes uses full likelihood with conditional independence assumption.
+
 ### Separating Hyperplanes
+* Direct approach to classification. Perceptron learning algorithm - would find a separator then stop. Minimization criteria - if misclassified it is positive, negative for correct classification. Uses gradient descent to optimize the loss.
+* Geometry - any two x on the line, then $\beta^T(x_2 - x_1)  = 0$ so $\beta$ is a normal to the line, since dot product is zero. Then the signed distance of a point to the line is projected onto the normal vector
+* Optimal separating hyperplane - $y_{i}\left(x_{i}^{T} \beta+\beta_{0}\right) \geq C$ multiplying by y removes the sign and we are left with just the distance to the hyperplane, and we want to maximize it. The optimal solution for $\beta$ is a linear combination of only the support vectors on the boundary / mgin
+
+## Chapter 5: Basis Functions
