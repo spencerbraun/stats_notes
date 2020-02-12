@@ -555,8 +555,27 @@ $$P(Y_{m+1} = y_{m+1}|Y_m = y_m,...,Y_0=y_0) = \frac{P(X_{n-m+1} = y_{m+1},...,X
 		* In particular if f(0) = 0, $rho = 0$ by theorem below. That is somewhat obvious since, f(0) = 0 means everyone has at least 1 child, so clearly the branching process does not die out. 
 		* We have properties $\phi(1) = 1,\;\phi(0) = f(0)$. The derivative of $\phi$, $\phi'(r) = \sum_{k=1}^\infty k r^{k-1} f(k) \geq 0 \implies \phi$ is increasing. Additionally, $\phi'(1) = \sum_{k=1}^\infty k f(k) = \mu$. The second derivative: $\phi'(r) = \sum_{k=2}^\infty k(k-1)\rho^{k-2}f(k) \geq 0 \implies \phi$ is convex on [0,1]. Can see all derivatives are positive and continuous for $0 < r < 1$ (so no jump discontinuities).
 	* Critical case $\mu = 1$, we get $\rho = 1$, it will extinguish eventually. We get the same result as a $\mu < 1$ and the population dies out with probability 1. In this case we cannot have $\phi(r) = r$ for $r < 1$ as then $\phi$ would have some derivative discontinuous (since once it touches the extinction line, it must stay on that line and all higher derivatives must be 0). <- This statement is not totally true, more explicitly we can say: We cannot have $\phi(r) = r$ for $r < 1$ as then $\phi$ would not be analytic (but outside the scope of the class to show).
-* Theorem: $\rho$ is the smallest solution of $\phi(r) = r $ in [0,1].
-* Corrolary: If f(0) > 0, and $\mu = 1$, then $\rho =1$. If $\mu > 1$, $\rho \in (0,1)$.
+* Theorem: $\rho$ is the smallest solution of $\phi(r) = r $ in [0,1]. 
+	* Extinction probability $\rho = P_1(T_0 < \infty)$ os the smallest solution of $\phi(r)=r$ with $0 \leq r \leq 1$
+* Corrolary: If f(0) > 0, and $\mu = 1$, then $\rho =1$. If $\mu > 1$, $\rho \in (0,1)$. 
+	* Proof of theorem: let $\rho_n  = P_1(X_n = 0)$ (0 absorbing state), so we are saying by time n it hits zero, though also could have happened before n. Absorbing at 0 implies $X_n=0 \implies X_{n+1}=0$, so sequence $\rho_n$ is monotone non-decreasing.
+		* $\underset{n \rightarrow \infty}{lim} \rho_n = \rho$. We can establish the recursion for $\rho_n$. For descendents of Eve to die out within n generations, need descendents of each of her children to die out within n - 1 generations. In math, by independence of descendents of each child, the probability that they die out $\rho_n = \sum_{k=0}^\infty f(k) \rho_{n-1}^k = \phi(\rho_{n-1})$. K independent events in which a whole tree needs to die out, probability of each tree if $\rho_{n-1}$ and since independent we multiply over k times. We get a recursion using our generating function.
+		* $\rho_n = \phi(\rho_{n-1})$. Starting at $\rho_1$, we get $\rho_1 = P_1(X_1 = 0) = f(0)$, the probability that Eve has no children. Then $\rho_2 = \phi(\rho_1), \; \rho_3 = \phi(\rho_2) = \phi(\phi(\rho_1))$. Call $\rho_* =  min\{r \in [0,1]: \phi(1) = r\}$. Note: for $ 0 \leq r \leq \rho_*, \; r < \phi(r) < \rho_*$. Let's assume $f(0) > 0 $, otherwise we have proved the theorem in this case. 
+		* Sequence $\rho_n$ increasing and bounded by $\rho_*$. See chart of bouncing $\rho$ toward $\rho_*$. It's limit $\rho \leq \rho_*$. Remains to show that it is equal to $\rho_*$. Taking $n \rightarrow \infty$ in $\rho_n = \phi(\rho_{n-1})$, $\rho = \underset{n \rightarrow \infty}{lim} \rho_n = \underset{n \rightarrow \infty}{lim} \phi(\rho_{n-1}) = \phi(\underset{n \rightarrow \infty}{lim} \rho_{n-1})$ (can take lim internal to phi since continuous) $=\phi(\rho)$. So $\rho$ is a fixed point of $\phi$
+		* $\rho_*$ was defined to be the smallest fixed point, so $\rho \geq \rho_*$. Since we also showed $\rho \leq \rho_*$, we conclude $\rho = \rho_*$.
+* We had easy arguments for cases $\mu < 1$ (using Markov's inequality) and f(0) = 0 (all people have at least 1 child, so no extinction possibility).  
+* Example: Suppose $f(k) = \begin{cases} 1/4 & k=0 \\ 1/4 & k=1 \\ 1/2 & k =2 \\ 0 & else\end{cases}$.
+	* $\mu = \sum_{k=0}^\infty kf(k) = 1/4 + 2(1/2) = \frac{5}{4} > 1$. Expectation of $X_n = E(X_n) = \mu^n \frac{E(X_0)}{1} = \left(\frac{5}{4}\right)^n$, which is exponentially large.
+	* Find probability of extinction. Using this theorem, we just need to find the fixed point of our polynomial method $\phi(r)$: $\phi(r) = \sum_{k=0}^\infty r^kf(k) = 1/4 + r(1/4) + r^2(1/2)$
+	* Solve $\phi(r)  = r$: $0 = \frac{1}{4}(1 -3r +2r^2)$, then $r = \frac{3 \pm \sqrt{9-8}}{4} = \frac{3 \pm 1}{4} = \{1/2, 1\}$
+	* Recall 1 is always a fixed point so can help factor higher degree polynomial cases. Here we get $\rho = P_1(T_0 < \infty) = 1/2$, since this is the smaller root of $\phi(r)$ We have a 50/50 chance of eventual extinction.
+
+### Reflecting Random Walk
+* Let S = $\{0,1,2,3,...\}$, we move to the left with probability 1-p and right with probability p. At 0 we transition to 0 with probability 1-p. This is a birth and death chain and is clearly irreducible. We can walk straight from any state to any other state.
+* DBC: $\pi(x) = \left(\frac{p}{1-p}\right)^x\pi(0)$ is solution to $\pi P = \pi$. Normalizable to get stationary distribution if p < 1/2. Then we get $\pi(0) = \frac{1-2p}{1-p}$
+* Expected return time to 0 - $E_0T_0 =\frac{1}{\pi_0} = \frac{1-p}{1-2p}$ when P < 1/2
+* Case: p > 1/2: Claim 0 is transient. From Gambler's ruin 1st step analysis we have performed, for 0 < x < N, $P_x(V_N < V_0) = \frac{\left(\frac{1-p}{p}\right)^x - 1}{\left(\frac{1-p}{p}\right)^N - 1}$. Plugging in $P_x(T_0 < \infty) = P_x(V_0 < \infty) = \underset{n \rightarrow \infty}{lim} P_x(V_0 < V_N) = \left(\frac{1-p}{p}\right)^x$. Then $1- \rho_{00} = P_0(T_0 = \infty) \geq P(0,1)P_1(T_0 = \infty) = p \frac{1-p}{p} = 1- p >0$
+	* This is a common proof technique in infinite spaces - imagine a large finite space and then take to infinity. 
 
 
 ## Probability Reference

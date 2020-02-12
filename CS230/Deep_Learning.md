@@ -168,6 +168,68 @@
 * Data augmentation often useful but not in every situation. In MNIST, if you rotate a 6, it becomes a 9, but the label is still a 6. Will confuse the model. Similar with character recognition. 
 * For transfer learning, may want to freeze the early layers since their weights should directly relate to your task - its the later higher level layers that we want to retune to the specific task as well as modify the output to our purposes.
 
+## Interpretability of NNs
+### Interpreting the Outputs
+##### Saliency Maps
+* Have a model, but users do not understand the decision process of the network. Say a CNN with softmax that outputs the animal. How do we relate the output to the input 
+* Look at the gradients - gradient of score of dog with respect to x - derivative will be RGB matrix shape (shape of X) and each entry will indicate if changing the given pixel will change the output or not.
+* Look over all pixels - have a saliency map - we can see the silhouette of the dog 
+* Either you are taking the derivative of score of dog pre or post softmax. Always want to take the pre softmax value - this value only depends on the feature of dogs. Post softmax depends on the scores of other animals. You might then find the pixels that minimize the score of other animals rather than maximize the score of dog, since this is equally important in discriminating among animals post softmax.
+
+##### Occlusion Sensitivity
+* Pass in the dog image and occlude a square in the top left .See how the probability changes after the softmax. 
+* Track it in a probability map - square of image where we track whether confidence increases or decreases when we move the occlusion across the image. 
+* End with a probability map that shows me where the dog is in the image.
+* When there are multiple areas of low confidence - we see the network using other features of the image to determine the true class - like writing on the car helps it figure out car wheel - probability declines when writing is occluded. 
+* For dog with humans - hiding the human face, the confidence of dog increases. Softmax declining probability of human face helps it with its dog confidence.
+
+##### Class Activation Maps
+* Say we want a realtime visualization of the model's decision process. Where are we losing the decision process data? Where we flatten the CNN to FC layers
+* Convolutional layers shrink the height and width but add depth - the top left of the image stays in the top left of the volume.
+* But once we flatten, we lose all localized information.
+* Instead then we can convert the last layer -> global average pooling -> FC -> softmax
+* Global average pooling - takes one slice of height width and averages to one number - keeps depth but reduces the H and W to a single number. Then we pass this to an FC layer -> softmax, but each unit in FC corresponds to a single depth layer in the volume. If the 3rd depth layer has a strong weight into softmax, can map back to that depth
+* Get a feature map for each slice in the volume. Weighted across the whole volume by the weights of the last FC layer, get the general class activation map for dog. Some feature maps may activate to human, some to wheel, etc, but the weights ensure the dog feature map carries the most weight for the global map.
+* This is a very fast method - can perform in real time. But note that we need to train the last FC layer since we replaced the layer in our original model. This is our new model for prediction as well - we discarded our old model, we might get slightly different probabilities but should be similar if well trained.
+* Starting from scratch, you do not need to change the last layer - just start using the GAP / FC / softmax
+
+### Visualizing NNs from the Inside
+##### Gradient Ascent
+* Try to explain what the model thinks a dog is. Without data, if you asked the model to generate a dog, what would it produce
+* If we try to use the backprop to produce the most dog image, the network will minimize the probability of not dog since we are using the softmax. Will end up with an image that is most not dog
+* Instead use the score presoftmax for dog, plus a regularizer to keep the pixels small and constrained. Then the gradient ascent $x = x+ \alpha \frac{\partial L}{\partial x}$
+* With better regularization, you can get closer in colors etc. Class model visualization
+* See it produces image of geese for goose. Confidence of model goes up for more geese in an image, but still should be able to label one goose.
+* What makes a good regularizer? If you have a skewed data distribution to the right, and model is focused around left. A large regularizer will not impact the quality of the image, while an overfitted regularizer will bind it too closely to the given data.
+
+##### Dataset Search
+* Given a filter, what examples in the dataset lead to a strongly activated feature map.
+* Take one activatation - store in memory the top 5 images that activate this feature map the most. Can do it for any feature map, see different patterns - one detects shirts, one detects edges. 
+* The top 5 images are cropped - trying to map the activation in a later layer back to the original image. If the activation is in the lower right of the map, then we take the lower right of the image. The deeper we go, the more of the image that maps to an activation.
+* If it is totally random, maybe the feature did not learn anything useful.
+
+##### Deconvolution
+* In a generator - to get 64 x 64 x 3 image would need a FC layer of size 64 x 64 x 3 units or use a deconvolution 
+* Encode information in reduced volume (H and W) then expand back out to original size
+* Keep the max activation of a feature map, then reverse the network. Unpool, relu, deconvolution through the layers to get to the reconstruction in the image of what activated that portion of the feature map
+* Unpool: But maxpool is not invertible since it only stores the max from the region it pools. But we can cache switches - they tell us the positions in the matrix that the max value came from. We don't get back the full matrix, so we set the rest of the values to 0. We care about the more discriminative feature so we can stick with just the max values.
+* Pass switches from forward prop to unpools to make this work
+* Deconv: 
+	* $\begin{bmatrix}0\\0\\x_1\\\vdots\\x_8\\0\\0\end{bmatrix} \rightarrow$ 1D conv with size 4, stride 2, pad 4 -> y.
+	* We have $y_1 ... y_5$ using the formula from the Conv section.
+	* Equations for conv: $y_1 = 0w_1 + 0 w_2 + x_1w_3 + x_2w_4$, $y_2 = x_1w_1 + x_2w_2 + x_3w_3 + x_4w_4$... $y_5 = x_7w_1 + x_8w_2 + 0w_3 + 0w_4$. A convolution in 1D is nothing more that a matrix vector multiplication.
+	* $y = Wx$ for y (5 x 1), x (12 x 1) so W is (5 x 12).
+	* So $\begin{bmatrix}y_1 \\ y_2\\y_3\\y_4\\y_5\end{bmatrix} = \begin{bmatrix}w_1 & w_2 & w_3 & w_4 & 0 & ... &0 \\ 0& 0 & w_1 & w_2 & w_3 & w_4 & 0 & ...  \\...\\...\\...\end{bmatrix}\begin{bmatrix}0\\0\\x_1\\\vdots\\x_8\\0\\0\end{bmatrix} $
+	* So we need $x = W^{-1}y$ - assume that W is invertible and also orthogonal: $W^TW = WW^T =I$
+	* Then this is easier $x = W^Ty = \begin{bmatrix} w_1 & 0 & ... \\w_2 & 0 & ... \\ w_3 & w_1 & ...\\ w_4 & w_4 & ... \\ 0 & w_3 & ... \\ 0 & w_4 & ... \\ 0 & 0 & ...\end{bmatrix}\begin{bmatrix}y_1 \\ y_2\\y_3\\y_4\\y_5\end{bmatrix}$
+	* But we lose something in the transformation - not really dealing with out filter anymore. 
+	* So instead we pad our y vector with 0's - 0 between every y value and 0's above and below.
+	* Take W and have sliding filter $w_4,w_3,w_2,w_1$. X is 12 x 1, y is 3 0's the 5 y's the 3 0's plus padding 0's 15 x 1. So W' here is (12 x 15).
+* In summary: Soft pixel transformation on y - this is padding it with 0's
+* Flip the filter W
+* Divide the stride by 2
+* ReLU does not really change. 
+
 # Coursera Modules
 
 ## C1 - Neural Networks and Deep Learning

@@ -338,7 +338,7 @@
 
 * Also depends on the scaling of the inputs, so typically we first standardize them to mean 0, var 1
 * Akin to PCR but takes the response into account instead of using an unsupervised preprocessing. Fit univariate coefficients then construct z = sum of coefs times x_i. This is the first z, z1. Then regression of y on z1, to get coef beta1. Then orthogonalize y and x’s wrt z1 - nothing left of z1 in any portion of the data. Then repeat the process.
-* As with principal-component regression, if we were to construct all M = p directions, we would get back a solution equivalent to the usual least squares estimates; using M<p directions produces a reduced regression.
+* As with principal-component regression, if we were to construct all M = p directions, we would get back a solution equivalent to the usual least squares estimates; using $M<p$ directions produces a reduced regression.
 * It can be shown that partial least squares seeks directions that have high variance and have high correlation with the response, but typically the variance dominates making it close to PCR. 
 * If the input matrix X is orthogonal, then partial least squares finds the least squares estimates after m = 1 steps.
 
@@ -496,6 +496,25 @@
 ### Separating Hyperplanes
 * Direct approach to classification. Perceptron learning algorithm - would find a separator then stop. Minimization criteria - if misclassified it is positive, negative for correct classification. Uses gradient descent to optimize the loss.
 * Geometry - any two x on the line, then $\beta^T(x_2 - x_1)  = 0$ so $\beta$ is a normal to the line, since dot product is zero. Then the signed distance of a point to the line is projected onto the normal vector
-* Optimal separating hyperplane - $y_{i}\left(x_{i}^{T} \beta+\beta_{0}\right) \geq C$ multiplying by y removes the sign and we are left with just the distance to the hyperplane, and we want to maximize it. The optimal solution for $\beta$ is a linear combination of only the support vectors on the boundary / mgin
+* Optimal separating hyperplane - $y_{i}\left(x_{i}^{T} \beta+\beta_{0}\right) \geq C$ multiplying by y removes the sign and we are left with just the distance to the hyperplane, and we want to maximize it. The optimal solution for $\beta$ is a linear combination of only the support vectors on the boundary / margin
 
 ## Chapter 5: Basis Functions
+* Controling complexity of the model - restriction methods limit the class of functions considered (such as additivity), Selection methods - scan possible functions and only use basis functions that contribute significantly to fit of model (CART, boosting), Regularization methods - scan all functions but restrict the coefficients
+### Piecewise Polynomials and Splines
+* Dividing the domain of X into contiguous intervals, and representing f by a separate polynomial in each interval.
+* Parameter count: regions x parameters per region - knots x contraints per knot. For example 3 regions x 4 parameters per region - 2 knots x 3 constraints per knot on a 2 knot, cubic spline fit on cubic model of X (4 params)
+* More generally, an order-M spline with knots ξj , j = 1,...,K is a piecewise-polynomial of order M, and has continuous derivatives up to order M − 2.
+* These fixed-knot splines are also known as regression splines. One needs to select the order of the spline, the number of knots and their placement.
+* A natural cubic spline adds additional constraints, namely that the function is linear beyond the boundary knots. This frees up four degrees of freedom (two constraints each in both boundary regions), which can be spent more profitably by sprinkling more knots in the interior region. Bias on the boundaries but linear approximation is not bad for most fits
+### Smoothing Splines
+* $\operatorname{RSS}(f, \lambda)=\sum_{i=1}^{N}\left\{y_{i}-f\left(x_{i}\right)\right\}^{2}+\lambda \int\left\{f^{\prime \prime}(t)\right\}^{2} d t$
+* The first term measures closeness to the data, while the second term penalizes curvature in the function, and $\lambda$ establishes a tradeoff between the two.
+* Remarkably, it can be shown that (5.9) has an explicit, finite-dimensional, unique minimizer which is a natural cubic spline with knots at the unique values of the $x_i$: $f(x)=\sum_{j=1}^{N} N_{j}(x) \theta_{j}$
+* $\operatorname{RSS}(\theta, \lambda)=(\mathbf{y}-\mathbf{N} \theta)^{T}(\mathbf{y}-\mathbf{N} \theta)+\lambda \theta^{T} \mathbf{\Omega}_{N} \theta$, for $\left\{\boldsymbol{\Omega}_{N}\right\}_{j k}=\int N_{j}^{\prime \prime}(t) N_{k}^{\prime \prime}(t) d t$
+* Solution $\hat{\theta}=\left(\mathbf{N}^{T} \mathbf{N}+\lambda \mathbf{\Omega}_{N}\right)^{-1} \mathbf{N}^{T} \mathbf{y}$
+
+### Automatic Selection of Smoothing Spline
+* Fixing degrees of freedom: $\mathrm{df}_{\lambda}=\operatorname{trace}\left(\mathbf{S}_{\lambda}\right)$ monotone for lambda, so can simply invert and specify a df.
+
+
+### Nonparametric Logistic Regression
