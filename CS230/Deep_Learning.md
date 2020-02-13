@@ -1086,3 +1086,49 @@ $$\begin{array}{|c|c|c|c|c|c|}
   * Ensembling - train several networks independently and average the outputs ($\hat{y}$). Good for benchmarks but super costly for real production
   * Multi-crop at test time - run classifier on multiple versions of test images and average the results. 10-crop for example.
 * Always consider open source architectures and papers and implementations / transfer learning weights
+
+### Module 3 - Detection Algorithms
+
+##### Object Localization
+* Localization - drawing a bounding box around a car in an image say. 
+* Detection: Can also have multiple detection for different objects in the photo.
+* Typical ConvNet might output to a softmax with a predicted class for an image, say 4 possible outputs. To localize we change our NN to have more output units, four more numbers $b_x, b_y, b_h, b_w$ that place a bounding box around the object that we classified. $b_x,b_y$ indicate the midpoint with $b_h, b_w$ determining the heigh and width of the bonding box.
+* In total we need to output those 4 coordinates and a class label 1-4. Target label y is vector $y=\left[\begin{array}{l}
+{p_{c}} \\
+{b_{x}} \\
+{b_{y}} \\
+{b_{h}} \\
+{b_{w}} \\
+{c_{1}} \\
+{c_{2}} \\
+{c_{3}}
+\end{array}\right]$: 
+	* 1st component $p_c$ is there any object? 1 for object detected, 0 for just background
+	* 2nd - 5th component: bx, by, bw, bh
+	* Last components: c1, c2, c3 - typical softmax, classifying a single object in the photo.
+* When pc is zero - we do not care about the rest of the y vector, since we aren't bounding anything, no detected objects.
+* Loss function $L(\hat{y}, y) = (\hat{y}_1 - y_1)^2 + ... + (\hat{y}_8 - y_8)^2$ if $y_1 = 1$
+	* If $y_1 = p_c = 0$, then just need $L = (\hat{y}_1 - y_1)^2$, since we just care about the accuracy of $p_c$ in this case.
+
+##### Landmark Detection
+* X and Y coordinates of important parts of an image you want the algo to recognize.
+* Say you want the corner of people's eyes - just have additonal outputs for the coordinate of interest (x,y). If you want more points, $(l_{1 x}, l_{1 y}), ...$ for all points of interest. 
+* Network can tell us a large number of key points on recognizing a face. Ouput vector where first indicates if it is a face, then over 64 landmarks we would have an additional 128 data points output in the vector. This is important for face filters and special effects.
+* We do need a labeled dataset for this task though. Often human intensive
+* Pose detection works similarly. Need consistent labels across images, landmark 1 refers to the same part of the image across examples.
+
+##### Object Detection - Sliding Windows
+* Say for car detection, create labeled datset with closely cropped images of cars as X, and y indicates if car or not. Then train a ConvNet that classifies if car or not for cropped images
+* Then use sliding window detection - take a local region of a real photo, and have the convnet determine in car is in this region. Slide the window across the whole image and it will classify which windows have cars and which don't. 
+* We then repeat the sliding window with a larger window, again feed the windows to the convnet for car classification. Can continue with larger and larger windows. The hope that so long as a car is somewhere in the image, the convnet will recognize for some window size.
+* Obviously this has a high computational cost. Using a coarse stride can reduce the number of windows but this might hurt performance of classification.
+* People use to use linear methods for the classifier but now convnets make this process slower. Luckily we can fix this cost by using a convolutional implementation of the sliding windows
+
+##### Convolutional Sliding Windows
+* How to turn FC into convolutional layers? If we have 5x5x16 filters at the end of the conv net, we can look at this as a 1 x 1 x 400 output, then pass through to 1 x 1 x 400 layer, but this is equivalent to an FC layer. We can do this a couple of times then pass to a 1 x 1 x 4 layer, which corresponds to the 4 class softmax output.
+* Using this is sliding windows, we start with a 14 x 14 x 3 image. We pass through the modified NN and we end with a 1 x 1 x 4. 
+* Our test image is 16 x 16 x 3. We could slide the 14 x 14 window around 4 times to cover the image, but this is highly duplicative. Doing this convolutionally, we just run the conv net using the 5 x 5 x 16 filters, and we shrink down to a 2 x 2 x 40 volume run through 1 x 1 filters. Finally get a 2 x 2 x 4. Each quadrant of the output corresponds to the upper / lower left/ right regions of the original image. 
+* We run the classifier once on the image and the computational expense is shared across regions. Adding larger images will correspond to larger outputs from the classifier conv net.
+* Still have a problem that the bounding boxes will not be too accurate so still have to adjust for that.
+
+##### Bounding Box Predictions

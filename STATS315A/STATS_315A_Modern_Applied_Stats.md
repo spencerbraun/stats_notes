@@ -498,14 +498,34 @@
 * Geometry - any two x on the line, then $\beta^T(x_2 - x_1)  = 0$ so $\beta$ is a normal to the line, since dot product is zero. Then the signed distance of a point to the line is projected onto the normal vector
 * Optimal separating hyperplane - $y_{i}\left(x_{i}^{T} \beta+\beta_{0}\right) \geq C$ multiplying by y removes the sign and we are left with just the distance to the hyperplane, and we want to maximize it. The optimal solution for $\beta$ is a linear combination of only the support vectors on the boundary / margin
 
+### Coordinate Descent for the Lasso
+* $\frac{1}{2N}\sum (r_{ij} - x_{ij} \beta_j)^2 + \lambda |\beta_j|$
+* Then add and subtract OLS beta: $(r_{ij} - x_{ij}\beta_j^* + x_{ij}\beta_j^* - x_{ij}\beta_j)^2$ - complete the square
+* Cross term: OLS residual in parens $(r_{ij} - x_{ij}\beta_j^*)x_{ij}(\beta_j^* - \beta_j) = 0$ since least squares residual is orthogonal to the x.
+* So get $C + 1/2(\beta_j^* - \beta_j) + \lambda|\beta_j|$. 
+* Suppose $\beta_j > 0 $. Then differentiating $-(\beta_j^* - \beta_j) + \lambda = 0$. If $\beta_j <0$ flip the sign on $lambda$: $-(\beta_j^* - \beta_j) - \lambda = 0$. 
+* So $\beta_j = \beta_j^* - \lambda$ if $\beta_j > 0$, else $\beta_j = \beta_j^* + \lambda$. Notice this only works if $|\beta_j^*| > \lambda$. This is the process of soft-thresholding.
+* We can do something similar for elastic net
+* $\lambda$ max - the smallest value of lambda for which all coefficients are still zero is lasso. It's the biggest $\beta_j$ in the regression. The first coefficient to survive the thresholding will be the biggest coefficient since we need $|\beta_j^*| > \lambda$. In elastic net, if alpha is 0 and we have pure ridge, this lambda is infinity. 
+* All variables in the active set will have inner products between x and residuals equal to lambda. All those out of the active set are less than lambda.
+
 ## Chapter 5: Basis Functions
 * Controling complexity of the model - restriction methods limit the class of functions considered (such as additivity), Selection methods - scan possible functions and only use basis functions that contribute significantly to fit of model (CART, boosting), Regularization methods - scan all functions but restrict the coefficients
+* Basis expansions, could be polynomials, radial function ||X||, log transform
+* Indicator basis function $h_{m}(X)=I\left(L_{m} \leq X_{k}<U_{m}\right)$ for a domain. This fits a piecewise constant function over the domain. Used to be a popular way of fitting non linear functions, just throw some knots in there.
+* If we use a large expansion, we need to include some regularization. 
 ### Piecewise Polynomials and Splines
 * Dividing the domain of X into contiguous intervals, and representing f by a separate polynomial in each interval.
+* Understanding piecewise knots - adjusted by $\xi_i$, forces value to 0 until X = $\xi_i$. Starts off at zero at the knot then from the knot onwards changes the slope of the linear function. Since added to the rest of the linear model is just a slope adjustment that doesn't kick in until you hit the knot. Continuity constrain enacted in this way to get the spline.
 * Parameter count: regions x parameters per region - knots x contraints per knot. For example 3 regions x 4 parameters per region - 2 knots x 3 constraints per knot on a 2 knot, cubic spline fit on cubic model of X (4 params)
 * More generally, an order-M spline with knots ξj , j = 1,...,K is a piecewise-polynomial of order M, and has continuous derivatives up to order M − 2.
 * These fixed-knot splines are also known as regression splines. One needs to select the order of the spline, the number of knots and their placement.
-* A natural cubic spline adds additional constraints, namely that the function is linear beyond the boundary knots. This frees up four degrees of freedom (two constraints each in both boundary regions), which can be spent more profitably by sprinkling more knots in the interior region. Bias on the boundaries but linear approximation is not bad for most fits
+* In the cubic case, the basis function is zero left of the knot, and adds a cubic beyond the knot. Continuous at the knot, but looking at the first derivative $3(x - \xi_1)^2_+$ still continuous across 0 and non zero parts. Second derivative $6(x - \xi_1)_+$ - still continuous. Third derivative = 6, not continuous from left 0 portion.
+* A natural cubic spline adds additional constraints, namely that the function is linear beyond the boundary knots. This frees up four degrees of freedom (two constraints each in both boundary regions), which can be spent more profitably by sprinkling more knots in the interior region. Bias on the boundaries but linear approximation is not bad for most fits. 
+	* There are separate boundary knots, beyond these knots the function is linear. Still have continuity at the boundary knot. We get two constraints in each of the boundary regions, reducing the number parameters by 4.
+	* Since the boundary knots decrease the number of parameters, we can fit more interior knots to match the df of the cubic spline for comparison.
+	* For $f(x) = \sum_{j=1}^m h_j(x)\theta_j$ and have an additive error model $y=f(x) + \epsilon$ iid constant variance. Fit via least squares get $\hat{\theta} = (H^TH)^{-1}H^Ty$, $Var(\hat{\theta}) = (H^TH)^{-1}\sigma^2$. Evaluate you basis functions at that point x and make a prediction. This gives us the pointwise variance of the fitted function. Comparison of variances - cubic spline has high variance in tails, little in the middle. Natural cubic spline has somewhat higher variance in the middle due to more knots but lower variance in the tails.
+* B Splines - made in recursive fashion, start as piecewise constant then iterated to raise the degree. (An order 4 polynomial is a degree 3 polynomial). Taking $h_1(x), h_2(x),...h_7(x)$, but returns N x 6 matrix to remove intercept. If we have x1, x2 and want a cubic spline in both. If we included intercept, there would be some arbitrariness. Instead of specifying knots we can specify degree of freedom, and knots will be dispersed to quantiles. `lm( y ~ bs(x_1, df=4) + bs(x_2, df=4))`. Not really perferred to natural splines though.
 ### Smoothing Splines
 * $\operatorname{RSS}(f, \lambda)=\sum_{i=1}^{N}\left\{y_{i}-f\left(x_{i}\right)\right\}^{2}+\lambda \int\left\{f^{\prime \prime}(t)\right\}^{2} d t$
 * The first term measures closeness to the data, while the second term penalizes curvature in the function, and $\lambda$ establishes a tradeoff between the two.
