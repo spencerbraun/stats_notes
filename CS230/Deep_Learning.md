@@ -21,7 +21,7 @@
 
 ### Day / Night Classification 
 
-* Given image, label day (0) or night (1)
+* Given image, label day (0) or night (1), logistic loss $L=-[y \log (\hat{y})+(1-y) \log (1-\hat{y})]$
 * Data - could have labeled pictures of day and night, balance data set. 10k images a good start, but wouldn’t wait to gather this many to start working on the problem. Could go to pixel bay and just search for day and night images, might have mistakes but with a big enough data set would be good enough
   * Indoor pictures in general are going to be difficult. Also edge cases at dawn dusk, etc and 10k won’t be enough to resolve the edge cases
 * Input - do we care about real time, then we have to consider speed. Even if not training time might matter. Low resolution images are probably fine for this problem since we aren’t looking at granularity and will make training faster. 
@@ -32,16 +32,18 @@
 
 ### Face Verification
 
-* School wants to use face verification for validating student IDs when students swipe their cards. Do they match their ID pictures?
+* School wants to use **face verification** for validating student IDs when students swipe their cards. Do they match their ID pictures?
 * Data - University has labeled images of every person with a card. But this is not enough, need more generalizability in the model. 
 * Input - give camera picture and stored picture 0 or 1 if same person or not. Resolution ~ 400 x 400
 * Output - 0 it is the same person, 1 different
 * Architecture - say the simplest idea could be compute distance pixel by pixel. Issues with brightness, background colors, faces aren’t centered the same way, face could change with aging hair etc.
   * Solution - use encoding. Run the id image and the camera image through the network. The vectors in the network should have much more information than the pixels on their own. Distance of the vectors should be more meaningful than pixel distance
+  * Encoder network learns a lower dimensional representation (the encoding) to focus on non-noisy signals
 * How do we train this kind of network? Triplets (Anchor, Positive, Negative)
   * What we want is pictures of the same person to have similar encoding and pics of different people should have different encodings. So we generate triplets - an anchor picture, the original picture. A positive, the same person. A negative, a different person. Now we want to min distance for anchor - positive and max distance anchor - negative. 
+  * Triplet loss is a loss function where an (anchor) input is compared to a positive input and a negative input. The distance from the anchor input to the positive input is minimized, whereas the distance from the anchor input to the negative input is maximized.
   * Minimize loss function $L = ||Enc(A) - Enc(P)||^2_2 - ||Enc(A) - Enc(N)||^2_2$
-* Now we modify the problem - no swipes, the camera just identifies you from the camera. Could use KNN from the DB of faces and compare vectors, could require more than one match to make more robust.
+* Now we modify the problem - no swipes, the camera just identifies you from the camera. Could use KNN from the DB of faces and compare vectors, could require more than one match to make more robust. 
 * Another tweak - we want face clustering, all photos of a single person together. Apply K-means clutering to vectors and see given a new picture which group does it fall into, each group is a person.
 
 ### Neural Style Transfer
@@ -49,8 +51,9 @@
 * Taking a picture, make it beautiful
 * Data - any data
 * Input is a content image and style image - want the ouput to be a generated image that is the content image in the style of the style image
+* We use a pretrained network on ImageNet - already extracts import information from images. 
 * Architecture - content is probably something you can get from lower level encoding of a good network. We use a pre-trained model because it extracts important information from images. Extract a content vector C. Feed in the style image, and find a deeper encoding to find a Gram matrix - style S. For image generation - feed in random image, pull out content CG and style SG, compute loss. After many iterations should get image with altered style. Loss: $L = ||Style_S - Style_G||_2^2 + ||Content_C - Content_G||_2^2$
-* The parameters are not being tuned - the network is fixed. It’s the pixels that are tweaked to minimize the loss functions - $\frac{dL}{dx}$
+* The parameters are not being tuned - the network is fixed. It’s the pixels that are tweaked to minimize the loss functions - $\frac{dL}{dx}$. We leverage the knowledge of the pretrained model to extract the content of content image and style of the style image.
 
 ### Trigger Word Detection
 
@@ -101,12 +104,12 @@
 ### Attacking Networks with Adversarial Networks
 
 * Given NN pretrained on ImageNet, we want to find an input image that will be classified as an iguana. 
-  * Rephrasing what we want: y_hat = y_iguana, some vector for iguana prediction. 
-  * Define the loss function, then optimize the input image. Use the an image to run network forward, compute loss, backprop and update our weights. After many iterations the image will be predicted to be iguana.
+  * Rephrasing what we want: y_hat = y_iguana, some vector for iguana prediction. Loss $L(\hat{y}, y)=\frac{1}{2}\left\|\hat{y}(W, b, x)-y_{\text {iguana}}\right\|_{2}^{2}$. Gradient wrt X, update X, our data, until we have an iguana classified image.
+  * Define the loss function, then optimize the input image. Use an image to run network forward, compute loss, backprop and update our weights. After many iterations the image will be predicted to be iguana.
   * But will the forged image x look like an iguana? We have optimized the pixels that lead the model to predict iguana, this is not the same as something human recognizable as iguana. If our image is 32 x 32 x 3, and each has 256 potential values, space of possible input images is huge $256^{32\times32\times3}$, while space of real images is a small subset. The space of images classified as iguanas will overlap with recognizable pictures of iguanas, but most of that space is random noise to humans.
 * Now say we want to find an input image of a cat but classified as iguana in our pretrained NN.
   * Rephrasing - similar to last problem but want x to look like a cat. x should be close to $x_{cat}$, an image of an actual cat that is classified as cat.
-  * Add term to loss function - a regularization that minimizes the distance $\lambda||x - x_{cat}||_2^2$ 
+  * Add term to loss function - a regularization that minimizes the distance $L(\hat{y}, y)=\frac{1}{2}\left\|\hat{y}(W, b, x)-y_{\text {iguana}}\right\|_{2}^{2} + \lambda||x - x_{cat}||_2^2$ 
   * Then optimizing over new loss function, we get an image that still appears to be a cat - pixels will still be close to the cat image.
   * There is another space of images that look real to humans, a superset of real images. It overlaps with the space of images classified as iguanas, including outside of the space of real images.
 
@@ -118,15 +121,15 @@
   * Ping the model to learn about it before producing adversarial example. Slow tweaks to cat image to see how robust / what it focuses on - a sort of approximation of the gradient.
 * Create a SafetyNet - a model whose only goal is to detect perturbation. Downsides, slowly inference time, optimization problem is more complicated
 * Train on correctly labeled adversarial examples - label the adversarial examples as cat in training 
-* Adversarial training - loss function has some reguarization for an adversarial x. However this will be slow to train, if we bring on adversarial examples for every training example - we basically have an extra loop to train over.
-* Need to understand why NN are vulnerable to adversarial examples
+* Adversarial training - loss function has some reguarization for an adversarial x: $L_{n e w}=L(W, b, x, y)+\lambda L\left(W, b, x_{a d v}, y\right)$. However this will be slow to train, if we bring on adversarial examples for every training example - we basically have an extra loop to train over.
+* Fast Gradient Sign Method: Need to understand why NN are vulnerable to adversarial examples
   * Goal is to design a method to generate adversarial examples quickly
   * Take logistic regression $x = \begin{bmatrix}x_1\\\vdots\\x_6\end{bmatrix} \rightarrow \sigma \rightarrow \hat{y} = \sigma(Wx + b)$
   * We trained the network and got $w = \{1,3,-1,2,2,3\}, b=0$. Can we slightly modify x while drastically modifying $\hat{y}$?
   * Propose generate $x^* = x + \varepsilon w^T$. Epsilon since we want small perturbation, $\frac{\partial \hat{y}}{\partial x} \propto w^T$ . Take $x = [1,-1,2,0,3,-2]$
   * Get $x^* = \begin{bmatrix}1\\-1\\2\\0\\3\\-2\end{bmatrix} + \begin{bmatrix}0.2\\0.6\\-0.2\\0.4\\0.4\\0.6\end{bmatrix} = \begin{bmatrix}1.2\\-0.4\\1.8\\0.4\\3.4\\-1.4\end{bmatrix} $ Then $\hat{y}^* = \sigma(wx^* + b) = \sigma(np.dot(w,w) + wx + b) = \sigma(1.6) = 0.83$
   * The impact of the perturbation increases with the dimensionality of the problem. The np.dot term is the sum of weights, as dimensions increase the sum will increase- our output gets pushed further by small changes. 
-  *  Fast gradient sign method: Could also take $x^* = x + \varepsilon sign(w)$. Now we can take this function and easily generate adversarial examples to train on. 
+  *  Fast gradient sign method: Could also take $x^* = x + \varepsilon sign(w)$. Now we can take this function and easily generate adversarial examples to train on. We just need the sign of the gradient more than an actual approximation of the exact value, allowing this attack to work relatively well in practice.
   * Generally $x = x + \epsilon \,sign(\nabla_x J(w,x,y))$
 
 ### GANs
@@ -141,10 +144,13 @@
 
 ### GAN Training
 
-* Cost of discriminator is binary cross entropy. CE term 1 says D should correctly label real data as 1, and term 2 says D should label generated data as 0.
-* Cost of generator - maximize cost of D. $J^{(G)} = - J^{(D)}$, but only consider term 2 since term 1 does not depend on G at all.
+* Cost of discriminator is binary cross entropy. CE term 1 says D should correctly label real data as 1, and term 2 says D should label generated data as 0: $J^{(D)}=-\frac{1}{m_{r e a l}} \sum_{i=1}^{m_{real}} y_{r e a l}^{(i)} \log \left(D\left(x^{(i)}\right)\right)-\frac{1}{m_{g e n}} \sum_{i=1}^{m_{gen}}\left(1-y_{gen}^{(i)}\right) \cdot \log \left(1-D\left(G\left(z^{(i)}\right)\right)\right)$
+* Cost of generator - maximize cost of D. $J^{(G)}=-J^{(D)}=\frac{1}{m_{g e n}} \sum_{i=1}^{m_{g e n}} \log \left(1-D\left(G\left(z^{(i)}\right)\right)\right)$, but only consider term 2 since term 1 does not depend on G at all. G should try to fool D: by minimizing the opposite of what D is trying to minimize
 * Saturating cost for the generator - $J^{(G)} \approx log(1-x)$, early in the training D is much better than G. Then D(G(z)) is close to 0, and the gradients are very low from $log(1-x)$. We want to modify the cost so that it is non saturating. We can say minimizing $log(1-x) \iff max(log(x)) \iff min(-log(x))$. These are roughly equivalent, except $-log(x)$  has high gradients early in the training. 
-* Another method - train D and G a different number of times. If D stops improving, G will also slow in improving. Could then update D k times for each time we update G
+* Saturating cost: $J^{(G)}=\frac{1}{m_{g e n}} \sum_{i=1}^{m_{\operatorname{gen}}} \log \left(1-D\left(G\left(z^{(i)}\right)\right)\right)$. Non saturating cost: $J^{(G)}=-\frac{1}{m_{g e n}} \sum_{i=1}^{m_{gen }} \log \left(D\left(G\left(z^{(i)}\right)\right)\right)$.
+* ![Screen Shot 2020-02-15 at 9.47.44 AM](/Users/spencerbraun/Documents/Notes/Stanford/CS230/Screen Shot 2020-02-15 at 9.47.44 AM.png)
+* Another method - train D and G a different number of times. If D stops improving, G will also slow in improving. Could then update D k times for each time we update G. Inner loop in training for D.
+* Cannot rely on loss to tell us the quality of output - since it depends on how good the discriminator and generator are. Need to look at the actual output for quality metrics.
 * See GanHacks on GitHub for many more ways to train GANs. GANs are hard to train and take many optimization tweaks.
 
 ### GAN Examples
@@ -167,14 +173,21 @@
 
 * Data augmentation often useful but not in every situation. In MNIST, if you rotate a 6, it becomes a 9, but the label is still a 6. Will confuse the model. Similar with character recognition. 
 * For transfer learning, may want to freeze the early layers since their weights should directly relate to your task - its the later higher level layers that we want to retune to the specific task as well as modify the output to our purposes.
+* Cell segmentation - Determine which parts of a microscope image corresponds to which individual cells. Network outputs a mask for the image that has the fill area for the cells. 
+* When we use training images not from the dev/test distribution, should still have more images from the dev/test distribution in training than in the dev/test sets.
+* If mask algorithm doesn't define the boundaries between cells well, modify the dataset in order to label the boundaries between cells. On top of that, change the loss function to give more weight to boundaries or penalize false positives.
+* Now cells labeled as cancerous and benign. Classifier high accuracy, but how can you explain the network's predictions?
+* Given an image classified as 1 (cancer present), how can you figure out based on which cell(s) the model predicted 1? Gradient of output w.r.t. input X
+* Network could achieve performance beyond a given doctor if a team of doctors can achieve higher accuracy, say 99% for the team and 97% for the individual.
 
 ## Interpretability of NNs
+
 ### Interpreting the Outputs
 ##### Saliency Maps
 * Have a model, but users do not understand the decision process of the network. Say a CNN with softmax that outputs the animal. How do we relate the output to the input 
 * Look at the gradients - gradient of score of dog with respect to x - derivative will be RGB matrix shape (shape of X) and each entry will indicate if changing the given pixel will change the output or not.
 * Look over all pixels - have a saliency map - we can see the silhouette of the dog 
-* Either you are taking the derivative of score of dog pre or post softmax. Always want to take the pre softmax value - this value only depends on the feature of dogs. Post softmax depends on the scores of other animals. You might then find the pixels that minimize the score of other animals rather than maximize the score of dog, since this is equally important in discriminating among animals post softmax.
+* Are you taking the derivative of score of dog pre or post softmax? Always want to take the pre softmax value - this value only depends on the feature of dogs. Post softmax depends on the scores of other animals. You might then find the pixels that minimize the score of other animals rather than maximize the score of dog, since this is equally important in discriminating among animals post softmax.
 
 ##### Occlusion Sensitivity
 * Pass in the dog image and occlude a square in the top left .See how the probability changes after the softmax. 
@@ -197,10 +210,13 @@
 ##### Gradient Ascent
 * Try to explain what the model thinks a dog is. Without data, if you asked the model to generate a dog, what would it produce
 * If we try to use the backprop to produce the most dog image, the network will minimize the probability of not dog since we are using the softmax. Will end up with an image that is most not dog
-* Instead use the score presoftmax for dog, plus a regularizer to keep the pixels small and constrained. Then the gradient ascent $x = x+ \alpha \frac{\partial L}{\partial x}$
+* Instead use the score pre-softmax for dog, plus a regularizer to keep the pixels small and constrained, $L=s_{d o g}(x)-\lambda\|x\|_{2}^{2}$, essentially constraining x to look natural. Keep the weights fixed and
+use gradient ascent on the input image to maximize this loss. Then the gradient ascent $x = x+ \alpha \frac{\partial L}{\partial x}$ .
+* Repeat the process: forward propogate image x, compute L, backprop dL/dx, update x's pixels with grad ascent.
 * With better regularization, you can get closer in colors etc. Class model visualization
 * See it produces image of geese for goose. Confidence of model goes up for more geese in an image, but still should be able to label one goose.
-* What makes a good regularizer? If you have a skewed data distribution to the right, and model is focused around left. A large regularizer will not impact the quality of the image, while an overfitted regularizer will bind it too closely to the given data.
+* What makes a good regularizer? If you have a skewed data distribution to the right, and model is focused around left. An underfitted regularizer will not impact the quality of the image, while an overfitted regularizer will bind it too closely to the given data, but general idea is to push the distribution towards the data.
+* This method can be applied to any activation in the network in order to interpret what a neuron is detecting. Instead of loss defined by class score $L=S_{d o g}(x)-R(x)$, sub in a specific activation from somewhere in the network: $L=a_{j}^{[l]}(x)-R(x)$
 
 ##### Dataset Search
 * Given a filter, what examples in the dataset lead to a strongly activated feature map.
@@ -212,7 +228,7 @@
 * In a generator - to get 64 x 64 x 3 image would need a FC layer of size 64 x 64 x 3 units or use a deconvolution 
 * Encode information in reduced volume (H and W) then expand back out to original size
 * Keep the max activation of a feature map, then reverse the network. Unpool, relu, deconvolution through the layers to get to the reconstruction in the image of what activated that portion of the feature map
-* Unpool: But maxpool is not invertible since it only stores the max from the region it pools. But we can cache switches - they tell us the positions in the matrix that the max value came from. We don't get back the full matrix, so we set the rest of the values to 0. We care about the more discriminative feature so we can stick with just the max values.
+* Unpool: But maxpool is not invertible since it only stores the max from the region it pools. But we can cache switches - they tell us the positions in the matrix that the max value came from. A matrix of 0's and 1's indicating we took a maxpool from this position or not. We don't get back the full matrix, so we set the rest of the values to 0. We care about the more discriminative feature so we can stick with just the max values.
 * Pass switches from forward prop to unpools to make this work
 * Deconv: 
 	* $\begin{bmatrix}0\\0\\x_1\\\vdots\\x_8\\0\\0\end{bmatrix} \rightarrow$ 1D conv with size 4, stride 2, pad 4 -> y.
@@ -222,13 +238,58 @@
 	* So $\begin{bmatrix}y_1 \\ y_2\\y_3\\y_4\\y_5\end{bmatrix} = \begin{bmatrix}w_1 & w_2 & w_3 & w_4 & 0 & ... &0 \\ 0& 0 & w_1 & w_2 & w_3 & w_4 & 0 & ...  \\...\\...\\...\end{bmatrix}\begin{bmatrix}0\\0\\x_1\\\vdots\\x_8\\0\\0\end{bmatrix} $
 	* So we need $x = W^{-1}y$ - assume that W is invertible and also orthogonal: $W^TW = WW^T =I$
 	* Then this is easier $x = W^Ty = \begin{bmatrix} w_1 & 0 & ... \\w_2 & 0 & ... \\ w_3 & w_1 & ...\\ w_4 & w_4 & ... \\ 0 & w_3 & ... \\ 0 & w_4 & ... \\ 0 & 0 & ...\end{bmatrix}\begin{bmatrix}y_1 \\ y_2\\y_3\\y_4\\y_5\end{bmatrix}$
-	* But we lose something in the transformation - not really dealing with out filter anymore. 
+	* But we lose something in the transformation - not really dealing with our filter anymore. 
 	* So instead we pad our y vector with 0's - 0 between every y value and 0's above and below.
 	* Take W and have sliding filter $w_4,w_3,w_2,w_1$. X is 12 x 1, y is 3 0's the 5 y's the 3 0's plus padding 0's 15 x 1. So W' here is (12 x 15).
 * In summary: Soft pixel transformation on y - this is padding it with 0's
 * Flip the filter W
-* Divide the stride by 2
+* Divide the stride by 2: zeros are inserted *between* input units, which makes the kernel move around at a slower pace than with unit strides. Since we originally mapped from larger to smaller, we need this spacing to do the reverse. Taking fractional stride.
 * ReLU does not really change. 
+
+## Midterm Review
+* Sigmoid - outside of activation region has very small gradient - vanishing gradient, and non centered at origin. Tanh also has shrinking gradient away from center.
+* ReLU - problem that gradient is 0 when negative z. But not really a vanishing gradient effect since linear for positive z.
+* How many bits for image mapping - need to rep cat vs not cat for all images 1 bit, 256 ^(64 x 64 x 3). If it took 4 bits to represent each class have  256 ^(64 x 64 x 3 x 4)
+* Part b - W1 taking a 64 x 64 x 3 space to a 100 space, so W1 is  64 x 64 x 3 x 100. W2 takes us from 100 dimensional space to 1 value, so 100 x 1. Each has 64 bits per weight, so 64 x (64 x 64 x 3 x 100 +100 x 1)
+* Number of parameters with L hidden layers, 1 input and ouput layer $\sum_{i=0}^{L}\left(n^{|i+1|} \times n^{[l]}+n^{[l+1]}\right)=\sum_{i=0}^{L}\left(n^{[l+1]} \times \left(n^{[l]}+1\right)\right)$
+* Weight initialization - these are all variances on the slide, not SD as the second number. Want activations to be around the same size throughout the network. Think of tanh, don't want to be out on the edges.
+* He initializtion - half of those inputs are zero in Relu so we multiply by 2. 
+* Assumptions are only valid at the beginning of training. Linear activation and tanh are close for small inputs. 2 / (nprev + ncurrent) allows same initialization for forward and backward since the prev layer is relative there. Initialization on backward pass - we aren't re-initializing, just thinking about how we want weights to change through forward and backward pass.
+* Noisy updates on MBGD add jitter, more likely to avoid getting stuck in saddle points.
+* ConvNets - # parameters, filter f, each side of a filter is a parameter (2d or 3d), f x f, f x f x nc +1 bias per filter. 
+* Output is 2D even if filter is 3d. Then the number of filters corresponds to the channels in the ouput activation.
+* Padding can be in neither valid nor same categories - any p that isnt 0 or (f-1)/2
+* Filter size is constant in the network, so it may not capture an appropriate feature if image is huge or small - not scale invariant. Not rotation invariant, applying the same filter to a rotated image will have different features. It is translation invariant - cat in top left corner to top right, the same filter is applied to local regions.
+* Pooling is down sampling - reduce size of activations while retaining important information. Pooling also has a filter and stride.
+* Number of weights - 9 x 9 x 3 - for every filter we have 9 x 9 and input image had 3 channels. We have 32 such filters so total weights  9 x 9 x 3 x 32. Bias is just 1 per filter so 1 x 32
+* Pooling has no weights and biases. FC number of weights number units x dims of volume flattened. 
+* Batch Norm has a slight regularization effect but shouldnt be used for regularization. At test norm, you use the exponentially weighted average computed during training as your normalizing values. Mitigates covariate shift - later layers depends on early layers, if they shift then so will the later layers - want to avoid shifts and keep things normalized. 
+* Adversarial - using backprop to update the image instead of the network.
+* D(G(z)) = 1 when discriminator output says real, 0 when D says fake. 0 towards beginning more when generator is bad.
+* $\begin{array}{|l|l|l|}
+  \hline & {\text { Bias }} & {\text { Variance }} \\
+  \hline \text { Regularizing the weights } & {\uparrow} & {\downarrow} \\
+  \hline \text { Increasing the size of the layers } & {\downarrow} & {\uparrow} \\
+  {\text { (more hiden units per layer) }} & {} & {}  \\
+  \hline \text { Using dropout to train a deep neural network } & {\uparrow} & {\downarrow} \\
+  \hline \text { Getting more training data } \\
+  {( \text { from the same distribution as before) } } & {-} & {\downarrow} \\
+  \hline
+  \end{array}$
+
+## Prediction Evaluation
+### Confusion Matrices
+* |               | Truth Pos | Truth Neg |
+  | ------------- | -------- | -------------- |
+  | Predicted Pos | TP       | FP             |
+  | Predicted Neg | FN       | TN             |
+
+* Accuracy: sum along the upper-left to bottom right diagonal over the total N. $\frac{TP + TN}{N}$. Good for balanced classes between positive and negative.
+* Recall (True Positive Rate, Sensitivity): how many of the positive examples did we catch? $\frac{TP}{TP+FN}$
+* Precision: how many of positive predictions are actually positive: $\frac{TP}{TP + FP}$
+* F1 Score: how do we trade off between precision and recall. Looks at TP, FP, FN boxes.  $\frac{2}{1/P + 1/R} = \frac{TP}{TP + \frac{FP + FN}{2}}$
+
+
 
 # Coursera Modules
 
@@ -255,6 +316,7 @@
 * In regime of small training sets, the relative ordering of the learning methods is not well defined - not obvious which method is best. Only in large m do we see consistently large NN’s dominating. 
 * Improvements in data size, computation, and algorithmic innovations. Many algorithmic improvements have allowed for faster training - such as switching from a sigmoid to a ReLU. The extremes of the sigmoid have very small derivative - gradient is small so learning is slow. ReLU has slope of 1 for all points above the kink - makes gradient descent much faster.
 * Training a network is iterative - idea -> code -> experiment -> repeat. The learning cycle for the programmer becomes much tighter, allowing more creative and interactive modeling.
+* ![Screen Shot 2020-02-15 at 10.30.03 AM](/Users/spencerbraun/Documents/Notes/Stanford/CS230/Screen Shot 2020-02-15 at 10.30.03 AM.png)
 
 ### Module 2 - Neural Networks Basics
 
@@ -365,6 +427,18 @@
   * Construct 1 x m matrix $Z=\left[z^{(1)} z^{(1)} \cdots z^{(m)}\right]=\omega^{\top} X +\left[b b...b\right] = \left[\begin{array}{c} w^Tx^{(1)} + b & ... & w^Tx^{(m)} + b \end{array}\right]$
   * In python: `Z = np.dot(w.T, x) + b` - here python uses broadcasting, expanding b to a row vector of the constant repeated to the right dimensions. 
   * Similarly $A = \left[a^{(1)} ...a^{(m)}\right] = \sigma(Z)$
+  * $\begin{aligned}
+    &Z=W^{\top} X+b\\
+    &=n p \cdot \text{dot} (W^{\top} , X)+b\\
+    &\begin{array}{l}
+    {A=\sigma(Z)} \\
+    {d Z=A-Y}
+    \end{array}\\
+    &d w=\frac{1}{m} X d Z^{T}\\
+    &d b=\frac{1}{m} n p. \operatorname{sum}(d Z)\\
+    &w:=w-\alpha d W\\
+    &b:=b-\alpha d b
+    \end{aligned}$
 
 * Gradients
 
@@ -384,6 +458,11 @@
     cal = A.sum(axis=0)
     #broadcasting - dividing 3x4 matrix by 1x4
     percentage = 100*A/cal.reshape(1,4)  #note - don't actually need reshape here
+    A.shape #(3,4)
+    np.mean(np.array([1,2],[3,4]), axis = 0) #array([2,3])
+    np.exp(X)
+    np.sqrt(X)
+    np.dot(v, w) # inner product or matrix multiplication (or np.matmul)
     ```
 
   * Python is autoexpanding during broadcasting - generally (m, n) # (1,n) -> (m,n);  (m, n) # (m,1) -> (m,n). Can also perform with single row / col vectors and scalars.
@@ -418,8 +497,10 @@
 * Activation functions can be different for layers, so may write $g^{[1]}, g^{[2]}$ to specify the layer associated with each activation.
 * Sigmoid $a=\frac{1}{1+e^{-z}}$ on [0, 1]. Never use on hidden layers besides output layer. Others are strictly superior otherwise. 
   * Derivative $\frac{d}{d z} g(z) = \frac{1}{1+e^{-z}}\left(1-\frac{1}{1+e^{-z}}\right) = g(z)(1-g(z))$. In a NN, this would be equivalent to $a(1-a)$. Can see that if z = 10, $g(z) \approx 1,\;g’(z)\approx 0$
+  * Can be interpreted as a probability, so typical output of logistic regression
+  * Problems: 1) Output is not centered at 0. Saturation (ie far out of on curve), gradient is near 0 and learning is slow.
 * Tanh $a=tanh(z)=\frac{e^{z}-e^{-z}}{e^{z}+e^{-z}}$ on [-1,1]. Similar shape as sigmoid with different range.
-  * Almost strictly superior to sigmoid bc the range allows for a mean 0 - centers the data so learning for the next layer is a bit easier.  One exception is the output layer, where you might want the output to be a 0 or 1 for classification. However when z is very large or small, then the slope becomes very small as well, slowing learning in gradient descent.
+  * Almost strictly superior to sigmoid bc the range allows for a mean 0 - centers the data so learning for the next layer is a bit easier.  One exception is the output layer, where you might want the output to be a 0 or 1 for classification. However when z is very large or small, then the slope becomes very small as well, slowing learning in gradient descent. 
   * Derivative: $\frac{d}{d z} g(z)=1-(\tanh (z))^{2}$. In NN a = g(z) and $g^{\prime}(z)=1-a^{2}$
 * ReLU - $a=max(0,z)$ on $[0,\infty]$. 
   * Discontinuity at 0, but essentially not a problem, can just hard code or pretend derivative is 1 or 0. When z is negative, derivative is 0, but could modify to maintain a slight positive slope for z negative - Leaky ReLU. Advantage to either is that for the majority of z’s, the slope is very different from 0 (z > 0), allowing faster learning.
@@ -427,7 +508,8 @@
     {0} & {\text { if } z<0} \\
     {1} & {\text { if } z>0} 
     \end{array}\right.$ . Can in practice ignore 0, since change z is exactly 0 is near 0.
-* Leady ReLU - $a = max(0.01z, z)$ on $[-\infty,\infty]$. Can modify the z coefficient or make it part of the learning function.
+   * Cheap to calculate and empirically converges faster. Major problems are gradient is 0 for z < 0 and output not centered at 0.
+* Leaky ReLU - $a = max(0.01z, z)$ on $[-\infty,\infty]$. Can modify the z coefficient or make it part of the learning function.
   * Derivative: $g^{\prime}(z)=\left\{\begin{array}{ccc}
     {0.01} & {\text { if }} & {z<0} \\
     {1} & {\text { if }} & {z>0}
@@ -462,6 +544,7 @@
       {d W^{[1]}=\frac{1}{m} d Z^{[1]} X^{T}} \\
       {d b^{[1]}=\frac{1}{m} n p . \operatorname{sum}\left(d Z^{[1]}, \text { axis }=1, \text { keepdims }=\text { True }\right)}
       \end{array}$
+* Basic idea here: each portion is the loss function derivative wrt some parameter. For $L= -ylog(a) - (1-y)log(1-a)$ we get $da = \frac{d}{da}L = -\frac{y}{a} + \frac{1-y}{1-a}$. Then $a = \sigma(z)$ and $\frac{dL}{dz}=dz = \frac{dL}{da}\frac{da}{dz} = da \frac{dg(z)}{dz} = da \times g'(z)$
 
 ##### Random Initialization
 
@@ -513,6 +596,14 @@
 * For backprop, input $da^{[l]}$ has output $da^{[l-1]}, dW^{[l]}, db^{[l]}$, cache($z^{[l]}$)
 * The cache contains the Z functions, since the actual output is a, Z after activation. We need the cache to compute the derivatives.
 * ![Screen Shot 2020-01-14 at 1.57.28 PM](/Users/spencerbraun/Documents/Notes/Stanford/CS230/Screen Shot 2020-01-14 at 1.57.28 PM.png)
+* Feed forward:
+* $\begin{aligned}
+  &Z^{[1]}=W^{[1]} X+b^{[1]}\\
+  &A^{[1]}=g^{[1]}\left(Z^{[1]}\right)\\
+  &Z^{[2]}=W^{[2]} A^{[1]}+b^{[2]}\\
+  &A^{[2]}=g^{[2]}\left(Z^{[2]}\right)\\
+  &A^{[L]}=g^{[L]}\left(Z^{[L]}\right)=\mathcal{Y}
+  \end{aligned}$
 * Backprop formulas for any layer:
   * $d Z^{[l]}=dA^{[l]} * g^{[1]{\prime}}\left(Z^{[1]}\right)$
   * $d W^{[1]}=\frac{1}{m} d Z^{[1]} A^{[l-1]T}$
@@ -579,6 +670,14 @@
 * Computer vision makes heavy use of dropout since they almost never have enough data for the size of the network, but in other application areas would wait to see overfitting before trying dropout.
 * Cost function J is less well defined and we lose the debugging tool of seeing a monotonically decreasing J in gradient descent. Can run the network without dropout just as a debugging tool to double check.
 
+```python
+
+D1 = np.random.rand(A1.shape[0], A1.shape[1]) #init dropout
+D1 = D1 <= keep_prob #convert to binary 0, 1 with threshold
+A1 = D1 * A1 #shut down some neurons of A1
+A1 = A1 / keep_prob #reflate the value of remaining neurons to keep expectation the same
+```
+
 ##### Other Regularization Methods
 
 * Data augmentation - say with image, you could flip or mirror image your training data to increase data size. Not as good as new data but a good proxy. Could also apply random distortions or cropping. 
@@ -593,7 +692,7 @@
 
 ##### Vanishing / Exploding Gradients
 
-* Training difficult with very large and very small derivatives. Especially problematic in very deep networks - $y = W^{[l]}W^{[l-1]}...W^{[0]}x$. Note $a^{[1]} = W^{[0]}x$, $a^{[2]}=W^{[1]}W^{[0]}x$, etc. We are taking large powers of the weight matrices, so the value of y can explode for weights over 1 (W > I). For weights less than 1 ( W < I ), the exponents shrink the weights to zero.
+* Training difficult with very large and very small derivatives. Especially problematic in very deep networks, ignoring bias - $y = W^{[l]}W^{[l-1]}...W^{[0]}x$. Note $a^{[1]} = W^{[0]}x$, $a^{[2]}=W^{[1]}W^{[0]}x$, etc. We are taking large powers of the weight matrices, so the value of y can explode for weights over 1 (W > I). For weights less than 1 ( W < I ), the exponents shrink the weights to zero.
 * Learning slows for tiny gradients, takes too large steps for large.
 * Weight Initialization Fix: Say we have 4 inputs in X. $z = w_1x_1 + ...w_nx_n$ - for larger n we want smaller w’s to balance out. Can set $Var(w_i) = 1/n$. In practice, set $W^{[l]} = $ `np.random.randn(slope)*np.sqrt(2/n^{[l-1]})` (better to set variance to 2 instead of 1). This is the fix generally for ReLU
 * For tanh, we tend to use Xavier initialization: $\sqrt{\frac{1}{n^{[l-1]}}}$ or $\sqrt{\frac{2}{n^{[l-1]}+n^{[l]}}}$. These initializations for variances can be tuned as well.
@@ -606,7 +705,7 @@
 * Gradient checking for debugging and verification. Take all parameters W, b, concatenate and reshape into a big vector $\theta$. Take the dW, db, etc into a big vector $d\theta$. 
 * $J(\theta) = J(\theta_1, \theta_2,...)$. For each i, $d\theta_{approx}[i] = \frac{J(\theta_1,...,\theta_i + \epsilon,...) - J(\theta_1,...,\theta_i - \epsilon,...)}{2\epsilon} \approx d\theta[i] = \frac{\partial J}{\partial \theta_i}$
 * We take $\frac{||d\theta_{approx} - d\theta||_2}{||d\theta||_2 + ||d\theta||_2} \approx 10^{-7}$ is a good range for the approximation to be close to the expected gradient. If it climbs to $10^{-3}$, should be cause for worry.
-* This is not used for training, just debugging - backprop is reserved for actual training. 
+* This is not used for training, just debugging - backprop is reserved for actual training. Remember need to include any regularization in checking, doesn't work with dropout.
 * If algorithm fails grad check, look at components, see which have the largest differences. Remember if you included regularization, you need to include it in the grad check (note this won’t work for dropout since it is randomized). Run at random initialization, then try again after some training since the problem may be cause by extremely small weights that will grow over time.
 
 ### Module 2 - Optimization Algorithms
@@ -737,7 +836,7 @@ z^{[L]}=\left[\begin{array}{c}
 {e^{3}}
 \end{array}\right]$and $g^{[L]}\left(z^{[L]}\right)=\left[\begin{array}{c}{e^{5} /\left(e^{5}+e^{2}+e^{-1}+e^{3}\right)} \\ {e^{2} /\left(e^{5}+e^{2}+e^{-1}+e^{3}\right)} \\ {e^{-1} /\left(e^{5}+e^{2}+e^{-1}+e^{3}\right)} \\ {e^{3} /\left(e^{5}+e^{2}+e^{-1}+e^{3}\right)}\end{array}\right]=\left[\begin{array}{c}{0.842} \\ {0.042} \\ {0.002} \\ {0.114}\end{array}\right]$. Soft since we do not map the last vector to a vector with a single 1 and rest 0 - we have a confidence level to our prediction.
 * Loss function: $L(\hat{y}, y) = -\sum_{j=1}^C y_j log(\hat{y}_j)$
-  * Say target y = [0,1,0,0]. Then $y_1=y_3=y_4=0$ and left with $-y_2log(\hat{y}_2) = -log(\hat{y_2}). To minimize, need $\hat{y_2}$ large, so we take the MLE for maximize the likelihood for $y_2$.
+  * Say target y = [0,1,0,0]. Then $y_1=y_3=y_4=0$ and left with $-y_2log(\hat{y}_2) = -log(\hat{y_2})$. To minimize, need $\hat{y_2}$ large, so we take the MLE for maximize the likelihood for $y_2$.
   * Cost function is same form as always - average over loss 
 * Gradient Descent - key equation for backprop $dz^{{L}}  = \hat{y} - y = \frac{\partial J}{\partial z^{{L}}}$
 
@@ -1005,6 +1104,7 @@ $$\begin{array}{|c|c|c|c|c|c|}
 * Fatten POOL2 into 400 x 1 vector
 * Fully connected layer: FC3, fully connected 120 units, where $w^{[3]} = (120,400)$
 * Add another FC: 84 units (FC4). Feed this to softmax unit with 10 outputs.
+* ![Screen Shot 2020-02-15 at 11.07.05 AM](/Users/spencerbraun/Documents/Notes/Stanford/CS230/Screen Shot 2020-02-15 at 11.07.05 AM.png)
 
 ##### Why Convolutions?
 * Parameter sharing
@@ -1033,8 +1133,8 @@ $$\begin{array}{|c|c|c|c|c|c|}
 	* Max Pool: f = 3, s = 2
 	* More Conv and Pool with same parameters. Gets down to a 6 x 6 x 256 -> 9216 FC nodes. Ends in a softmax
 	* Similar to LeNet but much bigger. This one has 60m parameters. Also used ReLU activation which helped a lot. 
-* VGG
-	* Conv layers f = 3 and s = 1, same convolutions
+* VGG-16
+	* Conv layers f = 3 and s = 1, same convolutions. Number of channels doubles at each convolutional step, each pool halves the size of the image. End with a squat, deep 7 x 7 x 52 before FC 4096.
 	* Max Pool layers f = 2, s = 2
 	* The layers get longer as number of filters increase, since this determines the third dimension. The pooling layers cause the image to shrink by 2 at each pool, but conv keep dimensions the same except for the third dimension.
 	* Has around 138m parameters. Roughly doubling number of filters at each conv layer.
@@ -1048,6 +1148,7 @@ $$\begin{array}{|c|c|c|c|c|c|}
 * Note $a^{[l+2]} = g(z^{[l+2]} + a^{[l]}) = g(w^{[l+2]}a^{[l+1]} + b^{[l+2]} + a^{[l]})$ - $w^{[l+2]} = 0$, that whole term goes away and you just get $a^{[l]}$. Easy to get $a^{[l+2]}=a^{[l]}$, then adding those extra layers between them leaves a fallback value to learn. If the hidden units actually learn something useful, then they can improve on $a^{[l]}$ but shouldn't hurt if they cannot.
 * Also note that we assume $z^{[l+2]}, a^{[l]}$ have same dimensions - so usually keep the dimensions constant in the res block so this works. If you changed dimensions could add $W_sa^{[l]}$ instead that transforms the dimensions correctly.
 * Can add to a CNN with 3 x 3 same conv layers to preserve dimensions. Whenever we have pooling layers, need to make the dimension adjustment. 
+* ![Screen Shot 2020-02-15 at 11.11.41 AM](/Users/spencerbraun/Documents/Notes/Stanford/CS230/Screen Shot 2020-02-15 at 11.11.41 AM-1793982.png)
 
 ##### 1x1 Convolutions
 * A 1x1 filter on 6 x 6 x 1 image ends up just scaling the original image by the number in the filter. But if you have a 6 x 6 x 32, your filter is 1 x 1 x 32 to get 6 x 6 x (# of filters) output. So it multiplies each of 32 channels by a scalar, summing and applying a ReLU. 
@@ -1064,8 +1165,10 @@ $$\begin{array}{|c|c|c|c|c|c|}
 * With max pooling, we add a same parameter to ensure we add padding to get the same dimensions. Then need a 1x1 to shrink the number of channels.
 * Once we feed the activations through a 1x1, the larger filters we desire (3x3, 5x5 etc) after the 1x1s, we can just concat the whole stack again. Then can repeat these inception blocks to create a full inception network.
 * Finally, can add some sidebranches that try to take a hidden layer and make a prediction through a softmax. Helps ensure the features computated even in the hidden units aren't too bad - can have a regularizing effect.
+*  ![Screen Shot 2020-02-15 at 11.12.13 AM](/Users/spencerbraun/Documents/Notes/Stanford/CS230/Screen Shot 2020-02-15 at 11.12.13 AM.png)
 
 ##### Transfer Learning
+
 * Can download weights that someone else has trained on their architecture. Then use this as the initializiation for your problem and get much faster training.
 * Get rid of the last softmax layer, then attach your own with the categories you care about. Freeze the early hidden layers and just train the softmax layer.
 * This can help get good performance even with a small dataset. Should be easy to do inside the DL framework using. 
@@ -1132,3 +1235,131 @@ $$\begin{array}{|c|c|c|c|c|c|}
 * Still have a problem that the bounding boxes will not be too accurate so still have to adjust for that.
 
 ##### Bounding Box Predictions
+* YOLO - you only look once, can give us better bounding boxes
+* Place grid on the image, medium fine. Apply to localization algorithm to each section of the grid. 
+* For each grid cell specify label y where like previously, y is an 8 dimensional vector $y=\left[\begin{array}{l}
+{p_{c}} \\
+{b_{x}} \\
+{b_{y}} \\
+{b_{h}} \\
+{b_{w}} \\
+{c_{1}} \\
+{c_{2}} \\
+{c_{3}}
+\end{array}\right]$. Say top left grid cell is sky, there is no label and we do not care about the rest of the values.
+* Taking an object that spans multiple grid cells, YOLO takes the midpoint of the object and assigns it to the grid cell that lives in. Then y indicates there is an object, $y=\left[\begin{array}{l}
+1 \\
+{b_{x}} \\
+{b_{y}} \\
+{b_{h}} \\
+{b_{w}} \\
+0 \\
+1 \\
+0
+\end{array}\right]$ say indicating the car is in that grid cell. With 9 grid cells on a 100 x 100 image, target output is 3 x 3 x 8, since each of the 3 x 3 grid cells has one of these 8 dimensional y vectors. This is the depth of the output volume.
+* 100 x 100 x 3 -> conv -> pool -> etc -> 3 x 3 x 8. Use backprop to train network to take any image X and output to this volume
+* First run forward prop, then for each 3 x 3 output, read the pc, and if object, have the coordinates for the object to backprop. If multiple objects per cell might make grid finer.
+* There is a lot of shared computation over all these steps since convolution
+* Bounding box encoding - set coordinates for grid cell, then midpoint is relative to the grid cell as is the height and width. If grid is unit square, then the midpoint is between 0 and 1, but height and width could be outside of grid dimensions if object spills out into other grid cells.
+
+##### Intersection Over Union
+* How do you tell if your object detection algo is working well?
+* Intersection over union (IOU) computes this statistic of 2 bounding boxes - the ideal and the computed. Compute size of intersection of boxes / size of union. 
+* Judged "correct" if IOU $\geq$ 0.5 typically. Could be more stringent
+
+##### Non-Max Suppression
+* Might detect an object multiple times - this ensures it is only detected once
+* A fine grid over the image, while cars only have one midpoint, in practice we are running a classification and localization for each grid cell and algorithm may assign midpoints to multiple grid cells
+* Over 19 x 19 grid, want to clean up the multiple detections per car. Looks at probabilities Pc of detection for each grid cell. Takes the highest confidence Pc.
+* Then takes the remaining bounding boxes and suppresses their detections. Just output the maximal Pc detection
+* On 19 x 19 grid, get 19 x 19 x 8 output volume. Say we only have cars to detect, so y is length 5 instead. 
+	* Discard all boxes Pc below 0.6 say. 
+	* While remaining bounding boxes, 
+		* pick the box with highest Pc and output that as prediction
+		* Discard any remaining box with IOU > 0.5 with the box output in the prior step
+
+##### Anchor Boxes
+* What if a grid cell wants to detect multiple objects, say human in front of car
+* Predefine two different shapes - anchor box shapes. In general we could use more anchor boxes.
+* Defined the class label to be $y=\left[\begin{array}{l}
+{p_{c}} \\
+{b_{x}} \\
+{b_{y}} \\
+{b_{h}} \\
+{b_{w}} \\
+{c_{1}} \\
+{c_{2}} \\
+{c_{3}}
+\end{array}\right]$ of double length - first 8 correspond to box 1 and 2nd 8 correspond to box 2. Then use the first to encode a person and second for car if those boxes are more similar to each of those shapes.
+* Each object in training image is assigned to grid cell that contains the objects midpoint and anchor box for the grid cell with highest IOU. (Grid cell, anchor box pair) assigned to object. 
+* Output y is 3 x 3 x 16 for a 9 square grid now.
+* Algorithm still weak if two objects that would be assigned same anchor box are in same grid cell, but happens rarely.
+
+##### YOLO Algorithm
+* Trying to detect peds, cars, motorcycles. y is then 3 x 3 x (2 x 8) (2 for anchors, 8 is 5 (pc, b's) + # of classes). Then for each grid cell create the y vector. Once object detected, we have bounding box coordinates and class label in C part of vector. 
+* Making a prediction - passes through early portions of algorithms until grid portion. Then for each grid, it outputs a y vector. Then run through non-max suppression.
+* For each grid cell, say get 2 predicted bounding boxes, and some exceed a single grid cell. Then run the algorithm as described above for each class to make final predictions (here would run 3 times).
+
+##### Region Proposals
+* R-CNN - regions of CNNs. There are a lot of non interesting grids cells
+* Instead of running on all windows, run on just a few. First run a segmentation algorithm to determine separation between objects. Then run the classifier on the segmented blobs
+* Find maybe 2000 blobs then place bounding boxes around those. Can be a much smaller number of objects then running over whole image.
+
+### Module 4 - Conv Applications
+
+##### Face Recognition
+* Verification - input image, name / id and ouput whether the input image is that of the claimed person
+* Recognition - has a database of k persons, get an input image, output id if the image is any of the k persons. If you have 100 persons may need a very high accuracy verification system to make this work. Verification is a building block of the recognition system.
+##### One Shot Learning
+* Given a single image or example, need to recognize a person again
+* Could try approach of taking an image -> conv net ->  softmax, but this is not robust for training, and would have to change the softmax if more people join
+* Instead learn a similarity function. $\mathrm{d}(\mathrm{img} 1, \mathrm{img} 2)=$ degree of difference between images. If d < tau then same else different persons.
+* Compare test image against the images in the database, get a number of difference scores. Take the lowest score if below tau threshold or return none at all if differences are all too large
+##### Siamese Network
+* Last layer of conv net - FC 128, let's call $f(x^{(1)})$, an encoding of $x^{(1)}$.
+* Feed a second image through the network and get a different 128 length vector at the end $f(x^{(2)})$. If these encodings are good representations of these images, then $d\left(x^{(1)}, x^{(2)}\right)=\left\|f\left(x^{(1)}\right)-f\left(x^{(2)}\right)\right\|_{2}^{2}$. 
+* Uses the same weights while working in tandem on two different input vectors to compute comparable output vectors. Often one of the output vectors is precomputed, thus forming a baseline against which the other output vector is compared.
+* How do we train this network. Parameters of NN define an encoding $f\left(x^{(i)}\right)$, and learn parameters st for $x^{(i)}, x^{(j)}$, $\left\|\mathrm{f}\left(x^{(i)}\right)-\mathrm{f}\left(x^{(j)}\right)\right\|^{2}$ is small for same persons and large for different persons
+##### Triplet Loss
+* We compare pairs of images. Want same persons to have similar encodings and different to have different encodings.
+* Want difference between anchor and pos example to be small and anchor vs neg example to be large. $\|f(A)-f(P)\|^{2} - \|f(A)-f(N)\|^{2} \leqslant 0 $. But this could be trivially satisfied by setting everything to 0. To prevent this solution, modify the objective to be $\leq 0 - \alpha$, so $$\|f(A)-f(P)\|^{2} - \|f(A)-f(N)\|^{2} + \alpha\leqslant 0 $. Equivalent to a margin in SVMs (called margin parameter here).
+* Forces the A-N difference to be much bigger than A-P instead of marginally different.
+* Given three images A,P,N, we define the triplet loss $L(A,P,N) = \max \left(\|f(A)-f(P)\|^{2}-\|f(A)-f(N)\|^{2}+\alpha, 0\right)$. Tries to send the left portion to 0. Then cost over all examples $J=\sum_{i=1}^{m} L\left(A^{(i)}, p^{(i)}, N^{(i)}\right)$. Say training set is 10k pictures of 1k different persons. We need multiple pictures of a person to train this system.
+* Then once trained this can be a one-shot task.
+* How do we choose triplets? If chosen at random, pretty easy to satisfy the $d(A, P)+\alpha \leq d(A, N)$ since most pictures will easily meet this criteria. You want to choose hard triplets, where A-P close to A-N. Increases the computational efficiency of your algorithm since then GD will have to actually do work to distinguish them.
+
+##### Face Verification and Binary Classification
+* Another approach to this problem. Take the encodings from the siamese networks and feed to binary classification output. 1 indicates same person 0 different.
+* $y_{h a t}=\sigma\left(\sum_{k=1}^{128} w_{k}\left|f\left(x^{(i)}\right)_{k}-f\left(x^{(j)}\right)_{k}\right|+b\right)$. Element wise features we run through logistic regression that we train for different or same persons.
+* Could also use chi-squared similarity or other metrics.
+* Computational trick: instead of computing the embedding every time, could precompute encodings so we do not need to store the images.
+
+##### Neural Style Transfer
+* Take content image and want to transfer style from another image.
+* What are deep conv nets really learning? Want to visualize what the hidden units at different layers are learning
+* Pick a unit in layer 1, find the nine image patches that max the unit's activation. Might see a diagonal edge in all of the images, seems like the unit is detecting that specific edge
+* We can go through other hidden units with different low level features they follow. Could be different colors, edges, etc. Relatively simple features at unit 1
+* As we go into the deeper layers, image patches are larger portions of the images since H and W shrunk. The later units are activated first for more complex shapes and pattersn and even later for specific human recognizable objects. Say people, car wheels, dogs, legs.
+
+##### Cost Function for Style Transfer
+* Overall cost function $J(G)=\alpha J_{\text {content }}(C, G)+\beta J_{\text {style }}(S, G)$
+* Initiate G randomly, say 100 x 100 x 3 random image
+* Use gradient descent to minimize J(G) - G := G - dJ(G)/dG 
+##### Content Portion
+* Say you use hidden layer l to compute content cost. Usually somewhere in the middle of the layers. Use a pretrained convnet like VGG
+* Let $a^{[l](C)}$, $a^{[l](G)}$ be activation of layer l on the images 
+* If $a^{[l](C)}$, $a^{[l](G)}$ similar both images have similar content. Use $J_{content}(C,G) = \frac{1}{2}\left\|a^{\operatorname{[\ell]}(c)}-a^{[\ell] (G)}\right\|^{2}$. Element wise sum of squared differences between these activations.
+
+##### Style Portion
+* Say using layer l to define the style of the image. Style is the correlation between activations across channels. Given block nH nW nc, say nc = 5. Look at red and yellow channels, look across positions between these channels and compare the activations and determine correlation. 
+* For high level features, like comparing how a certain pattern occurs with a certain color.
+* Style (Gram) matrix: let $\mathrm{a}_{i, j, k}^{[l]}=\operatorname{activation} \text { at }(i, j, k) . G^{[l]} \text { is } \mathrm{n}_{\mathrm{C}}^{[l]} \times \mathrm{n}_{\mathrm{C}}^{[l]}$ for i height, j width, k channel.
+* $G_{k k^{\prime}}^{[l](G)}=\sum_{i=1}^{n_{H}} \sum_{j=1}^{n_{W}} a_{i, j, k}^{[l](G)} a_{i, j, k^{\prime}}^{[l](G)}$. $G_{k k^{\prime}}^{[l](S)}=\sum_{i=1}^{n_{H}} \sum_{j=1}^{n_{W}} a_{i, j, k}^{[l](S)} a_{i, j, k^{\prime}}^{[l](S)}$ for generated image and style image. Measures the correlation between channels k and k'. 
+* Style Cost Function: $J_{\text {style}}^{|l|}(S, G)=\frac{1}{\left(2 n_{H}^{[l]} n_{W}^{[l]} n_{C}^{[l]}\right)^{2}} \sum_{k} \sum_{k^{\prime}}\left(G_{k k^{\prime}}^{[l](S)}-G_{k k^{\prime}}^{[l](G)}\right)^{2}$
+* Get more visually pleasing results if we take a weighting over multiple layers: $J_{\text {style}}^{|l|}(S, G) = sum_l \lambda^{[l]}J_{style}^{[l]}(S,G)$ 
+
+##### 1D and 3D Generalizations
+* Say you have EKG data, a spiky 1D time series. Here we might use a 1D filter that has 5 different value
+* 14 x 1 dimensional vector convolved with 5 x 1 filter 16 times gives us 10 x 16. Same idea as in 2D. 
+* 3D data like a CT scan - has a slice for each level of the brain. Conv net to 3D volume with 3D filter. A 14 x 14 x 14 (x 1 channel) input volume convolved with 5 x 5 x 5 x 1 filter, 16 filters gives us a 10 x 10 x 10 x 16. Then say we apply again with 32 filters -> 6 x 6 x 6 x 32
+* Could also use with movie data, where the third dimension is time.
