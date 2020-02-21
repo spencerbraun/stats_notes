@@ -3,7 +3,7 @@
 ## Themes
 
 * Scale invariance - how do units affect your method, standardizing predictors, effect on correlated predictor coefficients
-* Correlation between predictors - how well identified are your coefficients / relationships.
+* Correlation between predictors - how well identified are your coefficients / relationships. Correlation breeds uncertainty in model, regularization either discards correlated covariates or averages over them.
 * Continuous vs discrete, blending of features in a reduced model or feature selection (eg. ridge / pcr vs lasso).
 * p > n - now need some regularization. Consider when we perform regularization for variance reduction vs removing design matrix singularity
 * Adding bias for variance reduction
