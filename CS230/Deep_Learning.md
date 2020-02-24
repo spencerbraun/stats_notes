@@ -1363,3 +1363,138 @@ $$\begin{array}{|c|c|c|c|c|c|}
 * 14 x 1 dimensional vector convolved with 5 x 1 filter 16 times gives us 10 x 16. Same idea as in 2D. 
 * 3D data like a CT scan - has a slice for each level of the brain. Conv net to 3D volume with 3D filter. A 14 x 14 x 14 (x 1 channel) input volume convolved with 5 x 5 x 5 x 1 filter, 16 filters gives us a 10 x 10 x 10 x 16. Then say we apply again with 32 filters -> 6 x 6 x 6 x 32
 * Could also use with movie data, where the third dimension is time.
+
+## C5 - Sequence Models
+
+### Module 1 - Recurrent Neural Networks
+##### Notation
+* Speech recognition - x audio clip and y output words. Music generation. Sentiment classification, DNA sequencing. Machine Translation
+* Say have sequence model to find names in sentence x - Named entity recognition
+* Model output y, [1,1,1,0,0,0,1,0] etc, word is name or not a name. To refer to positions we will use $x^{\langle 1\rangle}, x^{\langle 2\rangle}, ... x^{\langle 9\rangle}$, similarly for y. Let $T_x = 9, T_y =9$, the number of words in input and output
+* The t'th element of example i: $x^{(i)<t>}$, lenth of training example input $T_{x}^{(i)}=9$
+* Vocabulary - need a mapping of all words in our dataset. Vector of words [a, aaron, ..., zulu], each assigned their numerical index. Dictionary sizes of 30-50k is common, but also much larger.
+* Use one hot encoding for each word in the sentence -> eg. $x^{<1>} = [0 0 0 1...0]$. Each vector the length of the vocab, with a single 1 indicating the word in the vocab we are looking at.
+* What if we encounter word not in vocab? We can use a placeholder <unknown>
+
+##### RNN
+* Why can't we use a standard network? Inputs and outputs can be different lengths in different examples. Doesn't share features learned across different positions of text - don't want it just to learn Harry in position 1 is a person's name, need more generalization.
+* Also using better representations reduces number of needed parameters
+* ![Screen Shot 2020-02-23 at 3.03.33 PM](/Users/spencerbraun/Documents/Notes/Stanford/CS230/Screen Shot 2020-02-23 at 3.03.33 PM.png)
+* With RNN, we take $x^{<1>}$ and input into the network, leading to prediction $y^{<1>}$. Then we feed in $x^{<2>}$, and activation is used from prior step $a^{<1>}$ to produce $y^{<2>}$. At each time step, the RNN passes its activation to the next time step to use.
+* Can initialize randomly or with all zeros for $a^{<0>}$ (0's more common).
+* We will have parameters $W_{xa}, W_{aa}, W_{ya}$ that govern relationships.
+* One weakness of this RNN is we are only using information before the current word - we also want to use information from after the current step in the sequence. We will address this with bidirectional RNNs.
+* Forward Prop: $a^{<1>} = g(W_{aa}a^{<0>} + W_{ax}x^{<1>} + b_a)$ and $y^{<1>} = g(W_{ya}a^{<1>} + b_y)$. Here we use $W_{ax}$ to indicate this will compute some a quantity from an x, while $W_{ya}$ computes a y quantity from an a quantity.
+* Often use tanh for activation, sometimes ReLU. Y activation depends on the type of output we are looking for.
+* Generally: $a^{<t>} = g(W_{aa}a^{<t-1>} + W_{ax}x^{<t>} + b_a)$ and $y^{<t>} = g(W_{ya}a^{<t>} + b_y)$
+* We can simplify these two equations with better notation: let $W_{aa}a^{<t-1>} + W_{ax}x^{<t>} = W_a[a^{<t-1>}, x^{<t>}]$, by stacking $[W_{aa}W_{ax}]$ (combine width and both matrices are of same height). 
+* $[a^{<t-1>}, x^{<t>}]$ indicates we are stacking these vectors vertically - say first 100 terms are a, next 10k are x, so when we do our matrix multiplcation we get back our original equation.
+
+##### Backprop Through Time
+* At each forward step, feed in x, W, b, and prior a to calculate current a. It outputs a y for our step using W_y and b_y.
+* Loss $L^{<t>}\left(\hat{y}^{<t>}, y^{<t>}\right) = -y^{<t>} log(\hat{y}^{<t>}) - (1-y^{<t>}) log(1-\hat{y}^{<t>})$
+* Then total loss is sum over all time steps $L = \sum_{t=1}^{T_y} L^{<t>}\left(\hat{y}^{<t>}, y^{<t>}\right)$
+* Then our backprop step is passing our gradients back through the steps that created our total loss. We go from the last step in our sequence to the first.
+
+##### Different Types of RNNs
+* $T_x$ does not have to equal $T_y$. In machine translation, we have different number of words to say the same things in different languages.
+* Many to many architecture is what we saw before - input has many sequences as does the output. 
+* Many to one architecture - For sentiment classification, x is text, y is a number 1-5. Then the RNN can read in the entire sentence and output a single y 
+* One to many archtecture - music generation, with goal to have network output a set of notes. Input x and have RNN output first value of y, then with no further inputs, output subsequent y values. Often drawn as output feeding back into the next sequence instead of a new x. 
+* Many to many with different lengths - Encoder: first portion takes in X's in a sequence, passing activations to next steps, but produces no output. Then we pass the output of the encoder to the decoder, which takes in no additional input but produces a sequence of y's.
+* ![Screen Shot 2020-02-23 at 3.26.16 PM](/Users/spencerbraun/Documents/Notes/Stanford/CS230/Screen Shot 2020-02-23 at 3.26.16 PM.png)
+
+##### Language Model and Sequence Generation
+* Given any sentence, what is the probability of that sentence occurring given an input sentence? 
+* The language model estimates the probability of the sequence of words $P(y^{<1>},...,y^{<T_y>})$
+* Train on a large corpus of text.
+* First, we tokenize the sentence by formulating our vocabulary. Often also want to model when setences end, by adding a token $<eos>$ to the end.
+* Could also treat punctuation as tokens in the vocab. If some words in training set are not in the vocab, then you can replace words with $<unk>$.
+* At time 0, we compute some activation $a^{<1>}$, starting with $a^{<0>}=x^{<1>}=0$. The first activation uses a softmax to make $\hat{y}^{<1>}$ - what is the chance that the first word is any given word in your vocabulary. With a 10k vocab, we have a 10k softmax.
+* Then we take our next step, trying to find the probability of what is the second word, but we give it ${y}^{<1>}$ - the actual first word in the dataset, so ${y}^{<1>} = {x}^{<2>}$ (since x init to 0). Then $\hat{y}^{<2>} = P({y}^{<2>}|{y}^{<1>})$.
+* To predict the 3rd word, we give the activation the prior word, etc. At the end, we feed in the last actual word, and hopefully the model predicts the next word is the EOS token.
+* Loss function $\mathcal{L}\left(\hat{y}^{<t>}, y^{<t>}\right)=-\sum_{i} y_{i}^{<t>} \log \hat{y}_{i}^{<t>}$. Overall loss $\mathcal{L}=\sum_{t} \mathcal{L}^{<t>}\left(\hat{y}^{<t>}, y^{<t>}\right)$. 
+* Probability of a sentence: $P(y^{<1>}, y^{<2>}, y^{<3>}) = P(y^{<1>})P(y^{<2>}|y^{<1>})P(y^{<3>}|y^{<1>}, y^{<2>})$
+
+##### Sampling Novel Sequences
+* Use your usual first inputs of 0, and get an output softmax distribution. Whats the chance that the first word is x over whole vocab. Then we can run `np.random.choice` to sample a word from this probability distribution. 
+* Then pass the word we sampled into the input for the second activation. We again sample the output softmax for the second sequence and pass it to the next activation as input. You could keep sampling until EOS is hit from sampling or decide a fixed length to try.
+* If you never want a <unk> token, could reject any sample that selects this and take a new sample. 
+* Could also build a character level RNN - vocab is just alphabet and characters (could use upper and lower case too). Then the sequence will just be individual characters.
+* Can use this for sequence generation and novel texts.
+
+##### Vanishing Gradients with RNN's
+* Whether the noun is singular determines the form of a verb. There can be long term dependencies within a sentence.
+* But with very deep NN's we have a problem of vanishing gradients, preventing learning in the early layers - ie. the early words in the sentence. Activations are affected only be nearby members of the sequence.
+* Exploding gradients tends to be less of problem with RNNs, but can happen and cause numerical overflow
+* Can apply gradient clipping in RNN - threshold the values against some fixed number. Pretty robust solution to solving exploding gradients, but vanishing graidents much harder to solve.
+
+##### Gated Recurrent Units
+* The cat, which already ate ..., was full. Sentence we are trying to get the GRU to recognize cat is singular, was should be singular
+* C = memory cell - have $c^{<t>} = a^{<t>}$
+* At every time step, consider overwriting C with $\tilde{c}^{<t>} = tanh(W_c[c^{<t-1>}, x^{<t>}] + b_c)$
+* Then it also has a gate: $\Gamma_u$, evaluated between 0 and 1. $\Gamma_u = \sigma(W_u[c^{<t-1>}, x^{<t>}]+ b_u)$. Here gamma will be far out on the sigmoid function so mostly 0 or 1. 
+* We have a candidate update and the gate for a decision function. Then can think $c^{<t>}$ at cat is set to 0 or 1 for plural or singular, then the GRU memorize this value until "was" comes along. But once we have used the gate, we can forget it and update it. 
+* The key equation for updating is $c^{<t>} = \Gamma_u \times \tilde{c}^{<t>} + (1-\Gamma_u)\times c^{<t-1>}$. 
+* Essentially this sets $\Gamma_u = 1$ at cat, then for the values between "cat" and "was" $\Gamma_u = 0$ indicating no updates should be made. 
+* ![Screen Shot 2020-02-23 at 6.13.40 PM](/Users/spencerbraun/Documents/Notes/Stanford/CS230/Screen Shot 2020-02-23 at 6.13.40 PM.png)
+* Because gamma is 0 across many time stamps, this helps with the vanishing gradient problem since most of the time $c^{<t>} =c^{<t-1>}$
+* We have $c^{<t>},c^{<t-1>},\Gamma_u$ are same dimensions, so note that the multiplication above is element-wise. It tells which dimensions should be updated at each step - the GRU will update some values at each step and leave others unchanged in the vector.
+* In practice, we can add another gate: $\Gamma_r$ for relevance - how relevant is $c^{<t-1>}$ to updating $c^{<t>}$. Then $\tilde{c}^{<t>}=\tanh \left(W_{c}\left[\Gamma_{r} * c^{<t-1>}, x^{<t>}\right]+b_{c}\right)$ for $\Gamma_r= \sigma(W_r[c^{<t-1>}, x^{<t>}]+ b_r)$
+
+##### LSTM
+* Also a type of unit to learn long term effects. Often seen as more powerful / better.
+* We now have a separate gate $\Gamma_f$ for explicitly forgetting prior values. Separate update and forget gates. Additionally an output gate $\Gamma_o$
+* Equations: $\begin{aligned}
+&\tilde{c}^{<t>}=\tanh \left(W_{c}\left[ a^{<t-1>}, x^{<t>}\right]+b_{c}\right)\\
+&\Gamma_{u}=\sigma\left(W_{u}\left[a^{<t-1>}, x^{<t>}\right]+b_{u}\right)\\
+&\Gamma_{f}=\sigma\left(W_{r}\left[a^{<t-1>}, x^{<t>}\right]+b_{f}\right)\\
+&\Gamma_{o}=\sigma\left(W_{o}\left[a^{<t-1>}, x^{<t>}\right]+b_{o}\right)\\
+&c^{<t>}=\Gamma_{u} * \tilde{c}^{<t>}+\Gamma_{f} * c^{<t-1>}\\
+&a^{<t>}=\Gamma_{o} *tanh(c^{<t>})
+\end{aligned}$
+* ![Screen Shot 2020-02-23 at 6.25.57 PM](/Users/spencerbraun/Documents/Notes/Stanford/CS230/Screen Shot 2020-02-23 at 6.25.57 PM.png)
+* If you connect these units in parallel - output from 1 becomes the input for another. As long as you set your update/forget gates correctly, can simply pass a single value straight through all of the units, so it is very good at maintaining a gradient.
+* Using one vs the other - GRUs are a more recent invention, derived as a simplification. Advantage of GRU is you can build a much bigger network, but is less powerful than the LSTM.
+
+##### Bidirectional RNNs
+* Take information from earlier and later in the sequence. Information presented can work for GRU/LSTM/Standard RNN blocks
+* Each X feeds into an activation, activations passed to the next step, y output produced at each step. So far all the same.
+* We will add a backward connection, where we have a reserve activation connection. 
+* The backward connection activations are connected to each other backwards in time. X passes into both forward and backward activations, and both activations feed into the y hat produced by each sequence.
+* Then $\hat{y}^{<t>} = g(W_y[a_f^{<t>}, a_b^{<t>}] + b_y)$. Predictions at any time point takes information from past and future.
+* BRNN with LSTM blocks is a common structure for these types of networks.
+* You do need the entire set of data - ie. the end of the sentence - to make a prediction. May not be best for real time processing of speech.
+
+##### Deep RNNs
+* Can stack layers of RNNs together to build deeper models
+* Now we specify the layer $a^{[\ell]<t>}$. 
+* ![Screen Shot 2020-02-23 at 6.39.17 PM](/Users/spencerbraun/Documents/Notes/Stanford/CS230/Screen Shot 2020-02-23 at 6.39.17 PM.png)
+* $a^{[2]<3>}$ has two inputs - from the left and from the bottom. Then $a^{[2] <3>}=g\left(W_{a}^{ [2]}\left[a^{[2] <2>}, a^{[1]<3>}\right]+b_{a}^{[2]}\right)$
+* We don't usually stack too many of these, since they are already quite complex / computationally expensive. The blocks can be RNN, GRU, LSTM.
+
+### Module 2 - NLP and Word Embeddings
+##### Word Representation
+* So far we have represented words using a vocab + 1 hot vectors. We represent one word as a single 1 in a vector of length of the vocab.
+* But it treats each word as a thing unto itself, prevents generalization of words. If we trained a network to see orange juice, it cannot generalize to apple juice. The inner product between any two one hot vectors is 0, and the euclidean distance is also the same between any pair
+* Featurized representation: word embedding. Have a matrix of values relating words to each other. Could have row of gender, age, royal, and the words man, woman, king, queen, will have different relationships to those rows.
+* Using this word representation, we now see correlation between orange and apple. Therefore the learning algorithm can figure out that apple and orange juice are likely both real things.
+* We often take a large dimensional embedding and reduce it to a 2D space for visualization - t-SNE algorithm. Shows clusters of related words.
+* Embeddings, since the word is embedded somewhere in high dimensional space.
+
+##### Using Word Embeddings
+* Training a model with embeddings for our named entity task, we can figure out names more easily in related sentences.
+* If we have learned word embeddings, then even for words outside of our vocab, the algorithm can still see that a new sentence is close to one it has learned. Embeddings can be huge 1B - 100B words.
+* Essentially transfer learning - taking pretrained relationships transferred to your smaller application dataset.
+* Now can use lower dimensional vectors - instead 0f 10k one hot sparse vector, have 300 length vector that is dense.
+* Similar to the face encodings in the siamese networks we learned for face recognition - encoding and embeddings are quite similar. 
+
+##### Properties of Word Embeddings
+* Embeddings can help with reasoning by analogy. If we posed the question Man:Woman as King:?, our embeddings can provide an answer
+* Vectors addition $e_{man} - e_{woman} \approx [2,0,0...0]$. Similar for King - Queen. It captures that the main difference between man and woman is gender, and king and queen also differ in the same dimension. So in the analogy can take the difference of our provided anology, and try to find a difference that is similar in the embeddings.
+* Turning this into an algorithm - Find word w s.t. $argmax_w \;sim(e_w, e_{king} - e_{man} + e_{woman})$.
+* Most common similarity function used is cosine similarity: $sim(u,v) = \langle u, v\rangle = \frac{u^{T} v}{\|u\|_{2}\|v\|_{2}}$. Note this is actually equal to the cosine of the angle between the vectors. 
+
+##### Embedding Matrix
+* Take our vocab to an embedding matrix of size 300 x 10k. The columns will be each word in the vocab. We take our one hot vectors for a word O and multiply it by the embedding matrix E: E0_{word1} = (300 x 10k) times (10k, 1) = e_{word1}. Our goal is to learn an embedding matrix E.
+* In practice, this isn't efficient way to do this. We use specialized functions instead. 
