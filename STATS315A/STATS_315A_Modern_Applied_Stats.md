@@ -581,3 +581,23 @@
 * Then let the diameter of the aorta vary against the age, for different conditioned values of sex and depth
 * How are they fit? Local regression gives us a way $y \sim B_0(S,D) + B_1(S,D)\times age$. For a given depth for males, could get your weighting kernel and fit a linear regression with weighting for $d_0, d_1,...$.
 * Any time you have a model and want it to change smoothly with one or more variables, we can use this mechanism - define a weighting function in terms of the that variable, then refit the overall model using these local observation weights. As long as the optimization can take observation weights, we can make any model local.
+
+### Kernel Density Classification
+* Old fashioned method today
+* Posterior given two densities. Density ratio not guaranteed to be smooth, get weird results when data is not distributed evenly across range. 
+* Can hide structure in class densities
+
+### Gaussian Mixture Models and EM Algorithm
+* GMMs useful for modeling non-standard densities, eg multi-modal. Useful for generation but also for estimation of odd densities
+* Form of non-parametric density estimation: $f(x) \sim \sum_{j=1}^k \pi_j \phi(x, \mu_j, \Sigma_j)$ - for $\phi$ Gaussian density. With a few Gaussians, we can approximate a weird density, but need a method for fitting GMM to data
+* K-means and vector quantization - image in pixels and we want to compress it. Break up image into non-overlapping blocks of pixels -> each block is a vector of pixel values. Run KMC on the vectors, K is often large in this application. All the vectors then approximated by their centroids in the encoder. The codebook has the centroids and cluster assignments, which is a small dataset. Then a decoder reconstructs the image, looking up its cluster centroid values.
+	* In a lossy way, we find clusters with some error, maybe some are pure white but many colors might be approximated. Lossless - we keep going until all clusters are pure, centroids and data points exactly match in vector values.
+* Mixture Models - can be seen as a soft version of KMC. 
+	* Soft assignment of responsibilities - have two centers with a Gaussian density over each. Have a point and we want to assign it to a class. If we knew the Gaussians, could assign based on the posterior. A soft assignment wouldn't assign it just to one - would assign it with a probability responsibilty to each class given the strength of the density. K-means is the limit as the bandwidth of the Gaussian shrinks to 0.
+* EM Algorithm
+	* Like KMC; make soft assignments, give points weights for a cluster. Go to each cluster and compute a weighted mean across points, using their weight contribution to the cluster.
+	* There is always some missing information - supposing we had it the whole problem would be easy. Some unobserved latent variables, naming them, we can write a joint density with observed values. Averaging over the data you have, you want to get the original mixture density you started with.
+	* We don't know the values, so we work iteratively, substituting the expected value of the parameter given the parameters we know so far and the observed data.
+	* If we have observations missing at random in a dataset. We could just use the mean of the observed values for each variable, though not perfect - if we now estimate the covariance, it will be biased, variances will be too small. 
+	* For $x_i \sim N_p(\mu, \Sigma),\; i = i,...,n$, if I knew $\mu,\Sigma$, I could come up with a more educated guess for the missing values given the others. I would know the conditional distribution of the missing data given the rest. For $x = [x_{(1)} \;x_{(2)}], \; (\mu_1,\mu_2), (\Sigma_{11}, \Sigma_{12}, \Sigma_{21}, \Sigma_{22})$, the distribution $x_{(2)} | x_{(1)} \sim N(\mu_2 + \Sigma_{21}\Sigma_{11}^{-1}(x_1 - \mu_1), \Sigma_{22} - \Sigma_{21}\Sigma_{11}^{-1}\Sigma_{12})$ - can think of this as the outcome of a linear regression. If there is correlation in these variables, then this distribution informs us about the missing values.
+	* Good case for EM - pretend we know the missing data, and run EM. If $O_i$ is the indexed set of the observed values, then $X_{i, O_i} \sim N_{O_i}(\mu_{O_i}, \Sigma_{O_i, O_i})$ - distribution of the observed values of the ith observation. Get a bunch of different sized normal densities for the observed log likelihood - quite a mess. By making up values we get a full loglikelihood 
