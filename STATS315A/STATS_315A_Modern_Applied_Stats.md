@@ -526,15 +526,58 @@
 	* Since the boundary knots decrease the number of parameters, we can fit more interior knots to match the df of the cubic spline for comparison.
 	* For $f(x) = \sum_{j=1}^m h_j(x)\theta_j$ and have an additive error model $y=f(x) + \epsilon$ iid constant variance. Fit via least squares get $\hat{\theta} = (H^TH)^{-1}H^Ty$, $Var(\hat{\theta}) = (H^TH)^{-1}\sigma^2$. Evaluate you basis functions at that point x and make a prediction. This gives us the pointwise variance of the fitted function. Comparison of variances - cubic spline has high variance in tails, little in the middle. Natural cubic spline has somewhat higher variance in the middle due to more knots but lower variance in the tails.
 * B Splines - made in recursive fashion, start as piecewise constant then iterated to raise the degree. (An order 4 polynomial is a degree 3 polynomial). Taking $h_1(x), h_2(x),...h_7(x)$, but returns N x 6 matrix to remove intercept. If we have x1, x2 and want a cubic spline in both. If we included intercept, there would be some arbitrariness. Instead of specifying knots we can specify degree of freedom, and knots will be dispersed to quantiles. `lm( y ~ bs(x_1, df=4) + bs(x_2, df=4))`. Not really perferred to natural splines though.
+* Can get pointwise standard errors around each point for a natural spline. Certainly would not want to extrapolate the spline prediction outside of the fitted data range, would be a worse fit than a linear model.
 ### Smoothing Splines
 * $\operatorname{RSS}(f, \lambda)=\sum_{i=1}^{N}\left\{y_{i}-f\left(x_{i}\right)\right\}^{2}+\lambda \int\left\{f^{\prime \prime}(t)\right\}^{2} d t$
 * The first term measures closeness to the data, while the second term penalizes curvature in the function, and $\lambda$ establishes a tradeoff between the two.
 * Remarkably, it can be shown that (5.9) has an explicit, finite-dimensional, unique minimizer which is a natural cubic spline with knots at the unique values of the $x_i$: $f(x)=\sum_{j=1}^{N} N_{j}(x) \theta_{j}$
 * $\operatorname{RSS}(\theta, \lambda)=(\mathbf{y}-\mathbf{N} \theta)^{T}(\mathbf{y}-\mathbf{N} \theta)+\lambda \theta^{T} \mathbf{\Omega}_{N} \theta$, for $\left\{\boldsymbol{\Omega}_{N}\right\}_{j k}=\int N_{j}^{\prime \prime}(t) N_{k}^{\prime \prime}(t) d t$
 * Solution $\hat{\theta}=\left(\mathbf{N}^{T} \mathbf{N}+\lambda \mathbf{\Omega}_{N}\right)^{-1} \mathbf{N}^{T} \mathbf{y}$
+* Reinsch form - reparametrization, had $||y-H\theta||_2^2 + \lambda \theta^T \Omega \theta$. Now take $f = H\theta$, $\theta = H^{-1}f$ -> $||y - f||_2^2 + \frac{1}{K}\lambda f^T(H^{-1}\Omega H^{-1})f$. Then say $K = UDU^T$. If you know the eigens of K, you know it of $I + \lambda K$.
+* S has two eigenvalues exactly equal to 1 - this creates a subspace. $S_\lambda v = v$. $S_\lambda$ is smoothing some response as a function of X, so can think of v as a function of X. If v is linear in X, the smoother applies no penalty, can simply reproduce the line since it makes no error on the loss and the penalty is 0. The space of functions spanned by the constant and linear functions in X get the eigenvalues of 1, anything else gets penalized.
+* For $S_\lambda v$, you wouldn't want the smoother to give you back something bigger than v - which is why we have largest eigenvalues of 1. But also all are bigger than 0, not reversing the sign.
+* Rows of the smoother matrix: fitted vector $\hat{f}_\lambda = S_\lambda y$, then each fitted vector is a sum of the y's across a row of S. We call this an equivalent kernel, interpreting the smoothing function as a weighted average. We see that it has local properties across $x_i$
+* CV vs EPE on a simulated example - we see EPE is far below CV error but minimizer df is around the same place. CV error has more variance, but the minimum is still a good choice.
+* LOOCV can be done efficiently with smoothing splines. $S_\lambda(i,i)$ - self influence. For small lambda, this fit becomes very local and close to 1 around for the locality around an $x_i$.
+* Generalized additive model RSS, $\sum_{i=1}^n(y_i - \sum_{j=1}^p f_j(x_{ji}))^2 + \sum_{j=1}^p \lambda_j\int f_j''(t_j)^2 dt$. Can be fit using smoothing splines. Y is linear in functions wrapped around each X in an additive way.
 
 ### Automatic Selection of Smoothing Spline
 * Fixing degrees of freedom: $\mathrm{df}_{\lambda}=\operatorname{trace}\left(\mathbf{S}_{\lambda}\right)$ monotone for lambda, so can simply invert and specify a df.
 
+### Tensor Product Basis
+* Fit model in higher dimensions, NSC say. Specify basis of function on each of the coordinates. Basis functions say for variable 1 and 2. Then for every basis function for 1 and every for 2, form a pairwise product
+* Then have a basis across both spaces and can fit a linear model
+* Easy to do in r - `lm(y ~ ns(x1, df =4) * ns(x2, df=4))`
+* df = 4 x 4 = 16 vs linear model df = 1 + (4-1) + (4-1) = 7 (only want to count the intercept once here). 
 
-### Nonparametric Logistic Regression
+### Kernels
+* Polynomial ridge regression for example. X in p dimensions, h(X) basis expansion mapping to Rm, for m huge. Solution requres inverting an M x M matrix of basis. $H^TH$ is big and low rank (at most n). But we can rewrite the solution to be N x N - this is the heart of the kernel trick
+* H is N x M matrix, N num observations. Each entry is the feature vector for the ith observation. So $HH^T$ is all of the pairwise inner products for the rows in H (also called a Gram matrix).
+* Our kernel function is a bivariate function that outputs a positive definite matrix $\R^p \times \R^p \rightarrow \R_+$. K computes the inner products for you - K does this without needing to perform $HH^T$.
+* All the computations just require K itself, don't actually use the basis functions, just know they exist
+* These K's exist for a good number of basis functions. In the radial basis function, there in an infinite implicit basis, but the kernel does not need to consider these.
+* Get a linear combination of the kernels in our model. 
+* There is a kernel for the smoothing spline, though it is only positive semi-definite (null space is the unpenalized dimensions)
+
+## Chapter 6: Kernels
+### Kernel Smoothing
+* NN kernel - discontinuous since discrete. Wiggly, not very attractive, but easy to compute, O(n) for whole curve.
+* General family of kernel functions that assign a weight between 0 and some number, indexed by target point x_0$ and another point for which we want to assign a weight.
+* Bandwidth parameter h - depends on lambda and target point, D function assigns weight. h can be a constant that acts like a scale parameter, amounts to keeping the same width as we slide along function - metric kernel. This is a biased estimate, since if function is concave then average will be down, but for constant we get bias approximately the same everywhere. The variance can still vary since the number of points can change, cause us to average over different number of observations
+* Can instead keep number of points we average over constant - constant variance but bias decreases for regions with a lot of data, increases in areas with less data.
+* Weightings generally give weight 0 outside of range.
+
+### Local Regression
+* At the boundary, kernel will reach more to the right (or left), but in a concave function say, the weighted average will be biased upwards, since more points to the up and right than nearer to the boundary. 
+* Instead of fitting a constant, let's fit a linear regression to the data with our kernel weights. Then the fitted value at $x_0$ is the value of the smoother.
+* W a diagonal weight matrix, get a closed form minimization criterion. We get an equivalent kernel, one for assigning the observation weights and one that performs the weighted least squares. If there are more points on the left than the right, the equivalent kernel can compensate by giving the right values more weight, even on the interior for additional bias correction.
+* Since the linear fit has bias in curved regions, could go further and do a local quadratic. Has less effect of "trimming down the hills, filling in the valleys." Of course the returned bias is traded for variance.
+* We see local linear and local constant have similar variances on the interior. Local quadratic is somewhat higher on the interior and much higher on the boundaries.
+* Generalization to two dimensions is basically automatic, while for smoothing splines this is much more complicated. Basic idea for local regression can simply be extended to incorporate more data directions. If you go to 3+ dimensions may get nearest neighbor type dimensionality problems.
+* Conditional plots - for higher dimensional data, can condition on other predictors and let one vary within each window, conditioning on different values for the variables.
+
+### Varying Coefficient Models
+* Coefficients conditioned on a varying factor in the model. Can condition on multiple factors like sex and depth in the aorta model.
+* Then let the diameter of the aorta vary against the age, for different conditioned values of sex and depth
+* How are they fit? Local regression gives us a way $y \sim B_0(S,D) + B_1(S,D)\times age$. For a given depth for males, could get your weighting kernel and fit a linear regression with weighting for $d_0, d_1,...$.
+* Any time you have a model and want it to change smoothly with one or more variables, we can use this mechanism - define a weighting function in terms of the that variable, then refit the overall model using these local observation weights. As long as the optimization can take observation weights, we can make any model local.

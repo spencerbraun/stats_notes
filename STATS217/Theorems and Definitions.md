@@ -201,7 +201,6 @@
 
   * In this case, the interarrival times are not exponential and they are not independent.
 
-
 ## Compound Poisson Processes
 
 * We will embellish our Poisson process by associating an independent and identically distributed (i.i.d.) random variable Yi with each arrival. By independent we mean that the Yi are independent of each other and of the Poisson process of arrivals. The sum of Y's up to time t $S(t)=Y_{1}+\cdots+Y_{N(t)}$ with $S(t) = 0$ and $N(t) =0$
@@ -232,6 +231,40 @@
 {n} \\
 {m}
 \end{array}\right)\left(\frac{s}{t}\right)^{m}\left(1-\frac{s}{t}\right)^{n-m}$. That is the conditional distribution of N(s) given $N(t) = n$ is $bin(n, s/t)$. 
+
+## Continuous Time Markov Chains
+
+* Markov property: $X_{t}, t \geq 0$ is an MC if for any $0 \leq s_{0}<s_{1} \cdots<s_{n}<s$ and possible states $i_{0}, \ldots, i_{n}, i_{n} j$, we have $P\left(X_{t+s}=j | X_{s}=i, X_{s_{n}}=i_{n}, \dots, X_{s_{0}}=i_{0}\right)=P\left(X_{t}=j | X_{0}=i\right)$
+* Transition probability: In continuous time there is no first time $ t > 0 $ so we introduce for each $t > 0$ a transition probability $p_{t}(i, j)=P\left(X_{t}=j | X_{0}=i\right)$
+	* Eg. $p_{t}(i, j)=\sum_{n=0}^{\infty} e^{-\lambda t} \frac{(\lambda t)^{n}}{n !} u^{n}(i, j)$
+* **Theorem 4.1** ((Chapman–Kolmogorov): $\sum_{k} p_{s}(i, k) p_{t}(k, j)=p_{s+t}(i, j)$
+* Jump rate: the transition probabilities $p_t$ can be determined from their derivatives at 0: $q(i, j)=\lim _{h \rightarrow 0} \frac{p_{h}(i, j)}{h} \quad \text { for } j \neq i$. If this limit exists (and it will in all the cases we consider) we will call q(i,j) the jump rate from i to j.
+* Informal Construction: Let $\lambda_{i}=\sum_{j \neq i} q(i, j)$ be the rate Xt leaves i. If Xt is in a state i with $\lambda_i =0$, then Xt stays there forever and the construction is done. If $\lambda_i > 0$, Xt stays at i for an exponentially distributed amount of time with rate $\lambda_i$, then goes to state j with probability r(i,j).
+
+### Transition Probabilities
+* Compute transition probability p from jump rates q: $Q(i, j)=\begin{cases} q(i, j) & \text{ if } j \neq i \\ -\lambda_{i} & \text { if } j=i \end{cases}$
+	* For future computations note that the off-diagonal elements $q(i,j),\; i \neq j$ are nonnegative, while the diagonal entry is a negative number chosen to make the row sum equal to 0.
+* Kolmogorov Backward Equation: $p_{t}^{\prime}=Q p_{t}$.  Forward equation: $p_{t}^{\prime}=p_{t} Q$
+* **Theorem 4.2** (Yule Process): The transition probabilities of the Yule process is given by $p_{t}(1, j)=e^{-\beta t}\left(1-e^{-\beta t}\right)^{j-1}$ for $j \geq 1$, $p_{t}(i, j)=\left(\begin{array}{l} j-1 \\ i-1 \end{array}\right)\left(e^{-\beta t}\right)^{i}\left(1-e^{-\beta t}\right)^{j-i}$
+	* In this system each individual dies at rate $\mu$ and gives birth to a new individual at rate $\lambda$. $\mu=0$ gives Yule process.
+	* That is $p_t(1,j)$ is a geom distribution with success probability $e^{-\beta t}$ and hence mean $e^{\beta t}$. We get $P\left(\exp (-\beta t) Y_{t}>x\right)=P\left(Y_{t}>x e^{\beta t}\right)=\left(1-1 / e^{\beta t}\right)^{x e^{\beta}} \rightarrow e^{-x}$ - $e^{-\beta t}$ converges to a mean one exponential. 
+* Lemma 4.3: For process Z(t) in which each individual gives birth at rate $\lambda$ and dies at rate $\mu$. The transition rates are $q(i, i+1)=\lambda i, \; q(i, i-1)=\mu i$ else 0. It is enough to consider Z(0)=1, $\frac{d}{d t} E Z(t)=(\lambda-\mu) E Z(t) \implies E_{1} Z(t)=\exp ((\lambda-\mu) t$. For generating function $F(x, t)=E x^{Z_{0}(t)}$:  $\partial F / \partial t=-(\lambda+\mu) F+\lambda F^{2}+\mu=(1-F)(\mu-\lambda F)$
+
+
+### Limiting Behavior
+* Irreducible: $X_t$ is irreducible if for any two states i and j it is possible to get from i to j in a finite number of jumps. To be precise, there is a sequence of states $k_{0}=i, k_{1}, \dots k_{n}=j $ so that $ q\left(k_{m-1}, k_{m}\right)>0$ for $1 \leq m \leq n$.
+* Lemma 4.6: If $X_t$ is irreducible, and t > 0, then $p_{t}(i, j)>0,\;\forall i,j$
+* Stationary Distribution: $\pi$ is SD if $\pi p_{t}=\pi,\;\forall t > 0$.
+* Lemma 4.7: $\pi$ is a SD if and only if $\pi Q =0$ (for $Q(i, j)=\begin{cases} q(i, j) & \text{ if } j \neq i \\ -\lambda_{i} & \text { if } j=i \end{cases}$ and $\lambda_{i}=\sum_{j \neq i} q(i, j)$ is the total rate of transitions out of i).
+	* A test for stationarity in terms of the basic data used to describe the chain, the matrix of transition rates
+* **Theorem 4.8**: If a continuous time Markov chain $X_t$ is irreducible and has a stationary distribution $\pi$, then $\lim _{t \rightarrow \infty} p_{t}(i, j)=\pi(j)$
+	* Since lemma 4.6 implies that for any h > 0, $p_h$ is irreducible and aperiodic, so we can use Theorem 1.19 to get this result
+
+### Detailed Balance Condition
+* **Theorem 4.9**: If $\pi(k) q(k, j)=\pi(j) q(j, k) \; \text { for all } j \neq k$ holds, then $\pi$ is a stationary distribution.
+	* The detailed balance condition implies that the flows of sand between each pair of sites are balanced, which then implies that the net amount of sand flowing into each vertex is 0, hence $\pi Q = 0$ 
+
+
 
 # Pinsky
 

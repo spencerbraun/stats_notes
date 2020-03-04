@@ -289,6 +289,21 @@ use gradient ascent on the input image to maximize this loss. Then the gradient 
 * Precision: how many of positive predictions are actually positive: $\frac{TP}{TP + FP}$
 * F1 Score: how do we trade off between precision and recall. Looks at TP, FP, FN boxes.  $\frac{2}{1/P + 1/R} = \frac{TP}{TP + \frac{FP + FN}{2}}$
 
+## Reading Papers and Career Advice
+### Tips for Absorbing Information from Research
+* Search web to compile a list of papers / blog posts / etc.  Skip around reading the papers, only achieving a partial understanding. Only reading the really interesting or cutting edge papers more fully. Get to know what is already outdated. 
+* After reading 5-20 papers, can get a good sense to implement something reasonable. 50-100 papers in a narrow field is near mastery of what is out there. 
+* Within one paper, make multiple passes. First looking at the title, abstract, figures. Second, read the intro, conclusion, figure captions, skim the rest, skip related work. Third, read the paper, skimming the math.
+* Questions to try to answer - what did the authors try to accomplish? What are the key elements of approach? What can you use yourself? What other references to you want to follow?
+* To understand the math, best to try to rederive the math from scratch. Same for code, could download and run open source implementations, but re-implementing from scratch helps you understand. 
+* The batch - Andrew's group publishes a newsletter
+
+### Career Advice
+* What do recruiters look for? Skills, evidence of meaningful work. Show that you can do things, learn new skills.
+* Strongest candidates have breadth of areas in ML they know about and depth in at least one area. DL reserved for specific problems, need to be able to distinguish when to use different models and skills.
+* Depth comes from meaningful project work, research, internships, etc. Better to have few deep projects than may shallow pieces of work.
+* Coursework should be a way to build foundational knowledge towards reading research and using more advanced ideas.
+
 
 
 # Coursera Modules
@@ -1498,3 +1513,122 @@ $$\begin{array}{|c|c|c|c|c|c|}
 ##### Embedding Matrix
 * Take our vocab to an embedding matrix of size 300 x 10k. The columns will be each word in the vocab. We take our one hot vectors for a word O and multiply it by the embedding matrix E: E0_{word1} = (300 x 10k) times (10k, 1) = e_{word1}. Our goal is to learn an embedding matrix E.
 * In practice, this isn't efficient way to do this. We use specialized functions instead. 
+
+##### Learning Word Embeddings
+* Have a sentence and want to predict the last word. Each word has an index in the vocab. 
+* Construct one hot vector for each word - 10k dimensional vector $O_{4343}$
+* Then take embedding matrix times one hot $np.dot(E, O_{4343}) = e_{4343}$. Perform for each word. These e are 300D embedding vectors.
+* We can feed these into a NN, to a softmax with 10k outputs corresponding to the vocab.
+* Often have a sliding window to just look at the previous, say 4, words. 
+* Parameters of the model is the matrix E and the weights of the NN layer and softmax layer. Then can just use backprop to train the NN and it learns pretty good word embeddings. 
+* Target is last word, context is last 4 words. Could experiment with other contexts - words on the left and right say, nearby 1 word, last 1 word. These are all good for learning embeddings over a language model.
+
+##### Word2Vec
+* More efficient way to learn embeddings. 
+* Skip-grams - come up with context to target pairs to create our supervised learning problem. Randomly pick a word to be a context word, randomly pick another word within some window to be the target.
+* Learn mapping from some context c to target t. Each word has a vocab index. 
+* Take one hot $O_c \rightarrow E \rightarrow e_c$, embedding for the context.
+* Then $e_c \rightarrow softmax \rightarrow \hat{y}$. Softmax: $p(t|c) = \frac{e^{\theta_t^Te_c}}{\sum_{j=1}^{10,000} \theta_t^Te_c}$, where $\theta_t$ is the parameter associated with output t. 
+* Then loss $L(\hat{y}, y) = -\sum_{i=1}^{10,000}y_i log(\hat{y_i})$. Output y hat is a 10k dimensional vector with probabilities within our vocab.
+* The problem with this model is computational speed - we are summing over our entire vocabulary embedding vectors. Often sped up through hierarchical softmax - binary classifier that creates a tree telling up if word is in first half or second half of list - tree of classifiers. We will also negative sampling helps speed this up with a different method.
+* How to sample context c? If you sample uniformly random, there are some words that appear very frequently while others are almost never selected. Doesn't help you update the embeddings for all words. So instead other samplings are used.
+
+##### Negative Sampling
+* Skip gram more efficiently. 
+* Given a pair of words, predict whether they are a context target pair. Eg positive ex is orange and juice, negative is orange and king.
+* To generate pos examples, sample nearby words from our sentence. For negative, sample one from sentence, one random word from the dictionary.
+* Create supervised learning problem, pair of words input, target is predict are they related or randomly chosen.
+* We pick the same word and for k examples of that word, we pair it up with other words. 
+* Logistic regression model $P(y=1| c,t) = \sigma(\theta_t^T e_c)$. For k negative examples, we have k:1 negative:positive example ratio. Input $O_c \rightarrow E \rightarrow e_c$ leading to 10k binary logistic regression problems, but we will only train 5 of them on a given iteration, 1 positive, k negative.
+* Sampling the negative examples: choosen something in between in proportion to word freq and uniformly at random: $p(w_i) = \frac{f(w_i)^{3/4}}{\sum_{i=i}^{10000}f(w_i)^{3/4}}$
+* As always you can download open source word vectors to get started more quickly without learning your own.
+
+##### GloVe
+* Global vectors for word representation
+* Let $x_{ij}$ = # of times the word j appears in the context of i. (i and j playing the role of t and c respectively). 
+* Symmetric relationship if we using both directions in the context (+- some number of words)
+* Minimize $\sum_{i=1}^{10,000}\sum_{j=1}^{10,000} f(x_{ij})(\theta_i^T e_j  + b_i + b_j -log x_{ij})^2$ - how related are words i and j measured by the co-occurrance. Solve using gradient descent. Weighting $f(x_{ij})=0$ if $x_{ij}=0$ to prevent log of 0.
+* Stop words - the very frequent non content words. Can use the weighting factor to modulate the weighting of stop words and infrequent words. Finally $\theta_i,e_j$ are symmetric, so $e_w^{final} = (e_w + \theta_w)/2$.
+* A nice simplification of earlier algorithms.
+* Learning the GloVe embeddings does not guarantee that the embeddings are interpretable.
+
+##### Sentiment Classification
+* Input sentence, output star rating.
+* Simple Model: Given some words, create the one hot vector, multiply by embedding matrix E (from BERT say), to get $e_{word}$. 
+* Take the e vectors, and average them (or sum) to get a 300D vector -> softmax -> yHat. Softmax gives the star rating 1-5.
+* Works for long or short reviews since we are aggregating over all the words. This works pretty well, but it ignores word order.
+* Instead, use an RNN:
+	* Take one hot vectors -> E -> embedding vecots e. Feed the embedding vectors into the RNN. Many to one - with prediction y hat the final output. Much better at taking word sequence into account.
+
+##### Debiasing Word Embeddings
+* Word embeddings reflect the biases in the text used to train the model.
+* Addressing gender bias in word embeddings - identify bias direction $e_{he} - e_{she}$ and related queries, take an average, find the bias direction in the embedding space via SVD.
+* Neutralize - for every word that is not definitional, project to get rid of bias.
+* Equalize pairs - for girl and boy, want only difference in embedding to be in the gender direction. Moves boy and girl to be equidistant from non-bias direction.
+* What words should be gender specific? Most words in the english language are not definitional - gender is unrelated to their definition. Linear classifier can tell us what words we need to correct and which we do not.
+
+### Module 3 - Sequence Models
+##### Basic Models
+* Sequence to Sequence model - say you are performing NMT. We have an input sequence x and output sequence y.
+* Encoder - RNN (GRU, LSTM), fed in the french words one at a time. Outputs some encoded vectors. Then a Decoder outputs the translated english words in a sequence
+	* Each generated word is the input to generated the next word in the decoder sequence
+* Similar architecture works for image captioning. We saw that a conv net can learn an encoding for an image at the last FC layer. This can be the encoder network and feed the FC to an RNN decoder, that captions the image with an output sequence one word at time.
+
+##### Picking Most Likely Sentence
+* NMT is like a conditional language model. We previously saw language models based on probabilities, where each output is fed back into the model to generate the next sequence.
+* Now the decoder looks like the language model previously, but it is initiated with the encoder network instead of all zeros. 
+* Instead of modeling the probability of any sentence, we model it as a conditional probability $P(y^{<1>},...,y^{<T_y>}| x^{<1>},...,x^{<T_x>})$.
+* We do not want to sample words at random order from this conditional distribution - we want to find the english sentence y that maximizes this distribution.
+* Beam search is the most common algorithm for maximizing this probability
+* Why not a greedy search? Pick first word most likely, then next and next most likely. The greedy approach does not maximize the joint probability of the sentence.
+* There are too many sentences to choose from to search through all possible sentences from your vocab. We use approximate algorithms to make this work. 
+
+##### Beam Search
+* First, it needs to pick the first word for the english translation. 
+* Given the encoder input, predict the probability of $p(y^{<1>} | x). 
+* Set beam width (say 3), evaluates three possibilities for a pick at a time. Takes three most likely possible first words and keeps track of all 3 in memory as we build the sentence.
+* Step 2: Consider what should be the second word for each choice of first word.
+* Takes encoder input, and feed $y^{<1>}$ back into the decoder to generate $y^{<2>}$. Does this for each $y^{<1>}$ kept in the first step, and maximizes the probability of the pair: $p(y^{<1>},y^{<2>} | x) = p(y^{<1>} | x)p(y^{<2>} | x, y^{<1>})$. We consider 3 times 10,000 = 30,000 possibilities for the second step, since we look at the conditional across our entire vocab.
+* At every step we have a beam width number of copies of the network.
+* Step 3: third word. For each two word fragment we have selected, we feed into the third unit of the decoder, to look at the probabilities for the third word.
+* If we set BW = 1, this becomes the greedy search algorithm, but tends to be much better if we set it higher.
+
+##### Refining Beam Search
+* Beam maxes: $\arg \max _{y} \prod_{t=1}^{T_{y}} P\left(y^{<t>} | x, y^{<1>}, \ldots, y^{<t-1>}\right)$
+* Length normalization: Multiplying many number that are less than 1 can result in tiny numbers. So in practice we take the log: $\arg \max _{y} \sum_{t=1}^{T_{y}} log P\left(y^{<t>} | x, y^{<1>}, \ldots, y^{<t-1>}\right)$. Makes for a more stable criterion.
+	* Long sentence will have smaller probabilities given that it multiplies (sums) many (log) probabilities together.
+	* So instead we can normalize the criterion by the number of words in the translation, reducing the penalty, ie $\arg \max _{y} \frac{1}{T_y}\sum_{t=1}^{T_{y}^\alpha}...$ with some alpha between 0 and 1 if we want to tune this hyperparameter.
+* Choosing beam width B? If large, improved translation but slower. In practice, B might be around 10, depending on resources. There is also diminishing returns, so moving to a massive B might not help much.
+* Beam search runs faster than BFS / DFS but not guaranteed to find an exact maximum.
+
+##### Error Analysis on Beam Search
+* We have two components to the model - the RNN encoder decoder and beam search.
+* Tempting to just increase B to make translation better. RNN computes P(y|x); most useful to compute $p(y^*|x), P(\hat{y}|x)$ for y* true translation to determine the cause of error.
+* Case 1: Beam search chose y hat, but y* achieves higher P(y|x) in RNN. Conclusion: beam search is at fault, since it isn't considering the better translation
+* Case 2: y* better translation than y hat but RNN predicted $p(y^*|x) <P(\hat{y}|x)$ - then RNN is at fault, since it is evaluating the better translation as worse.
+* For each human algorithm comparison that looks bad, compare these two conditional probabilities and assign fault, determine fraction assigned to each, and spend time improving the piece that would make the biggest differnt to error.
+
+##### BLEU Score
+* Measuring accuracy of your translation
+* So long as the NMT is close to the reference from humans, then it is a good translation.
+* Precision: Look at output words and see whether they appear in the reference. But just outputting a repeated word in the translation gives a perfect score.
+* Modified precision: Word only gets credit for max representation across reference translations. Score against the total number of words in the sentence.
+* Bleu on bigrams: Look at all possible adjacent bigrams. Can generate a count of bigram appearance in MT and a clipped count looking at the frequency in the references.
+* $P_n = \frac{\sum_{\text{n-grams in }\hat{y}} \text{Count clip}(n-gram)}{\sum_{\text{n-grams in }\hat{y}} \text{Count}(n-gram)}$
+* $P_n$ = bleu score on n-grams only. Combined bleu score is $(BP) exp(\sum_{n=1}^4 p_n)$ for BP = brevity penalty. BP = 1 if MT output length > reference output length, and $\exp \left(1-\text { reference output length } / \mathrm{MT}{-\text {output }} \text { length }\right)$ otherwise.
+
+##### Attention Model
+* With long sentences, we are asking an encoder to read the whole thing, encode it, then have the decoder pop NMT out. But it might be better to do it parts, hard to memorize the whole long sentence. With an attention model, we don't see the same drop in performance for longer sentences that we see with other architectures
+* Say we have a bidirectional RNN for NMT and we input a french sentence. Now let's take another RNN to generate the english transation S. For generating the first word, want to mostly look at the first word. So the attention model creates attention weights $\alpha^{<1,1>}$ for the first french word, $\alpha^{<1,2>}$ for the second, etc that are passed into the first decoder block. Then for the second NMT word, $s^{<2>}$ we take inputs $\alpha^{<2,1>}, \alpha^{<2,2>},...$. Feed into a context that aggregates the weights and inputs it into the unit S.
+* For $a^{<t>'} = (a^{<t>'}_{left}, a^{<t>'}_{right})$, french input in bidirectional input RNN. Attention weights satisfy $\sum_{t'}\alpha^{<1,t'>} = 1$ and $c^{<1>} = \sum_{t'}\alpha^{<1,t'>}a^{<t>'}$ for c context of step t. Note $\alpha^{<t,t'>}$ = amount of attention $y^{<t>}$ should pay to $a^{<t>}$.
+* The decoder portion looks like a standard RNN with the context vectors as input.
+* Attention weights: $\alpha^{<t, t^{\prime}>}=\frac{\exp (e^{< t, t^{\prime}>})}{\sum_{t^{\prime}=1}^{T_{x}} \exp \left(e^{<t, t^{\prime}>}\right)}$. We look at the hidden state of previous activation. 
+* This algorithm can be slow. This algorithm can be applied to image captioning and other problems beyond NMT.
+
+##### Speech Recognition
+* Given audio clip x, want to create transcript y. Often start by generating a spectrogram for the audio. In the past used phoneme, hand engineered features, now use E2E DL.
+* CTC Cost for speech recognition - allows RNN to write some characters with blanks. CTC collapses repeated characters not separated by blacks
+* Trigger word detection
+	* One option: everything before trigger set target labels to 0, then when trigger said, set target to 1.
+	* Create imbalanced dataset, so instead could make more 1's around the instant of trigger word.
+
