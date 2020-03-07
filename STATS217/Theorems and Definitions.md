@@ -1,3 +1,7 @@
+
+
+[TOC]
+
 # Theorems and Definitions
 
 # Chapter 1
@@ -250,8 +254,8 @@
 	* That is $p_t(1,j)$ is a geom distribution with success probability $e^{-\beta t}$ and hence mean $e^{\beta t}$. We get $P\left(\exp (-\beta t) Y_{t}>x\right)=P\left(Y_{t}>x e^{\beta t}\right)=\left(1-1 / e^{\beta t}\right)^{x e^{\beta}} \rightarrow e^{-x}$ - $e^{-\beta t}$ converges to a mean one exponential. 
 * Lemma 4.3: For process Z(t) in which each individual gives birth at rate $\lambda$ and dies at rate $\mu$. The transition rates are $q(i, i+1)=\lambda i, \; q(i, i-1)=\mu i$ else 0. It is enough to consider Z(0)=1, $\frac{d}{d t} E Z(t)=(\lambda-\mu) E Z(t) \implies E_{1} Z(t)=\exp ((\lambda-\mu) t$. For generating function $F(x, t)=E x^{Z_{0}(t)}$:  $\partial F / \partial t=-(\lambda+\mu) F+\lambda F^{2}+\mu=(1-F)(\mu-\lambda F)$
 
-
 ### Limiting Behavior
+
 * Irreducible: $X_t$ is irreducible if for any two states i and j it is possible to get from i to j in a finite number of jumps. To be precise, there is a sequence of states $k_{0}=i, k_{1}, \dots k_{n}=j $ so that $ q\left(k_{m-1}, k_{m}\right)>0$ for $1 \leq m \leq n$.
 * Lemma 4.6: If $X_t$ is irreducible, and t > 0, then $p_{t}(i, j)>0,\;\forall i,j$
 * Stationary Distribution: $\pi$ is SD if $\pi p_{t}=\pi,\;\forall t > 0$.
