@@ -601,3 +601,43 @@
 	* If we have observations missing at random in a dataset. We could just use the mean of the observed values for each variable, though not perfect - if we now estimate the covariance, it will be biased, variances will be too small. 
 	* For $x_i \sim N_p(\mu, \Sigma),\; i = i,...,n$, if I knew $\mu,\Sigma$, I could come up with a more educated guess for the missing values given the others. I would know the conditional distribution of the missing data given the rest. For $x = [x_{(1)} \;x_{(2)}], \; (\mu_1,\mu_2), (\Sigma_{11}, \Sigma_{12}, \Sigma_{21}, \Sigma_{22})$, the distribution $x_{(2)} | x_{(1)} \sim N(\mu_2 + \Sigma_{21}\Sigma_{11}^{-1}(x_1 - \mu_1), \Sigma_{22} - \Sigma_{21}\Sigma_{11}^{-1}\Sigma_{12})$ - can think of this as the outcome of a linear regression. If there is correlation in these variables, then this distribution informs us about the missing values.
 	* Good case for EM - pretend we know the missing data, and run EM. If $O_i$ is the indexed set of the observed values, then $X_{i, O_i} \sim N_{O_i}(\mu_{O_i}, \Sigma_{O_i, O_i})$ - distribution of the observed values of the ith observation. Get a bunch of different sized normal densities for the observed log likelihood - quite a mess. By making up values we get a full loglikelihood 
+
+## Chapter 9: GAMs
+* Intercept and a general function for each of the predictors
+* A linear model is an additive model trivially. 
+* Semi-parametric model - more interested in the parametric variables with their betas, but there are other factors we want to account for, the wrapped term
+* Then can look at plots for each of the linear functions separately, some will be in single variables, some will be packed together interaction terms wrapped in a function
+* There is a price to additivity, we ignore some interaction, can get different levels for a given pair of values. But the reduced flexibility of the additive model may reduce overfitting to the dataset.
+* Can do the same for logistic regression - any linear model can be replaced with a GAM
+
+### Fitting
+* Similar to coordinate descent, but in  block fashion: referred to as backfitting or block coordinate descent
+* Suppose we knew values of $f_2 ... f_p$ and we just needed to fit $f_1$. Then we could subtract off those values from y and be left with $f_1 + \epsilon$. Then we get $f_1(x_1)$ as a smooth residual $S_1(y- f_2 ....f_p)$. 
+* Then the smoothers are our fitting funciton - smoothing splines, lowess, etc.
+* We could start off with all functions = 0, then $f_1$ residual is just a smooth value of y.
+* Then fitting the next function, we take $f_1$ value fitted, subtract from y, and fit $f_2$. Pass through one full time to get estimates for each function. Then cycle back to $f_1$ and subtract off the estimated values of the other functions, repeat, repeat until convergence.
+* With two predictors, we alternate between them, each updated based on the last fit for the other predictor.
+* Fitting on logistic regression - outer layer of iteration corresponding to the Newton algorithm. We previously used IRLS, here we use a weighted additive model. Newton-Raphson algorithm for a penalized log-likelihood problem
+
+### Interpretation
+* Fitting a logistic additive model to spam, get the linear effects through the z-scores, non-linear effects through non-linear p values (test of non-linearity of $\hat{f}$)
+
+
+## Chapter 12: SVMs
+* Note that we know code responses in two classes as $\pm 1$, since this determine the size of the separating hyperplane
+* Building out from the maximum margin classifier; necessarily some points from each class exactly on the margin. 
+* Then can formulate the problem as $\max \; C$ st $y_i(x_i^T\beta + \beta_0) \geq C$. Now since y is in -1 or +1, it is a signed distance for each class from the margin.
+* Reformulate into the min $||\beta||$ st $y_i(x_i^T\beta + \beta_0) \geq 1$, since we are also working around the norm vector to the hyperplane. Easy transform since $C = \frac{1}{||\beta||}$
+* Maximum margin works well when p > n since then the data is always linearly separable.
+* Once you know the support points, you have everything you need to define the separating line. Then the solution coefficient $\hat{\beta}$ is defined just in terms of the support set S, the set of support points.
+* Soft margin - need to allow some errors with non-seperable data, and can prevent overfitting generally. Give yourself a budget for how much overlap you will allow, the max the margin subject to being within that budget.
+* The larger B, the more of the data that determines the orientation of the line - can then see B as a regularization parameter. Decreasing variance since relying on more of the data
+* Full SVMs: Generally, the higher the dimension, the more points sit on the margin. Using the radial basis expansion, get very good performance
+* Notice since the observations are only referenced through their inner products, can replace with a kernel / gram matrix 
+* Here the budget B determines the wiggliness of the solution in the kernel - if B is large it is less wiggly, small more wiggly
+* Just like lasso / ridge, we have a tuning parameter and we can get the svmpath cheaply, using svmpath in R. Reduces budget parameter down to 0, refitting in a piecewise fashion. At the end left with the optimal separating hyperplane. If you write the solution in the right way, you can show that adjusting the B will change the fit in a piecewise linear fashion. When a new point crosses the margin, it crosses from a support point to no longer being a support point (positive alpha to 0 alpha). This then changes the linear path.
+* SVM via loss / penalty: $\min _{\beta_{0}, \beta} \sum_{i=1}^{N}\left[1-y_{i} f\left(x_{i}\right)\right]_{+}+\lambda\|\beta\|^{2}$ - we see $\left[1-y_{i} f\left(x_{i}\right)\right]_{+}$ is 1 minus the margin. Get charged a linear loss for values less than 1, then add a ridge type penalty. The hinge loss criterion is equivalent to the SVM. 
+	* We can compare to the binomial deviance loss - like a smooth version of the hinge loss.
+	* If the data is separable, in the limit we get the same orientation of the margin - logistic regression and svm converge as lambda goes to zero.
+* If the data is separable and you want a separating hyperplane, definitely want to use SVM to get a more stable solution. If not separable, often the logistic regression is a better solution and easier to tune.
+* Logistic regression also has an edge in multiclass, has a natural extension. But SVM has more hacky ways of achieving multiclass, though Kernel Logistic Regression is more computationally heavy.

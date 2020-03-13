@@ -236,6 +236,8 @@
 {m}
 \end{array}\right)\left(\frac{s}{t}\right)^{m}\left(1-\frac{s}{t}\right)^{n-m}$. That is the conditional distribution of N(s) given $N(t) = n$ is $bin(n, s/t)$. 
 
+# Chapter 4
+
 ## Continuous Time Markov Chains
 
 * Markov property: $X_{t}, t \geq 0$ is an MC if for any $0 \leq s_{0}<s_{1} \cdots<s_{n}<s$ and possible states $i_{0}, \ldots, i_{n}, i_{n} j$, we have $P\left(X_{t+s}=j | X_{s}=i, X_{s_{n}}=i_{n}, \dots, X_{s_{0}}=i_{0}\right)=P\left(X_{t}=j | X_{0}=i\right)$
@@ -267,7 +269,25 @@
 ### Detailed Balance Condition
 * **Theorem 4.9**: If $\pi(k) q(k, j)=\pi(j) q(j, k) \; \text { for all } j \neq k$ holds, then $\pi$ is a stationary distribution.
 	* The detailed balance condition implies that the flows of sand between each pair of sites are balanced, which then implies that the net amount of sand flowing into each vertex is 0, hence $\pi Q = 0$ 
+	* Easier to check than SD but does not always hold. Always holds for birth and death chains
 
+### Exit Distributions
+* Definition: Jump chain with transition probabilities $r(i, j)=\frac{q(i, j)}{\lambda_{i}} $ where $\lambda_{i}=\sum_{j \neq i} q(i, j)$
+	* Let $V_{k}=\min \left\{t \geq 0: X_{t}=k\right\}$ be the time of the first visit to x
+	* Let $T_{k}=\min \left{t \geq 0: X_{t}=k \text { and } X_{s} \neq k \text { for some } s<t\right\}$ be the time of first return to x. Note if $X_0 = k$ then the chain stays at k for an amount of time that is exponential with rate $\lambda_k$
+* Definition: Branching process, has jump rates $q(i, i+1)=\lambda i$ and $q(i, i-1)= \mu i$. 0 is an absorbing state.
+	* For $ i \geq 0$ we have $r(i, i+1)=\frac{\lambda}{\lambda+\mu} \quad r(i, i-1)=\frac{\mu}{\lambda+\mu}$
+	* Absoption certain for $\lambda \leq \mu$. For $\lambda >  \mu$, probability of avoiding extinction is $P_{1}\left(T_{0}=\infty\right)=1-\frac{\mu}{\lambda}$
+	* Alternatively, can say $\rho=P_{1}\left(T_{0}<\infty\right)$ and for chain to leave 0, $\rho=\frac{\mu}{\lambda+\mu} \cdot 1+\frac{\lambda}{\lambda+\mu} \cdot \rho^{2}$. Solve for $\rho$ st $\mu/\lambda < 1$.
+* Definition: Let R be the portion of the Q matrix with $i,j \in C$. Then by $\sum_{j} Q(i, j) h(j)=0 \quad \text { for } i \in C$ we have $-\sum_{j \in C} R(i, j) h(j)=v(i)$ for $v(i)=\sum_{j \in A} Q(i, j),\; i \in C$. Finally then $h(i)=(-R)^{-1} v$, where $(-R)^{-1}(i, j)$ is the expected amount of time spent in state j when we start in i.
+
+### Exit Times
+* First step in continuous time: For $C = S-A$ finite, $P_i(V_A < \infty) > 0$ for each $i \in C$, $g(a) = 0$ for $a \in A$, then for $i \in C$: $g(i)=\frac{1}{\lambda_{i}}+\sum_{j \neq i} \frac{q(i, j)}{\lambda_{i}} g(j)$.
+	* By Theorem 1.29: $g(i)=E_{i} V_{A}$
+	* Alternatively, for R the part of Q with $i,j \in C$, and $g(a) = 0$ for $a \in A$, then $g=(-R)^{-1} \mathbf{1}$. Since $(-R)^{-1}(i, j)$ is the expected time spent at j when we start at i, when we multiply by $\mathbf{1}$ we sum over all j and get the exit time.
+* Exit Times and SD:
+	* $\pi(0)=\frac{1 / \lambda_{0}}{1 / \lambda_{0}+E_{1} T_{0}}$
+	* $E_{1} T_{0}=\frac{1-\pi(0)}{\lambda \pi(0)}$
 
 
 # Pinsky
