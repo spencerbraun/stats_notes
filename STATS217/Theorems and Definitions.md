@@ -145,9 +145,11 @@
 
 * Exponential Races: For $S = exp(\lambda),\; T=exp(\mu),\;S \perp T$. Then Min(S,T) has an exponential distribution with rate $\lambda + \mu$
 
+  * In order for the minimum of S and T to be larger than t, each of S and T must be larger than t
+
   * $P(\min (S, T)>t)=P(S>t, T>t)=P(S>t) P(T>t) = e^{-\lambda t} e^{-\mu t}=e^{-(\lambda+\mu) t}$
   * Who finishes first: $P(S<T)=\int_{0}^{\infty} f_{S}(s) P(T>s) d s = \frac{\lambda}{\lambda+\mu}$
-  * What is the time until both processes are done? Convert times to rates, The total service rate is $\lambda + \mu$, so the time until the first customer completes service is $exp(\lambda + \mu)$ with mean $\frac{1}{\lambda + \mu}$. Total waiting time is $\frac{1}{\lambda + \mu} + P(S <T)\frac{1}{\lambda} + P(T<S)\frac{1}{\mu}$
+  * What is the time until both processes are done? Convert times to rates, The total service rate is $\lambda + \mu$, so the time until the first customer completes service is $exp(\lambda + \mu)$ with mean $\frac{1}{\lambda + \mu}$. Total waiting time is $\frac{1}{\lambda + \mu} + P(S <T)\frac{1}{\lambda} + P(T<S)\frac{1}{\mu}$.  Another way to say this is $E \max \{S, T\} = =\frac{1}{\mu+\lambda}+\frac{\lambda}{\lambda+\mu} \cdot \frac{1}{\mu}+\frac{\mu}{\lambda+\mu} \cdot \frac{1}{\lambda}$. See example 2.1, page 97.
 
 * **Theorem 2.1**: Let $T_{i}=\text { exponential }\left(\lambda_{i}\right), 1 \leq i \leq n$ and $V=\min \left(T_{1}, \ldots, T_{n}\right)$, I be the (random) index of the $T_i$ that is smallest. Then
 
@@ -157,7 +159,7 @@
 
   3. I and V are independent
 
-  * In words: the time to first event is exponential with rate $\lambda_{1}+\cdots+\lambda_{n}$, so the mean time to first event is $\frac{1}{\lambda_{1}+\cdots+\lambda_{n}}$. $P(I=i)$ is the probability that a given part is the first to event. 
+  * In words: the **time to first event** is exponential with rate $\lambda_{1}+\cdots+\lambda_{n}$, so the mean time to first event is $\frac{1}{\lambda_{1}+\cdots+\lambda_{n}}$. $P(I=i)$ is the probability that a given part is the first to event. For time to second event / failure, see Example 2.2, Page 98.
 
 * **Theorem 2.2**: Let $\tau_{1}, \tau_{2}, \ldots$ be independent $exp (\lambda)$. The sum $T_{n}=\tau_{1}+\dots+\tau_{n}\sim \operatorname{gamma}(n, \lambda)$. That is, the density function $T_n$ is given by $f_{T_{n}}(t)=\lambda e^{-\lambda t} \cdot \frac{(\lambda t)^{n-1}}{(n-1) !} \quad \text { for } t \geq 0$, 0 otherwise.
 
@@ -179,7 +181,7 @@
 
 * Definition: Let $\tau_{1}, \tau_{2}, \ldots$ be independent $exp(\lambda)$ random variables. Let $T_{n}=\tau_{1}+\cdots+\tau_{n} \text { for } n \geq 1, T_{0}=0$ and define $N(s)=\max \left\{n: T_{n} \leq s\right\}$.
 
-  * Think of $\tau_n$ as times between arrivals of customers at the ATM, so $T_n = \tau_{1}+\dots+\tau_{n}$ is the arrival time of the nth customer and N(s) is the number of arrivals by time s. Below, N(s) = 4 when $T_{4} \leq s<T_{5}$, that is the 4th customer has arrived by time s but the 5th has not.
+  * Think of $\tau_n$ as times between arrivals of customers at the ATM, so $T_n = \tau_{1}+\dots+\tau_{n}$ is the arrival time of the nth customer and **N(s) is the number of arrivals by time s**. Below, N(s) = 4 when $T_{4} \leq s<T_{5}$, that is the 4th customer has arrived by time s but the 5th has not.
   * ![Screen Shot 2020-02-22 at 10.00.01 AM](/Users/spencerbraun/Documents/Notes/Stanford/STATS217/Screen Shot 2020-02-22 at 10.00.01 AM.png)
 
 * Lemma 2.6: $N(s)$ has a Poisson distribution with mean $\lambda s$
@@ -212,7 +214,7 @@
   1. If $E\left|Y_{i}\right|, E N<\infty$ then $E S=E N \cdot E Y_{i}$
   2. If $E Y_{i}^{2}, E N^{2}<\infty$ then $\operatorname{var}(S)=E N \operatorname{var}\left(Y_{i}\right)+\operatorname{var}(N)\left(E Y_{i}\right)^{2}$
   3. If N is Poisson($\lambda$) then  $\operatorname{var}(S)=\lambda E Y_{i}^{2}$
-     * Suppose that the number of customers at a liquor store in a day has a Poisson distribution with mean 81 and that each customer spends an average of \$8 with a standard deviation of \$6. It follows from (i) in Theorem 2.10 that the mean revenue for the day is 81 x \$8 = \$648. The variance of total revenue by iii) $81 \cdot\left\{(56)^{2}+(58)^{2}\right\}=\$ 8100$
+     * Suppose that the number of customers at a liquor store in a day has a Poisson distribution with mean 81 and that each customer spends an average of \$8 with a standard deviation of \$6. It follows from (i) in Theorem 2.10 that the mean revenue for the day is 81 x \$8 = \$648. The variance of total revenue by iii) $81 \cdot\left\{(6)^{2}+(8)^{2}\right\}=\$ 8100$
 
 ## Transformations
 
@@ -227,6 +229,8 @@
 * Taking one Poisson process and splitting it into two or more by using an i.i.d. sequence Yi is called thinning. Going in the other direction and adding up a lot of independent processes is called superposition.
 * **Theorem 2.14**: Suppose $N_{1}(t), \ldots N_{k}(t)$ are independent Poisson processes with rates $\lambda_{1}, \ldots, \lambda_{k}$ then $N_{1}(t)+\cdots+N_{k}(t)$ is a Poisson process with rate $\lambda_{1}+\dots+\lambda_{k}$. 
 	* Useful for computing the outcome of races between Poisson processes
+	* Viewing the red and green Poisson processes as being constructed by starting with one rate $\lambda + \mu$ Poisson process and flipping coins with probability $p = \lambda/(\lambda + \mu)$ to decide the color
+	
 
 ### Conditioning
 * Let $T_{1}, T_{2}, T_{3}, \ldots$ be the arrival times of a Poisson process with rate $\lambda$, let $U_{1}, U_{2}, \ldots U_{n}$ be independent and uniformly distributied on [0, t] and let $V_{1}<\ldots . V_{n}$ be the $U_i$ arranged in increasing order. 
@@ -245,11 +249,14 @@
 	* Eg. $p_{t}(i, j)=\sum_{n=0}^{\infty} e^{-\lambda t} \frac{(\lambda t)^{n}}{n !} u^{n}(i, j)$
 * **Theorem 4.1** ((Chapman–Kolmogorov): $\sum_{k} p_{s}(i, k) p_{t}(k, j)=p_{s+t}(i, j)$
 * Jump rate: the transition probabilities $p_t$ can be determined from their derivatives at 0: $q(i, j)=\lim _{h \rightarrow 0} \frac{p_{h}(i, j)}{h} \quad \text { for } j \neq i$. If this limit exists (and it will in all the cases we consider) we will call q(i,j) the jump rate from i to j.
+  * If we know the transition probability for t < $t_0$ for any $t_0$ > 0, we know it for all t
 * Informal Construction: Let $\lambda_{i}=\sum_{j \neq i} q(i, j)$ be the rate Xt leaves i. If Xt is in a state i with $\lambda_i =0$, then Xt stays there forever and the construction is done. If $\lambda_i > 0$, Xt stays at i for an exponentially distributed amount of time with rate $\lambda_i$, then goes to state j with probability r(i,j).
+  * r(i,j) is the routing matrix, the probability the chain goes to j when it leave i. $r(i, j)=q(i, j) / \lambda_{i}$
 
 ### Transition Probabilities
 * Compute transition probability p from jump rates q: $Q(i, j)=\begin{cases} q(i, j) & \text{ if } j \neq i \\ -\lambda_{i} & \text { if } j=i \end{cases}$
 	* For future computations note that the off-diagonal elements $q(i,j),\; i \neq j$ are nonnegative, while the diagonal entry is a negative number chosen to make the row sum equal to 0.
+	* If $\lambda_i=0$, X will never leave i
 * Kolmogorov Backward Equation: $p_{t}^{\prime}=Q p_{t}$.  Forward equation: $p_{t}^{\prime}=p_{t} Q$
 * **Theorem 4.2** (Yule Process): The transition probabilities of the Yule process is given by $p_{t}(1, j)=e^{-\beta t}\left(1-e^{-\beta t}\right)^{j-1}$ for $j \geq 1$, $p_{t}(i, j)=\left(\begin{array}{l} j-1 \\ i-1 \end{array}\right)\left(e^{-\beta t}\right)^{i}\left(1-e^{-\beta t}\right)^{j-i}$
 	* In this system each individual dies at rate $\mu$ and gives birth to a new individual at rate $\lambda$. $\mu=0$ gives Yule process.
