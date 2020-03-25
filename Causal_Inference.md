@@ -227,5 +227,73 @@ author: Spencer Braun
 
 ## Panel Data
 
-* 
+* Panel data estimators are designed explicitly for longitudinal data – the repeated observing of a unit over time. Repeatedly observing the same unit over time can overcome a particular kind of omitted variable bias, though not all kinds.
+* Let’s say that we have data on a column of outcomes, $Y_i$, which appear in three time periods ($Y_{i1}, Y_{i2}, Y_{i3}$). We have a matrix of covariates $D_i$ that vary over time $D_{i1}, D_{i2}, D_{i3}$. There exists a single unit-specific unobserved variable, $u_i$, which varies across units, but which does not vary over time for that unit. i. Finally there exists some unit-specific observed time-invariant variable, $X_i$.
+* $D_{i1}$ causes its own outcome $Y_{i1}$ is also correlated with the next period $D_{i2}$. Secondly, $u_i$ is correlated with all the $Y_{it}$ and $D_{it}$ variables. There is no time-varying unobserved confounder correlated with $D_{it}$ - the only confounder is $u_i$, which we call the **unobserved heterogeneity**. Past outcomes do not directly affect current outcomes (i.e., no direct edge between the $Y_{it}$ variables). Past outcomes do not directly affect current treatments (i.e., no direct edge from $Y_{i,t-1}$ to $D_{it}$). Past treatments, $D_{i,t-1}$ do not directly affect current outcomes, $Y_{it}$ (i.e., no direct edge from $D_{i,t-1}$ and $Y_{it}$).
+* Often our outcome variable depends on several factors, some of which are observed and some of which are unobserved in our data, and insofar as the unobserved variables are correlated with the treatment variable, then the treatment variable is endogenous and correlations are not estimates of a causal effect. But if these omitted variables are constant over time, then even if they are heterogeneous across units, we can use panel data estimators to consistently estimate the effect of our treatment variable on outcomes.
+* We are interested in the partial effects of variable $D_j$ in the population regression function $E\left[Y | D_{1}, D_{2}, \ldots, D_{k}, u\right]$. We typically assume that the actual cross-sectional units (e.g., individuals in a panel) are identical and independent draws from the population. Our model for a randomly drawn cross sectional unit i is $Y_{i t}=\delta D_{i t}+u_{i}+\varepsilon_{i t}, t=1,2, \ldots, T$
 
+### Pooled OLS
+
+* Ignore the panel structure and regress $Y_{i t}=\delta D_{i t}+\eta_{i t} ; t=1,2, \ldots, T$. We need assumption $E\left[\eta_{i t} | D_{i 1}, D_{i 2}, \ldots, D_{i T}\right]=E\left[\eta_{i t} | D_{i t}\right]=0 \text { for } t=1,2, \ldots, T$
+* No correlation between Dit and hit necessarily means no correlation between the unobserved ui and Dit for all t and that is just probably not a credible assumption. 
+* An additional problem is that $\eta_{it}$ is serially correlated for unit i since $u_i$ is present in each t period. And thus pooled OLS standard errors are also invalid.
+
+### Fixed Effects
+
+* If we have data on multiple time periods, we can think of ui as fixed effects to be estimated: $\left(\widehat{\delta}, \widehat{u}_{1}, \ldots, \widehat{u}_{N}\right)=\underset{b, m_{1}, \ldots, m_{N}}{\operatorname{argmin}} \sum_{i=1}^{N} \sum_{1=1}^{T}\left(Y_{i t}-D_{i t} b-m_{i}\right)^{2}$ - this amounts to including N individual dummies
+* Running a regression with the time-demeaned variables $\ddot{Y}_{i t} \equiv Y_{i t}-\bar{Y}_{i} \text { and } \ddot{D}_{i t} \equiv D_{i t}-\bar{D}$ is numerically equivalent to a regression of $Y_{it}$ on $D_{it}$. Time-demeaning eliminates the unobserved effects, so $\delta$ now consistent
+* Implementation: can choose from
+  * Demean and regress $\ddot{Y}_{it}$ on $\ddot{D}_{it}$
+  * Regress $Y_{it}$ on $D_{it}$ and unit dummies
+  * Regress $Y_{it}$ on $D_{it}$ using a fixed effect package 
+* Identifying assumptions
+  * $E\left[\varepsilon_{i t} | D_{i 1}, D_{i 2}, \ldots, D_{i T}, u_{i}\right]=0 ; t=1,2, \ldots, T$ - regressors are strictly exogenous conditional on the unobserved effect.
+  * $\operatorname{rank}\left(\sum_{t=1}^{T} E\left[\ddot{D}_{i t}^{\prime} \ddot{D}_{i t}\right]\right)=K$ - regressors must vary over time for at least some i and not be collinear
+* Fixed effects cannot address reverse causality or time-variant unobserved heterogeneity (demeaning will not change anything).
+* It’s thus the burden of the researcher to determine which type of unobserved heterogeneity problem they face.
+
+## Differences-in-Differences
+
+* DD is basically a version of panel fixed effects, but can also be used with repeated cross-sections.
+* The first difference, D1, does the simple before and after difference. This ultimately eliminates the unit specific fixed effects. Then, once those differences are made, we difference the differences (hence the name) to get the unbiased estimate of E.
+* Relies on a parallel trends assumption - T, time effect, is the same for all units. Starting from initial positions, the slope for the two units change would be equal in time except for the treatment intervention that causes their paths to diverge. 
+* PA / NJ minimum wage change difference: Let $Y_{ist}^1$ be employment at restaurant i, in state s, at time t with a high minimum wage, and let $Y_{ist}^0$ be employment at restaurant i, state s, time t with a low minimum wage. Assume $E\left[Y_{\text {ist }}^{0} | s, t\right]=\gamma_{s}+\tau_{t}$ - in the absence of a minimum wage change, employment in a state will be determined by the sum of a time-invariant state fixed effect, $\gamma_s$, that is idiosyncratic to the state, and a time effect $\tau_t$ that is common across all states.
+  * ATE given by $E\left[Y_{i s t}^{1}-Y_{i s t}^{0} | s, t\right]=\delta$ and observed employment by $Y_{i s t}=\gamma_{s}+\tau_{t}+\delta D_{s t}+\varepsilon_{i s t}$
+  * To calculate the treatment effect, compute before and after differences for each state, and then difference those differences.
+* If we want to control for other variables, can also do this through a regression framework, with something like $Y_{i t}=\alpha+\beta_{1} D_{i}+\beta_{2} P o s t_{t}+\delta(D \times P o s t)_{i t}+\tau_{t}+\sigma_{s}+\varepsilon_{s t}$, D is a dummy whether the unit is in the treatment group or not, Post is a post-treatment dummy, and the interaction is the DD coefficient of interest.
+* Parallel trends assumption tested by empiricists by looking at the trends before the treatment period - if parallel before, wouldn't they have continued on this path? Checking the parallelism of the pre-treatment trends is not equivalent to proving that the post-treatment trends would’ve evolved the same - it should just increase our confidence that our assumption might be valid. This is done by including lead terms in the regression.
+
+### Inference
+
+* Often use data with longer time periods and the outcome variables are serially correlated. Conventional standard errors often severely understate the standard deviation of the estimators
+* Potential solutions: Block bootstrapping standard errors, say sampling states with replacement for bootstrapping. Clustering standard errors at the group level. Aggregating the data into one pre and one post period - must have a single treatment date.
+
+### Threats to Validity
+
+* Non-parallel trends
+  * Often treatments are targeted towards the worst off - mean reversion may cause issues with parallel trends
+  * Selection bias is a big problem with many types of treatments and policy interventions.
+  * Correction - robustness checks are common, forms of placebo analysis. Looking at the leads, use a falsification test with an alternative control group, or falsification with outcomes that shouldn't be affected by the treatment. 
+  * Alternative control group - DDD differences in differences in differences. The logic of the DDD strategy is to use a within-city comparison group that experiences the same city-specific trends, as well as its own crime-specific trend, and use these within-city controls to net them out. This comes at a cost - more parallel trend assumptions and additivity assumptions
+* Compositional differences - DD can be applied to repeated cross-sections, as well as panel data. But one of the risks of working with the repeated cross-section is that unlike panel data (e.g., individual level panel data), repeated crosssections run the risk of compositional changes.
+* Long term effects vs reliability
+* Functional form dependendence
+
+## Synthetic Control
+
+* Synthetic controls models optimally choose a set of weights which when applied to a group of corresponding units produce an optimally estimated counterfactual to the unit that received the treatment. 
+* This counterfactual, called the “synthetic unit”, serves to outline what would have happened to the aggregate treated unit had the treatment never occurred. Generalization of DD
+* When the units of analysis are a few aggregate units, a combination of comparison units (the “synthetic control”) often does a better job of reproducing characteristics of a treated unit than using a single comparison unit alone. The comparison unit, therefore, in this method is selected to be the weighted average of all comparison units that best resemble the characteristics of the treated unit(s) in the pre-treatment period.
+* Advantages over regression based methods: control comparison within the same range as treatment data, precluding extrapolation beyond data support. Construction of the counterfactual does not require access to the post-treatment outcomes during the design phase of the study - data snooping not needed. The weights which are chosen make explicit what each unit is contributing the counterfactual, whereas regression weights are implicit. Bridges a gap between qualitative and quantitative types - choosing the counterfactuals gives power to those with detailed knowledge.
+* Let $Y_{jt}$ be the outcome of interest for unit j of J + 1 aggregate units at time t and treatment group j = 1. The synthetic control estimator models the effect of the intervention at time $T_0$ on the treatment group using a linear combination of optimally chosen units as a synthetic control. For the post-intervention period, the synthetic control estimator measures the causal effect as $Y_{1 t}-\sum_{j=2}^{J+1} w_{j}^{*} Y_{j t}$ for optimal weight vector $w_{j}^{*}$
+* Take matching variables $X_1, X_0$ that are chosen as predictors of post-intervention outcomes and are unaffected by the intervention. Weights are minimizer of the norm $||X_1 - X_0W||$ subject to $w_j \geq 0 ,\;j\in[2,J+1]$ and $\sum_j w_j = 1$
+* Since $\left\|X_{1}-X_{0} W\right\|=\sqrt{\left(X_{1}-X_{0} W\right)^{\prime} V\left(X_{1}-X_{0}\right) W}$ we are left to choose V, some symmetric, semi-definite matrix. Most people choose V that minimizes the mean squared prediction error: $\sum_{i=1}^{T_{0}}\left(Y_{1 t}-\sum_{j=2}^{I+1} w_{j}^{*}(V) Y_{j t}\right)^{2}$
+* How do we determine whether the observed difference between the two series is a statistically significant difference? 
+  * Iteratively apply the synthetic control method to each country/state in the donor pool and obtain a distribution of placebo effects
+  * Calculate the root mean squared prediction error RMSPE for each placebo for the pre-treatment period
+  * Calculate the RMSPE for each placebo for the post-treatment period
+  * Compute the ratio of the post-to-pre-treatment RMSPE. Sort ratio in descending order. 
+  * The treatment unit ratio in the distribution is p = rank / total
+  * Create a histogram of the ratios, and more or less mark the treatment group in the distribution so that the reader can see the exact p-value associated with the model.
+* Placebo robustness - rewind time from the treatment date and estimate the model on a placebo intervention date - should find no effect.
