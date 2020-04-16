@@ -58,6 +58,72 @@ author: Spencer Braun
 * Example: Parametric estimation via quadratic $\hat{m}_{t}=\hat{\alpha}+\hat{\beta} t+\hat{\gamma} t^{2}$. Objective find $(\hat{\alpha}, \hat{\beta}, \hat{\gamma}) \text { minimize } \sum_{t}\left(X_{t}-\alpha-\beta t-\gamma t^{2}\right)^{2}$
   * ACT on residuals - we have very few observations, so it looks like white noise but error bands are wide. Don't want to say white noise with confidence.
 * CI's / PI's are not valid if the residuals are not white noise. Always look for white noise first before puting our model to use.
+* Parametric gives very accurate estimates when model assumptions are correct and allows for straightforward forecasting. But selecting the correct model may be difficult and the parametric form may be unrealistic in practice
+
+##### Non-Parametric
+
+* Smoothing / filtering - estimate the trend $m_t$ by averaging in a neighborhood: $[t-q, t+q]$. The window size needs to be chosen as a tuning parameter (here q).
+* $\hat{m}_{t}=\frac{1}{2 q+1} \sum_{j=-q}^{q} x_{t+j}=\frac{1}{2 q+1} \sum_{j=-q}^{q} m_{t+j}+\frac{1}{2 q+1} \sum_{j=-q}^{s} Z_{t+j}$. When q is small then we have a very local estimate of trend, but the noise term is quite large - low bias high variance. With large q, we increase the bias but the noise term shrinks to 0. For example, if $m_t$ linear, then q can be quite large since we are estimating a constant slope - the first term is exactly equal to $m_t$ and we have no bias. Of course we could use a parametric model, but might be helpful if our trend looks piecewise linear smoothing makes some sense.
+* There are many smoothing methods - exponential weighting, polynomial weights, kernel smoothers, etc. 
+* Can decide whether to use symmetric window or only use past values - can think of forecasting financial time series, may only want a window using past values.
+* Downsides - smoothing parameters can be difficult to choose optimally, no estimates for end points, no straightforward method for predicting future values - similar to issues with working with ML algorithms like random forests.
+
+##### Isotonic Trend Estimation
+
+* Less used than either of the other methods. 
+* If expect a monotone trend, we solve a convex optimization problem. Min $\sum_{t=1}^{n}\left(X_{t}-a_{t}\right)^{2}$ st $a_{1} \leq \cdots \leq a_{n}$
+* Fitting a piecewise linear function, allow the function to choose the knots where the slopes change. The monotonic restriction can be unrealistic but perhaps for shorter time periods. Has nice theoretical properties
+* Not helpful if data is already monotone: If we are fitting to a monotonically increasing dataset, then we get back the original dataset - 0 residuals. We have not smoothed or learned anything.
+* Unclear how to produce forecasts with this method.
+
+### Differencing
+
+* When $m_t \approx$ linear, then $Y_{t}=X_{t}-X_{t-1}=m_{t}-m_{t-1}+Z_{t}-Z_{t-1}$. For higher order trends, we can difference multiple times.
+* Differencing when we want to remove a trend but do not need to estimate it.
+* Linear Example: For example for $m_t = at$ for constant a. Let $x_{t}=a t+z_{t}$, then $\Delta x_{t}=x_{t}-x_{t-1} = \left(a t+z_{t}\right)-a(t-1)-z_{t-1} = a+z_{t}-z_{t-1}$ - constant mean, no trend!
+* Quadratic Example: For $X_t = t^2$, note no noise, $\Delta X_{t}=X_{t}-X_{t-1}=t^{2}-(t-1)^{2} = 2t - 1$. There is stil trend remaining since we started with a quadratic. Instead $\Delta^{2} x_{t}=\Delta x_{t}-\Delta x_{t-1}=(2 t-1) - (2(t-1) - 1) = 2$, now no trend remaining. Continue for higher order trends and differences.
+* Generally do not know order in advance - perform multiple times, compare ACFs to see which fits dataset best.
+* In R, use `diff` for forward differencing, and `diffinv` can invert the differencing. Allows us to use differencing to estimate a model then generate un-differenced data from our model.
+* Warning: differencing too many times can introduce autocorrlations. Starting with white noise and differencing, you can introduce signficance to ACF. Need to carefully difference, look at ACF, determine if white noise, try a higher order difference, determine what order is best. 
+
+##### Prediction
+
+* We will have to reverse the differencing. Say we have $\Delta x_{t}=x_{t}-x_{t-1}$. If $\Delta X_t$ has mean c for all t, then can forecast $\hat{X}_t = c + X_{t-1}$ by inverting our differencing to return to our original scale.
+* For twice differenced $\Delta^2 X_t = \Delta\left(X_{t}-X_{t-1}\right) = X_t - 2X_{t-1} + X_{t - 2}$. If $\Delta^2 X_t$ has mean c for all t, then forecast is $\hat{X}_t = c + 2X_{t-1}  - X_{t-2}$
+* We can forecast manually in R using this formula.
+
+##### Stochastic Trend
+
+* Random walk with drift, $m_t$ is a stochastic trend function, no longer deterministic 
+* Popular model: $m_{t}=m_{t-1}+\delta+W_{t}$ 
+* Differencing also works to remove trend in this case.
+
+### Seasonality
+
+* $X_{t}=s_{t}+Z_{t}$ where $s_t$ deterministic periodic function of known period d, $s_{s+d} = s_t$. Think of montly, quarterly, weekly data
+* Fitting the model: superpositions of sin and cos terms: $s_{t}=a_{0}+\sum_{f=1}^{k}\left(a_{f} \cos (2 \pi f t / d)+b_{f} \sin (2 \pi f t / d)\right)$ with parameters $a_{0}, a_{1}, \dots, a_{k}, b_{1}, \dots, b_{k}$
+* d is the longest period, so if we have monthly data with annual trends, d would be 12. Daily data with weekly pattern, d = 7. Since we define $s_{s+d} = s_t$, it is how long we wait in the data for the pattern to repeat.
+* A small f is low frequency components, high f for high frequency. Usually start with low frequency and work upwards.
+* d defines period st d / f = period. f / d = frequency, a = amplitude. 
+* When we have sines and cosines, then period is least common multiple $\mathrm{LCM}\left(d / f_{1}, d / f_{2}\right)$. Take each individual period and take LCM. 
+* Start by thinking what is the overall d of our data. Then start with the low frequency periods, which captures the largest repeated oscillations. Then consider adding higher freq compoenents, that will capture smaller repeated hills.
+* Similar bias-variance tradeoff - how closely to we fit the high frequency components (increasing variance) or just the larger trends (higher bias)
+* Non-Parametric Seasonal Function Estimation: $s_{i}:=\text { average of } \ldots, X_{i-2 d}, X_{i-d}, X_{i}, X_{i+d}, X_{i+2 d}, \dots$. Smooth across periods separated by overall period d.
+* Seasonal differencing: $\nabla_{d} X_{t}=X_{t}-X_{t-d}=s_{t}-s_{t-d}+Z_{t}-Z_{t-d}=Z_{t}-Z_{t-d}$ - left with a mean 0 difference for all t. You will lose a full period d worth of observations in differencing.
+* Trend and seasonality: $X_{t}=m_{t}+s_{t}+Z_{t}$ where m is a deterministic trend and s is a deterministic periodic function. 
+  * Easy case is linear regression, smoothing / filtering a bit more challenging. We can also do differencing - first do seasonal differencing then do local differencing to get rid of the trend.
+* Fitting frequencies to data - start by trying to fit the lowest frequencies and work upwords. Start with say 12/1, 12/2, 12/3...
+  * In the beginning define the overall d (say 12), then work through frequencies, checking the fit using the acf. The correlogram may still look ugly and we need to correct for trend component, but hope to see seasonal cyclicality disappear from the plot.
+* Smoothing with seasonality - say for quarters, want to weight the quarters equally, but that means if we have an odd window, we are giving double weights to some quarters. So want to underweight the quarters that are double counted. Otherwise will have remaining seasonality. Say estimating trend for quarter 2 - give 1/4 to quarters 1,2,3 then give 1/8 weight to q4 from prior year and 1/8 weight to q4 from current year - now we have symmetric weighting window while giving each quarter the same amount of weight.
+
+### Variance Stabilizing Transform
+* Often dealing with heteroscedastic data - say in stock data, the variance will change if the average price changes.
+* Let $\operatorname{Var}\left(X_{t}\right)=g\left(\mu_{t}\right)$ for some known function g and mean of $X_t$, $\mu_t$. We are looking for a transformation $Y_t  = f(X_t)$ st the $Var(Y_t) = $ constant. Can be computationally difficult so tend to do a Taylor approximation
+* Using $f(X_t) \approx f\left(\mu_{t}\right)+f^{\prime}\left(\mu_{t}\right)\left(X_{t}-\mu_{t}\right)$  - note $f\left(\mu_{t}\right)$ is deterministic since f, $\mu_t$ not random and just $\left(X_{t}-\mu_{t}\right)$ is random. Then $Var(Y_t) = Var(f(X_t)) \approx\left(f^{\prime}\left(\mu_{t}\right)\right)^{2} \operatorname{Var}\left(X_{t}\right)=\left(f^{\prime}\left(\mu_{t}\right)\right)^{2} g\left(\mu_{t}\right)$
+* Goal is then to find f such that this variance approximation is constant.
+* Example: $Var(X_t) = C \mu_t$. Want $f $ such that $(f^\prime(\mu_t))^2C\mu_t = $ constant. Try $f(x) = \sqrt{x};\; (\frac{1}{2\sqrt{x}})^2Cx = \frac{C}{4}$. Another option $f(x) = 2\sqrt{x} - 1$, etc these transformations are not unique. 
+* Example: $Var(X_T) = C \mu_t^2$. Want $f $ such that $(f^\prime(\mu_t^2))^2C\mu_t^2 = $ constant. Here $f(x) = log(x)$ is a good pick: $(\frac{1}{\mu_t})^2C\mu_t^2 = C$ constant. 
+* In practice - for count data, square root transformation is widely used. When the heterskedasticity does not look to be along a linear changing mean, then try the log transform.
 
 ### Stationarity
 

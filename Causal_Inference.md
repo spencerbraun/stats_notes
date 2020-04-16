@@ -154,7 +154,7 @@ author: Spencer Braun
 
 ### Challenges to Identification
 
-* Continuity assumption can be violated if it is known in advance, agents have motivation and time to adjust. The cutoff can be endogenous in that it is correlated with variables that affect the outcomes (often age cutoffs are like this)
+* **Continuity assumption** can be violated if it is known in advance, agents have motivation and time to adjust. The cutoff can be endogenous in that it is correlated with variables that affect the outcomes (often age cutoffs are like this)
 * There are a number of tests to check the validity of RDD for your purpose
 * McCrary Density Test: check for whether units are sorting on the running variable. Assuming a continuous distribution of units, manipulation would mean that more units are showing up just on the other side of the cut off. Formally, if we assume a desirable treatment D and an assignment rule $X \geq c_0$, then if individuals sort into D by choosing X to be above cutoff, then individuals are sorting on the running variable.
   * Under the null, the density should be continuous at the cutoff point. Under the alternative hypothesis, the density should increase at the kink.

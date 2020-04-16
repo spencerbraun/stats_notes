@@ -136,3 +136,93 @@ title: Modern Applied Statistics: Data Mining
   * In high dimensional space, we really cannot just look and see whether we are fitting a signal better or noise better like we can in 2D. Instead we rely on CV.
 * With small sample size, often introduce too much bias with a validation set. Then can turn to k-fold CV.
 
+### Classification
+
+* Outcome y takes on 1 of k non-orderable values, simply names. 
+* Structural model will be quite similar to regression - partition space into regions, all observations in a region receive the same prediction. $\hat{c}(\underline{x})=\sum_{m=1}^{M} \hat{c}_{m} I\left(\underline{x} \in R_{m}\right)$
+* Score criterion: prediction risk is still the master score criterion, $E_{y \underline{x}} L(y, \hat{c}(\underline{x}))$, expected misclassification cost. The difference here is that L is a matrix, K x K, the 2,7 entry is the loss when you classify as 2 and it is really a 7. L has 0's along diagonal and off diagonal elements provide the misclassification costs. In two class problem $\begin{bmatrix} 0 & c_1 \\ c_2 & 0\end{bmatrix}$
+  * Can use misclassification error, treat all misclassifications the same. This is rarely true in real life - the costs for some misclassifications are much higher than others.
+  * Data score criterion, $\hat{r} = \frac{1}{N} \sum_{i=1}^{N} L\left(y_{i}, c\left(\underline{x}_{i}\right)\right)$ natural score criterion 
+* Search strategy - just like in regression, consider how a partition improves the prediction risk, recursive splitting + pruning.
+* Again, the critical problem is finding a good set of regions, then assigning the class is trivial.
+* For categorical X's, recall we need to use value subsets instead of split points.
+* For entire tree $\hat{r}_M = \sum_{m=1}^M \hat{p}_m \hat{r}_m$ the estimated risk is the sum over regions of the probability of being in that region p times the estimated risk for that region, gives expected loss for that tree. $\hat{p}_{m}=N_{m} / N$ and $\hat{r}_m = \frac{1}{N_{m}} \sum_{\underline{x}_{i} \in R_{m}} L\left(y_{i}, \hat{c}_{m}\right)$, which is the risk given $\underline{x} \in R_m$. 
+* Improvement then is $I(j_m, s_{jm}) = \hat{p}_{m} \hat{r}_{m}-\hat{p}_{l m} \hat{r}_{l m}-\hat{p}_{r m} \hat{r}_{r m}$. Seems like we have everything we need, but this works terribly! 
+  * If I do a split into two children, I cannot improve my prediction risk if the children have the same predicted class with 0-1 loss. 
+  * Example dataset has majority class 1's for every split, even though 3 splits could get us 0 error rate. But when looking for a first split, we cannot find a split where the children nodes will have different predictions, since class 1 is majority on both sides.
+  * Misclassification risk is not a continuous function of model parameters. We can only do combinatorial optimization, for larger trees this is intractable
+  * Each split minimizes estimated risk assuming it is the final split, does not account for better partitioning in future splits. Bad greedy strategy
+* If we use a differentiable surrogate criterion, we can still use our greedy strategy. 
+* Define the loss $\operatorname{loss}\left(y=c_{l}, c(\underline{x})=k\right) = \sum_{l=1}^{K}L_{lk}I\left(y=c_{l} | \underline{x}\right) = L_{lk}$ for when we predict k and the true class is $c_l$. 
+  * Risk (the <u>expected</u> loss) in predicting $c(x) = c_k$ when truth is $y = c_l$ is $r_k(x) = EL(y=c_l, c(x) = c_k) = \sum_{l=1}^{K} L_{lk}E I\left(y=c_{l} | \underline{x}\right) =\sum_{l=1}^{K} L_{lk}Pr\left(y=c_{l} | \underline{x}\right) $ - the expected value of an indicator of an event is its probability that the event happens. We are summing over the classes 1 through k. If I classify as class k, the loss is the sum over the classes of the $L_{lk}$ times the probability that it really is an $\ell$. If I know the probability of y taking on each of its values at x, I can compute the optimal risk - this is the **Bayes** optimal decision rule.
+* We do not know these probabilities, but we will estimate them as $\hat{p}_l(x)$. This changes our categorical problem to a interval scale problem. Then using asymptotic arguments can justify the use of our estimates. Our probabilities will be off with finite data, but our tree can still be optimal if the probability orderings, and therefore decision boundaries, are the same.
+* We redefine our population score criterion: $E_{y \underline{x}} L\left(y, c(\underline{x})) \leftarrow E_{y \underline{x}} J\left(y,\left\{\hat{p}_{k}(\underline{x})\}_1^k\right.\right.\right.)$. Now we need an empirical score criterion that is differentiable and matches this expectation 
+* Squared error loss is a candidate, where we estimate k numeric target functions, one for each class. Estimating the probability of each class at each value of x. We now have k variables we are trying to predict that are numeric, instead of 1 variable to predict that has k distinct values. We are using the probabilities as a device to do a minimum risk classification, but often the probabilities themselves are useful.
+* Given a region, we simply estimate the probabilities by counting the number of observations in each class in the region: $\hat{p}_{km} = \frac{N_{km}}{N_m}$. However we do not just classify to the highest probability - the loss also depends on $L_{lk}$ for each comparison of class, if some misclassification are much more costly, we still might predict a lower probability class. 
+* When we plug in, the squared error risk reduces to $\frac{N_{m}}{N} \sum_{k=1}^{K} \hat{p}_{km}\left(1-\hat{p}_{k m}\right)$, which is the Gini index of diversity.
+  * Max diversity (min purity) when all classes equally probable, $G = 1 - \frac{1}{k}$.
+  * Min diversity (max purity) when all 1 class, $G = 0$
+* If the node is pure, it contributes nothing to the risk of the tree. If the node is not pure, it contributes a positive amount to the risk. Therefore our objective becomes making pure nodes. The improvement from a split becomes $\hat{I}_m(j , s_{jm}) = \hat{e}_{m}-\hat{e}_{m l}-\hat{e}_{mr} = \hat{P}\left(\underline{x} \in R_{m}\right) \text { Gini }\left(R_{m}\right) - \hat{P}\left(\underline{x} \in R_{m}^{(\ell)}\right) \text { Gini }\left(R_{m}^{(\ell)}\right) - \hat{P}\left(\underline{x} \in R_{m}^{(r)}\right) \text { Gini }\left(R_{m}^{(r)}\right)$
+* This is differentiable - we are no longer trying to classify better, we are trying to purify. Splits that improve the confidence of your classification will be made, even if it does nothing to improve the misclassification error.
+* Entropy: $H=-\sum_{k=1}^{K} P_k \log p_{k}$ also a fine criterion / purity measure, similar to Gini.
+
+### Tree Advantages
+
+* Relatively fast, can use all types of predictor variables - numeric, binary, categorical, missing values
+* Invariant under monotone transforms of the predictor variables - building a piecewise constant model so order matters but scale does not.
+  * Thus we do not have the issue of choosing transformations, simplifying the search process (eg in regression, we can make a <u>lot</u> of transformations)
+  * Immunity to outliers in predictors. As long as the observations remain in the same order, the decision boundary is the same. Especially important for outliers that are typical in a single predictor dimension but are odd in 2 predictor dimensions or more - we cannot see them and we do not have to worry when using trees
+  * Scales are irrelevant, allowing us to pull in data from different sources without worrying about rescaling
+* Note we are not talking about outliers / transformation in y - those can matter since that determines the predicted value assigned
+* Resistence to noise variables - we saw lasso, SVM etc degrade with high number of noise variables. Trees really do not require variable selection - the tree itself tells you what is important. Bet on sparsity principle: “Use a procedure that does well in sparse problems, since no procedure does well in dense problems.” Some people use trees for variable selection and place those into another model 
+* Few tunable parameters - essentially off the shelf. Interpretable model representation. 
+* No problems with highly correlated variables. The identifiability problem. The tree will just pick one a move on, so may hurt interpretation a bit but the predictive model should be fine.
+
+### Tree Disadvantages
+
+* Inaccuracy - piecewise constant approximation can lead to big bias.  Think of the linear target function, requires many splits to get arbitrarily close, but in practice you do not get that many splits on each variable. So piecewise constant functions do not always map well to the target - more bias.
+* Hyper rectangular regions - oscillating overshooting and undershooting a linear function - bias issue
+* Data fragmentation - each split reduced the training data in a subregion. Run out of data pretty quickly. Cannot model local dependency on more than a few variables, not good for target functions that have dependencies on many variables. Again another bias problem.
+* Variance problems - we have to find a function in our function class and to do that we use data. Trees have very high variance caused by its greedy search strategy that results in a local optimum. $\hat{f}(x) = c\prod I(x_{j(l)} \in s_{jl})$ - we are multiplying our errors, causing the to get much larger!  Small changes in data cause big changes in the tree - unstable, high variance, high error.
+* Look to bagging, boosting, and MARS to solve these issues.
+
+## Chapter 8: Model Inference and Averaging
+
+### Bagging
+
+* Goal: improve performance of unstable procedures by stabilizing them. Ie, high variance procedures with multiple optima
+* Given a convex criterion, our sample may have different minima. We get a distribution of solutions over samples, and this is our variance. Suppose instead we have a non-convex multiple minima criterion - this is our situation with trees, NNs. The solution we end up in will depend on where we start, which is not true in our convex case.  Procedures that are convex in their parameters are much more stable than those that are not. 
+*  We have some $\hat{F}(x) = argmin \frac{1}{N} \sum_{i=1}^{N} L\left(y_{i}, F(\underline{x}_i)\right)$. Unstable procedure - small change in training data, big change in F hat.
+* Bagging repeatedly makes small changes in data and averages the results. The average should be much more stable
+* Now have $\hat{F}_b(x)$ for each iteration of our model fit to perturbed data. Then our bagged estimate is $\hat{F}_{B}(\underline{x})=\frac{1}{B} \sum_{b=1}^{B} \hat{F}_{b}(\underline{x})$. Typically we do a bootstrap sampling procedure to get perturbed data, but the procedure is not especially important.
+* Here we aren't using the bootstrap for its original purpose of estimating population parameters. Just a convenient way to shake up the data, so other procedures could be just as effective. Dropout for NN's is equivalent to bagging - sampling from your parameters, averaging many solutions as the training goes along. We don't bag NNs since they take so long to train, use a concurrent regularization while training instead.
+* Notice I have not changed my function space - bagging is pulling functions out of the same class. We do not reduce bias then, only change the variance. Why then not make the function class as big as we can, if we can reduce the variance with bagging? No reason - we do increase our function class and throw out pruning our pre-bagged trees!
+
+### Random Forests
+
+* Bagged trees where we randomize the available predictors to split over for a given tree fit. 
+* Typically restrict to $\sqrt{p}$ where p is the number of predictors. Not especially chosen for theory but helps with computation.
+* Increasing the randomization increases our variance control, but we pay with some bias.
+* Bootstrap samples have a bias variance tradeoff - fitting on a portion of the dataset available introduces bias but we gain more from variance reduction. Fitting on the whole dataset lowers bias but we cannot control the variance.
+* Work much better for classification than regression. This is true for trees in general, since classification is almost a piecewise constant function anyway.
+
+## Chapter 10: Boosting and Additive Trees
+
+### Boosting
+
+* You can boost any procedure, but trees are especially improved by boosting. 
+* Let $\left\{y_{i}, z_{i}\right\}_{1}^{N}$ be our outcome and predictor variables, $\hat{F}(\underline{z})=\operatorname{argmin}_{1} S\left(\left\{y_{i}, F\left(\underline{z}_{i}\right)\right\}_{1}^{N}\right)$ is our function approx in a function class, and S is our score criterion
+* For trees, $F(z)=T(z)=\sum_{m=1}^{M} c_{m} I\left(z \in R_{m}\right)$. Then our boosted model is $F(z)=\sum_{j=1}^{J} a_{j} T_{j}(\underline{z})$, a linear model where we are finding the weights $a$ for each tree - it is a linear regression problem. This thing that defines our function in this space are the coefficients - we are considering all possible trees in our tree class (in principle). 
+* We are not expanding our tree class like in bagging, we are weighting the models in our given class.
+* Then our population optimization is $\left\{ a_{j}^{*}\right\}_{1}^{M}=\underset{\left\{a_{j}\right\}_{1}^{M}}{\operatorname{argmin}} E_{yz} L(y, \sum_{j=1}^{J} a_{j} T_{j}(\underline{z}))$ and on our training data approximated by $\hat{F}(\underline{z})=\arg \min _{\left\{ a_{j}\right\}_{1}^{M}} \frac{1}{N} \sum_{i=1}^{N} L\left(y_{i}, \sum_{j=1}^{J} a_{j} T_{j}\left(\underline{z}_{i}\right)\right)$
+* Treat trees as fixed, weights are the parameters to solve for. So we can let $X_j = T_j(z),\; X_{ij} = T_j(z_i) \implies F(\underline{x} ;\{a_{j}^{*}\}_{1}^{J})=\sum_{j=1}^{n} a_{j}^{*} x_{j}$. 
+* This parameter space is way too large - need to regularize to solve this optimization. We are essentially fitting a regularized linear regression. If N >> n, we will end up with a high variance answer - $\hat{R}$ is random and the optimization $\hat{\mathbf{a}}=\arg \min _{\mathbf{a}} \hat{R}(\mathbf{a})$ will vary widely.
+* $\hat{R}(\mathbf{a})=\frac{1}{N} \sum_{i=1}^{N} L\left(y_{i}, a_{0}+\sum_{j=1}^{n} a_{j} x_{i j}\right)$ is the average loss over the data - empirical risk. With regularization we minimize this with a constraint $P(\mathrm{a}) \leq t$. Note $t \geq P(\hat{\mathbf{a}})$ imposes no constraint and max variance, t = 0 is max constraint and we have max bias (all coefs are 0)
+*  Define equivalent optimization problem $\hat{\mathbf{a}}(\lambda)=\arg \min _{\mathbf{a}}[\hat{R}(\mathbf{a})+\lambda \cdot P(\mathbf{a})]$. For a given data set, we have a fixed risk for a set of coefficients and the solution will change only with lambda. Given this set up, our set of possible solutions follows a 1 dimensional path $\in S^{n+1}$. We can then examine solutions along the path to find the best point - the one that minimizes the prediction risk.
+* We cannot find the solution in the entire space of $a$, but our path restriction makes this problem tractable. This is different from a Lasso for example.
+* If we were optimizing on finite data, lambda would be 0 - we obviously need to use CV. Construct the path using a subset of the data and use the left out data to approximate the predicted risk along the path.
+* Make a grid of lambda values. For each lambda value we will solve our optimization problem. That gives us a set of coefficients, and we use the model given these coefficients to predict the left out data. That's how we choose lambda, but we still need a penalty function p 
+* We say $a^* = $ point in $S^{n+1}$. Different penalties will produce different paths in $a$ space. Want to use the penalty that brings us closest to the actual optimal solution target point. We then need to know something about the properties of the true solution. What is this property? Sparsity
+* Sparsity: the fraction of non-influential variables. Even if we have measured 10k variables, assume only a few are actually influencing the outcome. We don't know which but we assume our solutions are sparse. In the case of trees, we pretty much need to assume sparse solutions - there are very few tress in our huge function class that will have good predictions on our outcome. Bet of sparsity principle.
+* Choose $P(a)$ that induces sparse paths - one that hugs one of the axes in $a$ space (say a has two dimensions). Keeps one axis near 0 and allows the other to have large influence. In higher space, hugs all axes but a few.
+* Power family: $P_{\gamma}(\mathbf{a})=\sum_{j=1}^{n}\left|a_{j}\right|^{\gamma}$ indexed by gamma. This is quite familiar, $\gamma \in (2,1,0)$ produces ridge, lasso, and subset respectively going from densest to most sparse.
