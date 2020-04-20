@@ -53,6 +53,17 @@
 * Low hanging fruit in the outcomes that are bad in the short term and good in the long run. If you can run a long term experiment, can show their effectiveness outside of the standard A/B framework. Up to the firm to provide incentives / rewards for capturing this value.
 * Peer review for experimental design - making sure that the team running it has value alignment and metrics that are not gamed. 
 
+### Recommendation Systems
+
+* Netflix challenge - the utility matrix was sparse but entries missing for different reasons. If a movie just added, or some movies are never recommended, user wouldnt have had the chance to rate it. Decision to be made about how to treat missing values; setting dependent. In some settings not rated may be a negative rating, while in other settings empty cells are truly no interaction between user and item.
+* We may have observable information about the items - the meta data of actors in a movie or genre etc. In S2M we will have the text of the story. Sometimes there is no additional benefit to having this data, we may instead strictly prefer user inputs.
+* ML focused on prediction but some approaches also have interpretability. Sparse matrix approaches have real advantages over treating this with typical classification algos
+* Article on EM algo - the text, item properties, point towards statistics researchers would be interested. From users who interacted with the article, we see vision researchers also like this article. Using latent dirichlet allocation to perform dimensionality reduction and assign topic interests to clusters.
+* Might make sense to model topics on their own, outside of the user context. Creates defined contexts, user churn can confuse how items are related. In a more stable context, could more easily build in the user choices.
+* Rec system could generate just predictions, but may want a bigger model with probabilistic predictions instead - important for S2M since we are running an experiment - need a prediction of how big the treatment effect should be.
+* Typically assume pure additivity, no interaction models - too computationally expensive to consider combinations. Consider each item separately, not designing sets of recommendations.
+*  Jaccard / cosine can be applied to item-item similarity (eg. text similarity via bigrams) but also user/item rating comparisons. Each item has a rating vector, so we can get an item-item similarity matrix from user ratings. In either case we can get an item-item similarity matrix for the recommendation step. Then to predict for a given user and test item, take a weighted average of their ratings for other items times the similarity of those items to the test item.
+
 ## The Power of Experiments
 
 ### Chapter 4: Experimentation Considerations
@@ -108,4 +119,38 @@
 
 ## Project Notes
 
-* 
+### Recommendation Systems - Mining Massive Datasets Chapter 9
+
+* Content-based systems examine properties of the items recommended. Collaborative filtering systems recommend items based on similarity measures between users and/or items.
+* Utility matrix, gives for each user-item pair, a value that represents what is known about the degree of preference of that user for that item. The goal of a recommendation system is to predict the blanks in the utility matrix. It is only necessary to discover some entries in each row that are likely to be high. In most applications, the recommendation system does not offer users a ranking of all items, but rather suggests a few that the user should value highly.
+* The long tail phenomenon: forces on-line institutions to recommend items to individual users. It is not possible to present all available items to the user, the way physical institutions can. Neither can we expect users to have heard of each of the items they might like.
+* Utility matrix needs to be populated. Can ask users to rate items, but generally they are unwilling to rate many things. We can make inferences from their behavior - sort of a binary rating of engaging / buying product or not, but could scale with level of engagement (eg. viewing but not buying).
+
+##### Content Matrix Methods
+
+* In a content-based system, we must construct for each item a profile, which is a record or collection of records representing important characteristics of that item. Some will be boolean values and other real-valued, can still take cosine distance but might need some scaling so real valued do not dominate.
+* Documents present special problems. First, eliminate stop words – the several hundred most common words, which tend to say little about the topic of a document. For the remaining words, compute the TF.IDF score for each word in the document. The ones with the highest scores are the words that characterize the document. 
+  * To measure the similarity of two documents, there are several natural distance measures we can use: Jaccard or Cosine. For cosine, think of the sets of high TF.IDF words as a vector, with one component for each possible word. The vector has 1 if the word is in the set and 0 if not. 
+* We also need vectors describing user preferences from the utility matrix. If the utility matrix is not Boolean, e.g., ratings 1–5, then we can weight the vectors representing the profiles of items by the utility value, normalizing by subtracting off the mean value. 
+* With profile vectors for both users and items, we can estimate the degree to which a user would prefer an item by computing the cosine distance between the user’s and item’s vectors. The random-hyperplane and locality-sensitive-hashing techniques can be used to place (just) item profiles in buckets. 
+
+##### Content Classification Algorithms
+
+* A completely different approach to a recommendation system using item profiles and utility matrices is to treat the problem as one of machine learning - for each user, build a classifier that predicts the rating of all items.
+* Unfortunately, classifiers of all types tend to take a long time to construct. For instance, if we wish to use decision trees, we need one tree per user.
+
+##### Collaborative Filtering
+
+* In place of the item-profile vector for an item, we use its column in the utility matrix. Instead of contriving a profile vector for users, we represent them by their rows in the utility matrix. Users are similar if their vectors are close according to some distance measure such as Jaccard or cosine distance. Recommendation for a user U is then made by looking at the users that are most similar to U in this sense, and recommending items that these users like.
+* A larger (positive) cosine implies a smaller angle and therefore a smaller distance. Jaccard similarity  = IOU
+* Distance measures across low and high ratings can cause some confusion in the metrics. Just treating high ratings as rated help clear up Jaccard and cosine confusion.
+* If we normalize ratings, by subtracting from each rating the average rating of that user, we turn low ratings into negative numbers and high ratings into positive numbers. If we then take the cosine distance, we find that users with opposite views of the movies they viewed in common will have vectors in almost opposite directions, and can be considered as far apart as possible.
+* The utility matrix can be viewed as telling us about users or about items, or both. There are two ways in which the symmetry is broken in practice: (1) We can base our recommendation on the decisions made by these similar users (2) it is easier to discover items that are similar because they belong to the same genre, than it is to detect that two users are similar because they prefer one genre in common, while each also likes some genres that the other doesn’t care for.
+* Dually, we can use item similarity to estimate the entry for user U and item I. Find the m items most similar to I, for some m, and take the average rating, among the m items, of the ratings that U has given. As for user-user similarity, we consider only those items among the m that U has rated, and it is probably wise to normalize item ratings first. If we find similar users, then we only have to do the process once for user U. On the other hand, item-item similarity often provides more reliable information.
+* Clustering - items or users. Our utility matrix is usually too sparse to use outright. Iteratively can slowly cluster items then users then repeat to reduce matrix. To predict for user U and item I, find their cluster, take that entry or use a filling method to approximate it.
+
+##### Dimensionality Reduction
+
+* Conjecture that the utility matrix is actually the product of two long, thin matrices. Makes sense if there are a relatively small set of features of items and users that determine the reaction of most users to most items.
+* UV-decomposition:  from M (n x m) construct U (n x d) and V (d x m) st UV approximates M in those entries where M is nonblank. Closeness often measured by RMSE - summing nonblank M entries, taking square of entry-wise difference between M and UV
+  * Computed incrementally - start with random initialized UV and move stochastically towards a minimum via grad descent. 
