@@ -4,6 +4,17 @@
 
 
 
+## The Deconfounded Recommender: A Causal Inference Approach to Recommendation. Wang, Liang, Charlin, Blei.
+
+* A causal approach to recommendation, one where watching a movie is a “treatment” and a user’s rating is an “outcome.” The problem is there may be unobserved confounders, variables that affect both which movies the users watch and how they rate them.
+* Frame the recommendation problem as an intervention: how would you rate this movie if forced to watch it. The traditional approach would only work under randomized movie watching and rating. There are many confounders - can think of a director the user likes as a confounder.
+* Deconfounded recommender: we have two data streams what movies were watched and how they were rated by a user. The *exposure* data comes from a model by which users discover movies to watch; the *ratings* data comes from a model by which users decide which movies they like. The ratings data entangles this information. 
+* The decounded recommender tries to correct the bias: uses the exposure data to estimate a model of which movies each user is likely to consider then uses this exposure model to estimate a substitute for the unobserved confounders. Then it fits a ratings model (e.g., matrix factorization) that accounts for the substitute confounders
+* Matrix factorization as potential outcomes: for user u and movie i, with potential outcomes $\left(y_{u i}(0), y_{u i}(1)\right)$ for unseen and seen movies. We can separate movie ratings into a binary watched dataset and a numerical rating set. The system predicts each user’s ratings for their unseen movies and uses these estimates to suggest movies to each user - ie. prediction under intervention, what would you rate if forced to watch movie i.
+* Adjusting for confounders: the prior approach assumed ignorability of confounders, which seems unlikely to hold. We need to control for confounders $w_{u}$ st $\left\{\boldsymbol{y}_{u}(0), \boldsymbol{y}_{u}(1)\right\} \perp \boldsymbol{a}_{u} | w_{u}$. This requires strong ignorability, controlling for all confounders. Not testable.
+* Deconfounded approach: employes multiple causal inference since multiple treatments. Each binary movie exposure is a treatment so $I$ treatments, and I-vector outcome of seen or unseen per user. Fit Poisson factorization model to the exposure data since works well with binary data fit with coordinate ascent. With a fitted PF model, the deconfounded recommender computes a substitute for unobserved confounders. To form recommendations, calculates all potential ratings from model and orders the unseen movie potential ratings.
+* Focusing on PF as the exposure model, we can also use other outcome models, e.g. Poisson matrix factorization and weighted matrix factorization
+
 ## Estimation Considerations in Contextual Bandits. Dimakopoulou, Zhou, Athey, Imbens
 
 * We develop parametric and non-parametric contextual bandits that integrate balancing methods from the causal inference literature in their estimation to make it less prone to problems of estimation bias. Our methods aim to balance covariates between treatment groups and achieve contextual bandit designs which are less prone to problems of bias. We establish theoretical guarantees of BLTS and BLUCB that are comparable to LinTS and LinUCB.
