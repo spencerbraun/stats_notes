@@ -287,7 +287,7 @@ title: Modern Applied Statistics: Data Mining
   * Add base learner to the expansion and give it coefficient $\hat{a}_k = \Delta \nu$
   * Repeat until we decide to stop.
 
-### Boosting Trees
+### Boosting Regression Trees
 
 * Our base learner function class restricted to all M terminal node trees. Now $b = \{c_m\}_1^N$ and split variables or subsets defining regions $\{R_m\}_1^M$
 * At each boosting step, find the region set and region assignments (c's) that best predicts the generalized residual by squared error loss. This is a least square regression tree problem, which we solved previously with an approximate CART greedy top down approach. We will use this procedure again, except instead of best predicting the outcome we are predicting the generalized residual - simply treated as an outcome.
@@ -303,3 +303,23 @@ title: Modern Applied Statistics: Data Mining
 * Now CART returns the regions as fit to the GR. In each region separately, we find the update that minimizes the risk for that region. We find the best constant in each terminal node to add to the current prediction that reduces the risk the most.
 * We have to decide when to stop, otherwise will perfectly fit the training data eventually. At every step, use the tree we have so far, predict on the test set to get the test error. We trace a test error curve and can then pick the model that minimizes the test error. (Originally thought it couldn't overfit, because mostly used for classification and misclassification risk is so crude that changes to the model did little to the error rate. But look at the estimated probabilities instead of predicted classes and we would see overfitting.)
 * We can see boosting is taking an output of a not very good model, operating on the output instead of the internals of the model to make it more powerful.
+* Each tree is a sum $\sum_{m=1}^{M} c_{m} I\left(\underline{x} \in \mathbb{R}_{m}\right)$ and we want to find a coefficient to multiply this tree by $\alpha$ to scale it in the model. But because of the specific tree structure, a linear combination, we can say $a_m = \alpha c_m$ and optimize directly the combined coefficient. 
+* Want to make learning rate as small as possible, paying the price of many more trees as the learning rate declines. Will have a sequence of many similar trees. Learning rate typically not cross validated. The final result is a boosted piecewise constant, and the smaller the learning rate, the smoother the approximation. 
+* Two biggest points: If we define the generalized residual as $\ell(y ,F)=-\frac{\partial L(y, F)}{\partial F}$, when we build the tree, we **pick regions** $\{R_m\}_1^M = CART(\{\ell(y_i, F_i)\}, x_i)$, keeping just the regions and not caring about the constants predicted, since these are residual predictions. Then within each region, the **update** is given by $\sum_{x_{i} \in R_{m}} \ell\left(y_{1}, F_{i}+a_{m}\right)=0$ - the reason for this is that the constant update that minimizes the risk in a region is the same as setting its derivative to 0. 
+
+##### Generalizing Loss Functions
+* Instead of squared error loss, could use absolute loss. Since the minimizer is the median of y given x, it is absolutely robust against outliers in y. Trees themselves are already immune to outliers in x so MART with median is totally immune to outliers in predictors and response. This is quite useful for data mining, early portions when you might not have discovered everything about your dataset.
+* The generalized residual is the $l_{i}=\tilde{y}_{i}=\operatorname{sign}\left(y_{i}-F_{m-1}\left(\underline{x}_{i}\right)\right)$ - so as long as we haven't changed the sign of the residual the solution won't change.
+* However, if your residuals are well behaved, say an additive error model $y = F^*(x) + \varepsilon,\; \varepsilon \sim N(0, \sigma^2)$ the squared error loss is simply the best you can do. Using absolute value loss will incur error - 60% efficiency. But if you don't have this, fatter tails, exponential loss, etc, then absolute loss can be quite a bit better.
+* Huber M-Loss: $L(y, F)=M(y, F)=\left\{\begin{array}{ll}
+  1 / 2(y-F)^{2} & |y-F| \leq \delta \\
+  \delta(| y-F|-\delta / 2) & |y-F|>\delta
+  \end{array}\right.$ where $\delta$ is a trimming factor defining outliers. Squared error loss is more sensitive to very extreme positions (look at its slope) which is the opposite of what we want. Instead Huber takes a convex loss for small residuals and absolute loss for large residuals. This is a very good loss for regression to get the best of both worlds. To determine $\delta$, could look at sorted residuals and see where you might want to cut off, but boosting will change the distribution of the residuals at each step. Better to make it proportional to residuals, need to adjust along the way. 
+
+### Boosting Classification Trees
+
+* Let $d_k = I(y = c_k)$ - dummy indicator variable for y in a given class. We ar egoing to try to predict the probabilities that y takes on each class value for a given x, just as we did for single trees.
+* Then the prediction risk is the sum of class pair-specific losses times the estimated probabilities, this is what we minimize
+* So we let $d=\left\{d_{k}\right\}_{1}^{K}$, indicators of being in each class, and the Gini criterion could be a loss we use such that $L(d, p)=\sum_{k=1}^{K}\left(d_{k}-\hat{p}_{k}(x)\right)^{2}$ - we use this in CART because of rapid computation. But in boosting we can use any loss (the tree will use squared error)
+* Let $d_k \in \{0,1\}$ a multinomial RV - then we use negative multinomial log likelihood (just like when we have a binomial outcome). $L(\underline{d}, \hat{\underline{p}}(\underline{x}))=-\sum_{k=1}^{K} d_k \log \hat{p}_{k}(\underline{x})$. This is nice, but must have probabilities between 0 and 1 and the probabilities need to sum to 1 - not going to easy in a tree expansion.
+* Instead, express each probability as a ratio of some function $F_k$ for each class - these can take on any value and we ensure that the ratio sums to one across all probabilities: $\hat{p}_k(x) = exp(F_k(x)) / \sum_{l=1}^Kexp(F_l(x))$
