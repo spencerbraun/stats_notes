@@ -151,7 +151,7 @@ author: Spencer Braun
 
 * MA(1) = $X_{t}=Z_{t}+\theta Z_{t-1}$ for Z white noise. We are modeling using noise plus past noise.
 * This is a weakly stationary process: Given a white noise process $Z_t,\; Var(Z_t = \sigma^2),\; \theta \in \R$. Set $X_{t}=Z_{t}+\theta Z_{t-1}$. Then $E(X_t) = 0,\; Var(X_t) =\sigma^2 + \theta^2\sigma^2$. Looking at covariance, $Cov(X_t, X_{t-1}) = Cov(Z_t+ \theta Z_{t-1}, Z_{t-1} + \theta Z_{t-2}) = \theta \sigma^2 \neq 0 $ but for longer lags $Cov(X_t, X_{t-j}) = 0 $ for $j > 1$.
-* Generally a MA(q) process = $X_{t}=Z_{t}+\theta_{1} Z_{t-1}+\theta_{2} Z_{t-2}+\ldots+\theta_{q} Z_{t-q}$ for non zero $\theta$ parameters. $X_t$ is a linear combination of white noise contributions (not a real average, just a linear model).
+* Generally a MA(q) process = $X_{t}=Z_{t}+\theta_{1} Z_{t-1}+\theta_{2} Z_{t-2}+\ldots+\theta_{q} Z_{t-q}$ for non zero $\theta$ parameters. $X_t$ is a linear combination of white noise contributions (not a real average, just a linear model). Every MA(q) model is weakly stationary.
 * The autocovariance given by $\gamma_{X}(h)=\sigma^{2} \sum_{j=0}^{q-h} \theta_{j} \theta_{j+h}$ if $h=0,1, \ldots, q$ and 0 beyond lag q. The influence of lags cuts off at q. There is no t in this formula, so we have weak stationarity - covariance independent of time period.
 * Looking at the autocorrelation function, for a lag larger than the order of the process it should have zero influence on $X_t$. We should look for this pattern in data - significant lags back to a certain q, then drop off to 0. This will be opposed to an AR process that exhibits exponential decay in the lags, without a single drop off lag value.
 * Backshifting $BX_t = X_{t-1}$, so an MA(q) is equivalently written as $X_t = \theta(B) Z_t$ for $\theta(B)=1+\theta_{1} B+\ldots \theta_{q} B^{q}$. We are building towards a polynomial times a white noise term, allowing us to say more about the MA process.
@@ -187,6 +187,7 @@ author: Spencer Braun
 * We have seen this process before, and it is simply an AR(1) model. In other words, we can use a MA process to encode AR processes and we can go back and forth. They are two notations for equal models.
 
 ### Autoregressive Models
+* AR(p) model is of form $X_{t}=Z_{t}+\phi_{1} X_{t-1}+\phi_{2} X_{t-2}+\ldots+\phi_{p} X_{t-p}$
 * Working from the infinite MA process, we can define the autocovariance and autocorrelation
 * Autocovariance: $\gamma(h) = \sigma^2\sum_{j=0}^\infty \theta_k \theta_{j+h} = \sigma^2 \sum_{j=0} \phi^j \phi^{j+h} = \sigma^2 \phi^h \sum_{j=0}^\infty \phi^{2j}$. This is a geometric series, so we can rewrite as $ \sigma^2 \phi^h \sum_{j=0}^\infty (\phi^{2})^j = \sigma^2\phi^h \frac{1}{1-\phi^2}$
 * Autocorrelation: $\phi(h) / \phi(0) = \phi^h$
@@ -196,10 +197,57 @@ author: Spencer Braun
 	* $X_t$ is a linear combination of past values plus white noise. Clearly this will be useful for predictions, since this form directly gives us a formula for predicting future values.
 * Autoregressive operator: $\phi(B)=1-\phi_{1} B-\ldots \phi_{p} B^{P}$. 
 	* Recall for the MA process, we had $X_t = \theta(B)Z_t$. Here we have the opposite: $\phi(B) X_{t}=Z_{t}$ for white noise Z
-* Unique stationary solution: For some white noise process Z and fixed parameter $|\phi| \neq 1$ there exists exatly one time series process X with mean zero which is stationary that solves the difference equation $X_{t}-\phi X_{t-1}=Z_{t}$. The solution is given by $X_{t}=\sum_{j \geq 0} \phi Z_{t-j}$
+* Unique stationary solution: For some white noise process Z and fixed parameter $|\phi| \neq 1$ there exists exactly one time series process X with mean zero which is stationary that solves the difference equation $X_{t}-\phi X_{t-1}=Z_{t}$. The solution is given by $X_{t}=\sum_{j \geq 0} \phi Z_{t-j}$
 	* Other non-stationary solutions to $X_t = \sum_{j=0}^\infty \phi^j Z_{t-j}$: if we add a trend that scales with the growth component $X_t = \sum_{j=0}^\infty \phi^j Z_{t-j} + \alpha \phi^t$. For any deterministic or random $\alpha$ we still have a solution to $X_{t}-\phi X_{t-1}=Z_{t}$. So there are many non-stationary solutions to this recursion but only one stationary solution.
 * Intuition: For polynomial $\phi(Z)  =1 - \phi Z$ can write the process in compact form $\phi(B) X_t = Z_t$. If $\phi(B)$ were a number, we could divide both sides by $\phi(B)$ to obtain $X_t = \frac{1}{\phi(B)}Z_t$, a unique representation of our process. We can just proceed by pretending it is a number $X_t = \frac{1}{1 - \phi B}Z_t$, we could use a geometric series. Then since $\frac{1}{1-X} = 1 + X + X^2+... $ if $|X| < 1$. Here $=(1 + \phi B + \phi^2 B^2 + ... ) Z_t$. So the guess based on this intuition that the unique stationary solution to $\phi(B) X_t = Z_t$ is $X_t = \sum_{j=0}^\infty \phi^j B^j Z_t$ 
   * This can be made more precise by using a Neumann Series, checking $|\phi B| <1$, but this requires functional analysis. B is just a shift matrix, shifts your process but doesn't change the variance, etc. So the norm of this operator is exactly 1, so $|\phi B| < 1\iff \phi < 1$, and this is equivalent to the unit root problems we looked at for MA process: $\phi < 1 \iff $ characteristic roots outside of the unit circle.
 * Proof of Lemma for assuming $|\phi | < 1$ (as we will exclude other cases later): We NTS $X_t = \sum_{j=0}^\infty \phi^j B^j Z_t $ satisfies $X_t = \phi X_{t-1} + Z_t$. Then $X_t = \sum_{j=0}^\infty \phi^j B^j Z_t  = \sum_{j=0}^\infty \phi^jZ_{t-j} = Z_t + \phi X_{t-1}$. So our intuitive solution turns out to be correct. This approach (division -> geometric series) works quite often in converting between representations.
-* Uniqueness: Let's assume there is another process $Y_t$ that satisfies $Y_t  = \phi Y_{t-1} + Z_t$. Then $Y_t = Z_t + \phi (\phi Y_{t-2} + Z_[t-1]) = Z_t + \phi Z_{t-1} \phi^2 Y_{t-2}$. Can continue to iterate this, $Z_t + \phi Z_{t-1} \phi^2 Z_{t-2} + ... + \phi^k Y_{t-k}$ where the last term cannot be converted to Z. If the remainder goes to 0, then we have the same process as above. $E[(\phi^k Y_{t-k})^2] = \phi^{2k} E(Y_{t-k}^2)  = \phi^{2k} E(Y_0^2)$ since we are looking at stationary solutions only, so constant in t. Then $\underset{k \rightarrow \infty}{lim} \phi^{2k} E(Y_0^2) = 0$ if $|\phi| < 1$. Therefore $Y_t = \sum_{j=0}^\infty \phi^j Z_{t-j}$ and thus $X_t = \sum_{j=0}^\infty \phi^j Z_{t-j}$ is the unique stationary solution.
-	* Remark: $|\phi| > 1$ can be treated similarly, but the unique stationary solution will suddently depend on the future values of the noise process, which is highly problematic. 
+* Uniqueness: Let's assume there is another process $Y_t$ that satisfies $Y_t  = \phi Y_{t-1} + Z_t$. Then $Y_t = Z_t + \phi (\phi Y_{t-2} + Z_{t-1}) = Z_t + \phi Z_{t-1} \phi^2 Y_{t-2}$. Can continue to iterate this, $Z_t + \phi Z_{t-1} \phi^2 Z_{t-2} + ... + \phi^k Y_{t-k}$ where the last term cannot be converted to Z. If the remainder goes to 0, then we have the same process as above. $E[(\phi^k Y_{t-k})^2] = \phi^{2k} E(Y_{t-k}^2)  = \phi^{2k} E(Y_0^2)$ since we are looking at stationary solutions only, so constant in t. Then $\underset{k \rightarrow \infty}{lim} \phi^{2k} E(Y_0^2) = 0$ if $|\phi| < 1$. Therefore $Y_t = \sum_{j=0}^\infty \phi^j Z_{t-j}$ and thus $X_t = \sum_{j=0}^\infty \phi^j Z_{t-j}$ is the unique stationary solution.
+	* Remark: $|\phi| > 1$ can be treated similarly, but the unique stationary solution will suddenly depend on the future values of the noise process, which is highly problematic. 
+* If $\phi(z) = 0$ for some $|z| < 1$ then the stationary solution depends on future values of $Z_t$. This violates what we call a causality condition
+* AR(p) model $\phi(B) X_t = Z_t$ is **causal** if $\phi(z) \neq 0$ for $|z| \leq 1$.
+* AR(p) mopdel is causal iff the time series and white noise can be written as a stable function of past noise values. (The moving average representation $X_{t}=\psi(B) Z_{t}=\sum_{j=0}^\infty \psi_{j} Z_{t-j}$)
+* Example: (non-causal process) $X_t = 2X_{t-1} + Z_t$. Want to write the process as a MA - could do this through recursion or the backshift operator + inversion, but latter needs invertibility. With recursion: 
+
+$$
+X_t = 2(2X_{t-2} + Z_{t-1}) + Z_t = Z_t + 2Z_{t-1} + 4X_{t-2} \\
+= Z_t + 2Z_{t-1} + 4(2X_{t-3} + Z_{t-2}) \\
+= Z_t + 2Z_{t-1} + 4Z_{t-2} + 8X_{t-3}
+$$
+
+* First problem we see is that the weights explode exponentially, and the variance of the remainder term $2^k X_{t+k}$ also explodes.
+* Trying a different way: $X_t = 2X_{t-1} + Z_t \iff X_{t-1} = \frac{1}{2} X_t -  \frac{1}{2} Z_t$ A time reversed process with coefficient of 1/2 instead of 2 - now our coefficient will degrade instead of explode. We get 
+
+$$
+X_t = 2X_{t-1} + Z_t \iff X_{t-1} = \frac{1}{2} X_t -  \frac{1}{2} Z_t \\
+= -\frac{1}{2}Z_t + \frac{1}{2}(\frac{1}{2}X_{t+1} - \frac{1}{2}Z_{t+1}) 
+= -\frac{1}{2}Z_t - \frac{1}{4}Z_{t+1} + \frac{1}{4}X_{t+1} \\
+=-\frac{1}{2}Z_t - \frac{1}{4}Z_{t+1} - \frac{1}{8}Z_{t+2}... + \left(\frac{1}{2}\right)^k X_{t+k}
+$$
+
+* Weights go zero exponentially fast and remainder goes to zero . So we can write $MA(\infty)$ representation as $X_{t-1}  = -\frac{1}{2}Z_t - \frac{1}{4}Z_{t+1} - \frac{1}{8}Z_{t+2}...$. It depends on future values, which is not useful for modeling the real world. The problem is $\phi(B) = 1-2B,\; \phi(1/2) = 0$ violates the unit root condition and we see we have a non-causal process.
+* Other examples:
+  * $X_t = 0.9X_{t-1} +Z_t \implies \phi(B) = 1- 0.9B$ so $\phi(Z) = 0 \iff Z = 10/9 > 1$ - yes this process is causal. (Note careful with the signs compared to MA process. If we had $X_t = Z_t +0.9Z_{t-1}$ MA process, then $\theta(B) = 1 + 0.9B$. For the AR process, have to move our X's to the same side before defining the polynomial, while the backshift polynomial works on the Z's for the MA process)
+  * Random walk: $X_t  = X_{t-1} + Z_t \implies \phi(Z) = 1-Z$. We are exactly at the boundary of causality (boundary of unit circle. The roots $\phi(1) = 0 \implies $not causal. But this is widely used in finance - how do we fix this? Notice that this process is not stationary  - once we tranform to a stationary process we no longer have this problem. Differencing: $\Delta X_t = X_t - X_{t-1} = Z_t$. When you have a root very close to 1, differencing is commonly used to return the process to stationarity
+  * $X_t = -X_{t-2} + Z_t;\; \phi(Z) = 1 + Z^2$. We then have complex roots $\phi(Z) = 0 \implies Z = \pm i$, which means this process is not causal.
+* Notice for MA(q) process, invertible $(\theta(z) \neq 0 \text { for all }|z| \leq 1) \Leftrightarrow A R(\infty)$, want parameters uniquely identified. For AR(p) process, causal $(\phi(z) \neq 0 \text { for all }|z| \leq 1) \Leftrightarrow M A(\infty)$ - want unique stationary solution that only depends on the past.
+
+### ARMA Models
+
+* ARMA(p,q) is linear combination of MA(q) and AR(p) of form $\phi(B) X_{t}=\theta(B) Z_{t}$. We always assume that $\phi(z), \theta(z)$ have no common factors - this removes redundancies. Our models we have seen so far can be seen as special cases ARMA(0,0), ARMA(p,0), ARMA(0,q)
+* Common factors in $\phi,\theta$: For example, $X_t= X_{t-1} + Z_t - Z_{t-1}$ implies polynomials $\theta(z) = 1 - z,\; \phi(z) = 1-z$ and common factor $1-z$. This looks like an ARMA(1,1) process. But one solution is $X_t = Z_t$, ie X is just white noise: $X_t = Z_{t-1} + Z_t - Z_{t-1} = Z_t$, so in fact this is ARMA(0,0). We can fit this model but end up with a complicated description of a very simple process. (Note we use z instead of B in the polynomial bc B is an operator whereas z is a complex number that solves the polynomial equation.)
+* We are interested in the simplest model that fits the data. In practice start with lower order ARMA models before trying to build more complex ones
+* Example: $\theta(z) = (1-\frac{1}{3} z)(1- \frac{1}{2} z),\; \phi(z) = (1-\frac{1}{2}z)(1- \frac{1}{4}z)$ They share one factor, so after removing common factors get $\theta(z) = (1-\frac{1}{3} z),\; \phi(z) =(1- \frac{1}{4}z)$. End up with ARMA(1,1) instead of ARMA(2,2).
+* ARMA models have causal and invertible conditions on the polynomials for MA and AR as defined above. ARMA is causal if can be written as a $MA(\infty)$ representation (linear combination of noise), and invertible if can be written as $AR(\infty)$ representation.
+* This requires dividing two polynomials: $\psi(z)=\theta(z) / \phi(z)$. We write $\phi(z) \psi(z)=\theta(z)$, could look at constant terms on each side, get formula for $\psi_0$, look at linear terms, etc. But instead can invert the operator and use geometric sums: $\phi(z)=\left(1-a_{1} z\right) \dots\left(1-a_{p} z\right)$ and write $\psi(0) = \theta(0)\left(1-a_{1} z\right) \dots\left(1-a_{p} z\right)$.
+* Why are we interested in MA and AR representations? The MA representation tells us something about the ACF. The AR representation can be used for prediction. 
+* Example: $X_t = \frac{1}{3} X_{t-1} + Z_t - \frac{1}{2}Z_{t-1};\; \phi(z) = 1 - \frac{1}{3} z;\;\theta(z) = 1 - \frac{1}{2}z$. Now use method 2 to get an MA represenation: $\frac{\theta(z)}{\phi(z)} = \frac{1 - \frac{1}{2}z}{1 - \frac{1}{3}}$ Then using geometric series, multiplying out and collecting by order terms: 
+
+$$
+=(1 - \frac{1}{2}z)(1 + \frac{1}{3}z + (\frac{1}{3}z)^2 + (\frac{1}{3}z)^3...) \\
+= 1 + \frac{1}{3}z  + (\frac{1}{3}z)^2 + (\frac{1}{3}z)^3 ... -\frac{1}{2}z - \frac{1}{2}z\frac{1}{3}z - \frac{1}{2}z(\frac{1}{3}z)^2 \\
+= 1 + \sum_{j=0}^\infty z^{j+1}\left(\left(\frac{1}{3}\right)^{j+1} -\frac{1}{2}\left(\frac{1}{3}\right)^j\right)
+$$
+
+* Thus we get the following MA representation $X_t = Z_t + \sum_{j=0}^\infty Z_{t-j-1} (\left(\frac{1}{3}\right)^{j+1} -\frac{1}{2}\left(\frac{1}{3}\right)^j )$
+* In practice, R does this for us `ARMAtoMA`
