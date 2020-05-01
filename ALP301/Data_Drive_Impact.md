@@ -55,7 +55,7 @@
 
 ### Recommendation Systems
 
-* Netflix challenge - the utility matrix was sparse but entries missing for different reasons. If a movie just added, or some movies are never recommended, user wouldnt have had the chance to rate it. Decision to be made about how to treat missing values; setting dependent. In some settings not rated may be a negative rating, while in other settings empty cells are truly no interaction between user and item.
+* Netflix challenge - the utility matrix was sparse but entries missing for different reasons. If a movie just added, or some movies are never recommended, user wouldn't have had the chance to rate it. Decision to be made about how to treat missing values; setting dependent. In some settings not rated may be a negative rating, while in other settings empty cells are truly no interaction between user and item.
 * We may have observable information about the items - the meta data of actors in a movie or genre etc. In S2M we will have the text of the story. Sometimes there is no additional benefit to having this data, we may instead strictly prefer user inputs.
 * ML focused on prediction but some approaches also have interpretability. Sparse matrix approaches have real advantages over treating this with typical classification algos
 * Article on EM algo - the text, item properties, point towards statistics researchers would be interested. From users who interacted with the article, we see vision researchers also like this article. Using latent dirichlet allocation to perform dimensionality reduction and assign topic interests to clusters.

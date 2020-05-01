@@ -251,3 +251,50 @@ $$
 
 * Thus we get the following MA representation $X_t = Z_t + \sum_{j=0}^\infty Z_{t-j-1} (\left(\frac{1}{3}\right)^{j+1} -\frac{1}{2}\left(\frac{1}{3}\right)^j )$
 * In practice, R does this for us `ARMAtoMA`
+* Compute the ACF of ARMA model
+	* First approach, we know how to compute acf, acvf for MA process - convert ARMA to $MA(\infty)$ representation. Divide polynomials $\psi(z)=\theta(z) / \phi(z)$ to get MA representation, get autocovariance function $\gamma_{X}(h)=\operatorname{cov}\left(X_{t}, X_{t+h}\right)=\sigma_{Z}^{2} \sum_{j=0}^{\infty} \psi_{j} \psi_{j+h}$, adapted from earlier formula in MA section. However, we need to compute the infinite sequence of $\psi_j$ even if we only care about one step (h=1) to get exact result - inefficient method.
+	* Example: AR(1) $X_t \phi X_{t-1} + Z_t,\; |\phi| < 1$. (1) $MA(\infty)$ representation: $X_t = \frac{1}{1- \phi(B)} Z_t = \sum_{j=0}^\infty \phi^jB^jZ_t$ (equality by geometric series) $=\sum_{j=0}^\infty \phi^jZ_{t-j}$ is the $MA(\infty)$ representation. (2) Compute autocovariance + autocorr using $\gamma(h) = \sigma^2 \sum_0^\infty \psi_j\psi_{j+h} = ...=\frac{\sigma^2 \phi^h}{1 - \phi^2}$, $\rho(h) = \phi^h$.
+	* Second Approach: Solve difference equations $\operatorname{Cov}\left(\phi(B) X_{t}, X_{t-k}\right)=\operatorname{Cov}\left(\theta(B) Z_{t}, X_{t-k}\right)$ and recursion. We get components that only depend on AR coefficients and previous ACVF terms, so we have a finite number of coefficients to compute (q terms). Note recusion yields closed form solution only for given autocovariance and p,q
+	* Proof: We know $\phi(B)X_t = \theta(B) Z_t$ (ARMA eqn) so $Cov(\phi(B)X_t, X_{t-k}) = Cov(\theta(B)Z_t, X_{t-k})$. LHS yields 
+
+$$
+Cov(\phi(B)X_t, X_{t-k}) = Cov(X_t - \phi_1X_{t-1}...-\phi_pX_{t-p}, X_{t-k}) \\
+= Cov(X_t, X_{t-k}) - \phi_1Cov(X-{t-1}, X_{t-k}) - ... - \phi_p Cov(X_{t-p}, X_{t-k}) \\
+=\gamma(k) - \phi_1\gamma(k-1)...- \phi_p\gamma(k-p)
+$$
+
+Then the RHS yields
+
+$$
+Cov(\theta(B)Z_t, X_{t-k}) = Cov(Z_t + \theta_1Z_{t-1} + ... + \theta_qZ_{t-q},\psi_0Z_{t-k} + \psi_1Z_{t-k}...) \\
+=\begin{cases} (\psi_0\theta_k + ... + \psi_{q-k}\theta_q) \sigma^2 & 0 \leq k \leq q \\ 0 &  t - q > t-k, \iff q < k\end{cases}
+$$
+
+* Yules - Walker Equations
+	* Let $X_t$ be an AR(p) process so q = 0. Then $c_k = \begin{cases} \sigma^2 & k = 0 \\ 0 & k > 0\end{cases}$. Writing the recursion for k = 0, $\gamma(0) - \phi_1\gamma(-1) ... - \phi_p\gamma(-p) = \sigma^2 = c_0$. For $k > 1,\; \gamma(k) - \phi_1\gamma(k-1)-....-\phi_p\gamma(k-p) = 0 $. Note that gamma is symmetric ($Cov(X_t, X_{t+h}) = Cov(X_t, X_{t-h})$), so $\gamma(-1) = \gamma(1)$ .
+	* Later we will estimate $\phi_1,...,\phi_p$ based on $\hat{\gamma}(1) .... \hat{\gamma}(p)$ using the Yules-Walker equations.
+	* Summarizing
+
+$$
+\left(\begin{array}{c}
+\gamma(1) \\ \vdots \\
+\gamma(p)
+\end{array}\right)=\left(\begin{array}{cccc}
+\gamma(0) & \gamma(-1) & \ldots & \gamma(p+1) \\
+\gamma(1) & \gamma(0) & & \vdots \\
+\gamma(2) & \gamma(1) & \cdots & \\
+& & & \vdots \\
+ \gamma(p-1) & \gamma(p-2) & \ldots & \gamma(0)
+\end{array}\right)\left(\begin{array}{c}
+\phi_1 \\
+\vdots \\
+\phi_{p}
+\end{array}\right)
+$$
+
+  * But given the symmetry of gamma the gamma matrix is symmetric. In practice, first solve the matrix equation for $\phi$ then solve $\gamma(0)-\phi_{1} \gamma(-1) \cdots-\phi_{p} \gamma(-p)=\sigma^{2}$
+
+* Direct Solutions: even though we formulated the difference equation as a recursion, we can solve things directly. Given a difference equation, look at the corresponding polynmial and can infer behavior. Solutions to difference equations have a simple form and we can skip the recursion. 
+  * We sometimes see oscillations in ACF plots and this result will help us understand why. In case (3) where roots are only complex, $u_k  = c_1 Z_1^{-k} + \bar{c}_1\bar{Z}_1 - k$ (complex conjugates). We can write $a+bi$ in terms of its radius r and angle $\phi$, $a+bi = r e^{i\phi}$
+
+  
