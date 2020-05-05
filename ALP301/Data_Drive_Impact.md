@@ -53,6 +53,17 @@
 * Low hanging fruit in the outcomes that are bad in the short term and good in the long run. If you can run a long term experiment, can show their effectiveness outside of the standard A/B framework. Up to the firm to provide incentives / rewards for capturing this value.
 * Peer review for experimental design - making sure that the team running it has value alignment and metrics that are not gamed. 
 
+### Advanced Topics in Experimentation
+
+* Multiple hypothesis testing - consider the false discovery proportion (FDP), the % of "positives" found that are false. With low true positives across all tests, the proportion of false discoveries will be quite high.
+* An A/B platform is an incentive system - for the engineers. They are incentivized to test as much as possible, hoping for a positive result to advance their careers. You need a way to weed out the false discoveries especially when incentives cannot be properly aligned
+* We can't know which discoveries are false right away, but we can take the expectation over all tests - FDR = E(FDP). We can use Benjamini Hochberg to determine significance. Order all p values from smallest to largest, check whether p value is under desired FDR times 1/n for n tests. Continue for each p value in increasing order (decreasing in signficance). When you find one greater than than 1/n times FDR, that is your cutoff. The idea is that given noise p values should be uniformly random. Note you are choosing an acceptable FDR, measure of risk for many tests.
+* Can relate business problems to testing GWAS for significant gene snips. Have 2.5 mm coefficient tests, but just using as a priority ranking for research. Looking at a eCDF of p values, can set a FDR cut line and discover the genes that offer the most promise for further study.
+* Family-wise error rate - in policy analysis may want to be extra conservative and worry about the probability of any false discovery. FWER is the prob of rejecting at least one true null hypothesis. This lowers Type I at the expense of increasing Type II
+  * Can use a Bonferonni correction for M hypothesis tests, threshold at $p_m < \alpha/M$. This assumes test independence, though in regression we usually have correlation among covariates. This is a conservative assumption, so often still used. 
+* Accounting for correlated test statistics (invented by J. Romano) - this allows us to make smaller corrections, since it isn't really like we are testing X different hypotheses, more like we are test some percentage of the total tests. 
+* Shared control group - pool control group for multiple treatment arms to optimize power.
+
 ### Recommendation Systems
 
 * Netflix challenge - the utility matrix was sparse but entries missing for different reasons. If a movie just added, or some movies are never recommended, user wouldn't have had the chance to rate it. Decision to be made about how to treat missing values; setting dependent. In some settings not rated may be a negative rating, while in other settings empty cells are truly no interaction between user and item.

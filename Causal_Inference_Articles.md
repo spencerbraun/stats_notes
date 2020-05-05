@@ -4,6 +4,18 @@
 
 
 
+## Recommendations as Treatments: Debiasing Learning and Evaluation. Schnabel et al.
+
+* Viewing recommendation from a causal inference perspective, we argue that exposing a user to an item in a recommendation system is an intervention analogous to exposing a patient to a treatment in a medical study.
+* Let binary matrix O represent which movies users provided ratings for. Define $\hat{Y}$ to encode recommendations as a similar binary matrix like O, limited to budget of k recs per user.
+* A reasonable way to measure the quality of a recommendation is the Cumulative Gain (CG) that the user derives from the recommended movies, which we define as the average star-rating of the recommended movies in our toy example
+* We are faced with the counterfactual question: how well would our users have enjoyed themselves (in terms of CG), if they had followed our recommendations
+* To get unbiased estimates of recommendation quality despite missing observations, consider the following connec- tion to estimating average treatment effects of a given pol- icy in causal inference, that was already explored in the contextual bandit setting
+* We refer to Pu,i as the *propensity* of observing Yu,i. In the *experimental* setting, we know the matrix P of all propensities, since we have implemented the assignment mechanism. In the *observa- tional* setting, we will need to estimate P from the observed matrix O. 
+* Use inverse propensity weighting in the experimental setting. For observation settings, we merely need estimated propensities that are “better” than the naive assumption of observations being revealed uniformly. 
+* Propensity Estimation via Naive Bayes: assuming that dependencies between covariates X, Xhid and other ratings are negligible.
+* Propensity Estimation via Logistic Regression: aims to find model parameters φ such that O be- comes independent of unobserved X hid and Y. 
+
 ## The Deconfounded Recommender: A Causal Inference Approach to Recommendation. Wang, Liang, Charlin, Blei.
 
 * A causal approach to recommendation, one where watching a movie is a “treatment” and a user’s rating is an “outcome.” The problem is there may be unobserved confounders, variables that affect both which movies the users watch and how they rate them.

@@ -42,7 +42,7 @@ author: Spencer Braun
   	*  Note if X were always 0 then $e^{-X}$ would always be 1. 
     * Proof: Suppose $E(e^{-X}) = 1$ then $E(1-e^{-X}) = 0$. Since X is nonnegative then $1 - e^{-X} \geq 0$. So  $1 - e^{-X}$ is a nonnegative RV whose expectation is 0. So by Markov's Inequality, $P(1 - e^{-X} \geq t) \leq 0$ for any $t > 0 \implies P(1 - e^{-X} =0) = 1\implies P(X = 0)=1$. So we get a contradiction. Thus $E(e^{-X}) \neq 1$. But $e^{-X} < 1$ always so $E(e^{-X})$ cannot be > 1 thus  $E(e^{-X}) < 1$
   * **Lemma 4**: $m(t) < \infty$ for any t
-    * Proof: $P(N(t) \geq n) = P(S_n \leq t)$ by above. $= P(e^{-S_n} \geq e^{-t}) \leq \frac{E(e^{-S_n})}{e^{-t}}$. Using the fact that X's are iid, then $ = e^t (E(e^{-X_1})^N) = e^tp^n$. By Lemma 1 $p = E(e^{X_1})$. Then $m(t) = E(N(t)) = \sum_{n=1}^\infty P(N(t) \geq n) = \sum_{n=1}^\infty P(S_n \leq t = \sum_{n=1}^\infty) F_n(t)$. By the above $\sum_{n=1}^\infty P(N(t) \geq n) \leq e^t \sum_{n=1}^\infty p^n < \infty$ since $0 \leq p < 1$.
+    * Proof: $P(N(t) \geq n) = P(S_n \leq t)$ by above. $= P(e^{-S_n} \geq e^{-t}) \leq \frac{E(e^{-S_n})}{e^{-t}}$. Using the fact that X's are iid, then $ = e^t (E(e^{-X_1})^n) = e^tp^n$. By Lemma 1 $p = E(e^{-X_1})$. Then $m(t) = E(N(t)) = \sum_{n=1}^\infty P(N(t) \geq n) = \sum_{n=1}^\infty P(S_n \leq t = \sum_{n=1}^\infty) F_n(t)$. By the above $\sum_{n=1}^\infty P(N(t) \geq n) \leq e^t \sum_{n=1}^\infty p^n < \infty$ since $0 \leq p < 1$.
 * Note the above also shows $E\left[N^{r}(t)\right]<\infty$ for all $t ,r \geq 0$
 * Recall: $\mu = E(X_1) = E(X_2)=...$ which could be infinite.
 

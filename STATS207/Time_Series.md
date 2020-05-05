@@ -297,4 +297,45 @@ $$
 * Direct Solutions: even though we formulated the difference equation as a recursion, we can solve things directly. Given a difference equation, look at the corresponding polynmial and can infer behavior. Solutions to difference equations have a simple form and we can skip the recursion. 
   * We sometimes see oscillations in ACF plots and this result will help us understand why. In case (3) where roots are only complex, $u_k  = c_1 Z_1^{-k} + \bar{c}_1\bar{Z}_1 - k$ (complex conjugates). We can write $a+bi$ in terms of its radius r and angle $\phi$, $a+bi = r e^{i\phi}$
 
-  
+### Fitting ARMA
+* How to check whether ARMA(p,q) is a good model? We need an equivalent of Theorem 2.4, relating behavior of white noise to autocorrelations that are approx iid Gaussian with variance $\frac{1}{n}$
+* **Bartlett's Formula**: $\sqrt{n}\left(\left(\begin{array}{c} r_{1} \\ \vdots \\ r_{k} \end{array}\right) \left(\begin{array}{c} \rho_{X}(1) \\ \vdots \\ \rho_{X}(k) \end{array}\right)\right) \rightarrow \mathcal{N}(0, W)$ Taking emprical autocorrelations and subtracting off theoretical autocorrelations. Plot empirical acf, create confidence bands around them, reject theoretical model if there are too many outliers. 
+	* This implies $\mathbf{P}\left(\left|r_{i}-\rho_{X}(i)\right| \geq 1.96 \sqrt{W_{i i} / n}\right) \approx 5 \%$
+	* W is the autocovariance matrix - diagonal entries is the variance, off-diags are the covariance.
+	* r is the empirical autocorrelation
+* Example: MA(1) process. $X_t = Z_t + \theta Z_{t-1}$. We know $\rho(0) = 1,\, \rho(1) = \frac{\theta}{1 + \theta^2},\, \rho(2) = 0...\rho(h) =0$ for all h > 1.Using Bartlett to understand the asymptotic variance of the autocorrelation: Choosing $r_1, \; Var(r_1) \approx \frac{W_{11}}{n} = \frac{1}{n}\sum_{m=1}^\infty (\rho(m+1) + \rho(m-1) - 2\rho(1)\rho(m))^2$ (squared since i=j in example). Writing out m=1,2,3... terms, $=\frac{1}{n}[(0 + 1 - 2\rho(1)^2) + (0 + \rho(1) -0)^2+ (0 + 0 + 0)^2 + ... + 0]$. Simplifying get $=\frac{1}{n}(1-4\rho(1)^2 + 4\rho(1)^4 + \rho(1)^2)$
+
+### Prediction
+* Fitting the conditional expectation on data with weak stationarity, things may change over time and we should not fit general functions.
+* Instead just look at linear predictors. Have to be more careful than in standard stats - autocovariances need to stay constant but also higher moments! Fitting higher order functions may not account for that, which is why a linear class restriction is best
+* Best Linear Predictor: $\left(a_{1}^{\star}, \ldots, a_{n}^{\star}\right)^{\top}=\Delta^{-1} \zeta$ for $\Delta_{i j}=\operatorname{Cov}\left(W_{i}, W_{j}\right)$ and $\zeta_{i}=\operatorname{Cov}\left(Y, W_{i}\right)$. (Effectively $(X^TX)^{-1}X^Ty$ since $X^TX$ is the predictor  covariance matrix and $X^Ty$ is the covariance matrix with the response).
+* Here our predictors are past values and the response is future values - $X_i$ appear on both sides of the equation.
+* Example: Time series with 200 time points, want to use prior 2 values to predict the next one. $X_{200}, X_{199}...$ is the target vector. The linear model equation is then $\begin{pmatrix} X_{200} \\ X_{199} \\ \vdots \end{pmatrix} = \begin{pmatrix} X_{199} & X_{198} \\ \vdots \end{pmatrix}\begin{pmatrix} a_1 \\ a_2 \end{pmatrix} + \epsilon$
+* We know the optimal predictor for this form is $\left(X_{n}, X_{n-1}, \ldots, X_{n-k+1}\right) \Delta^{-1} \zeta$. But with stationarity, we see $\Delta_{i j} =\operatorname{Cov}\left(X_{n-i+1}, X_{n-j+1}\right)=\gamma_{X}(i-j),\; \zeta_{i} =\operatorname{Cov}\left(X_{n+1}, X_{n-i+1}\right)=\gamma_{X}(i)$
+* Create a highly symmetric matrix for $\Delta$ - Toeplitz form and can be solved very efficiently.
+* Example: Predict $X_{t+1} $ from $X_t$, stationary process. $\Delta = Var(X_t),\; \zeta = Cov(X_Tt X_{t+1})$ So  $\hat{X}_t = X_t \Delta^{-1} \zeta$, which we have seen before as $=X_t \rho(1)$ - the autocorrelation function at lag 1. 
+* AR(p) models: with iid noise and a causal AR model with n > p, the best predictor coincides with the best linear predictor. $\tilde{X}_{n+1} = =\phi_{1} X_{n}+\ldots+\phi_{p} X_{n+1-p}$. 
+	* Prediction intervals are then easy if noise is Gaussian, $P\left(\left|X_{n+1}-\tilde{X}_{n+1}\right|>1.96 \sigma\right)=5 \%$, where $\sigma$ is the sd of the noise.
+* Prediction in ARMA(p,q) models 
+	* For given invertible ARMA(p,q) process, switch the $AR(\infty)$ representation: $X_t = Z_T - \sum_{j=1}^\infty \pi_j X_{t-j}$, then approximate infinite sum and form prediction $\hat{X}_t = -\sum_{j=1}^J \pi_j X_{t-j}$
+	* Longer range predictions: proceed recursively using AR representation. Predict one step into the future then use that to predict the next value, eg. $\hat{X}_{t+1}$ predicted from $\hat{X}_t,X_{t-1},X_{t-2},...$. Using iterated expecations can show this is optimal.
+* Variance of residuals needed for computation: $Var(X-_t - \sum_{j=1}^J\beta_jX_{t-j}) = Var(X_t) - 2\sum_{j=1}^J \beta_j Cov(X_t, X_{t-j}) + \sum_{j=1}^J\sum_{k=1}^K \beta_J\beta_KCov(X_{t-k}, X_{t-j})$. SImplifying by using stationarity: $=\gamma(0) - 2\sum_{j=1}^J \beta_j \gamma(j) + \sum_{j=1}^J\sum_{k=1}^K \beta_J\beta_K \gamma(j-k)$. For a given process we can then form prediction intervals by computing the variance of the residuals from the estimated autocovariances. (For Gaussian white noise)
+* As prediction goes out in time, the prediction converges to overall mean. We are essentially taking matrix powers, and since the eigenvalues are smaller than 1 in abs value, you converge to the mean. We also converge in the variance to the variance of the stationary distribution - prediction interval becomes 1.96 times var of stationary dist.
+* Practical consequences: If the log returns of a stock follow invertible ARMA process, can we predict what the stock does in the long run? No - the long term prediction of log returns = mean of log returns. 
+
+### Partial Autocorrelations
+* pacf(h): Coefficient of $X_{t-h}$ in the best linear predictor of $X_t$ in terms of $X_{t-1}, \ldots, X_{t-h}$
+
+* ACF $\rho(h)$ for an MA(q) process drops off after lag q. The PACF $pacf(h)$ for an AR(p) process drops off after lag p. We can judge which order AR process we should fit using this tool.
+
+|      | MA(q)                       | AR(p)                       |
+| ---- | --------------------------- | :-------------------------- |
+| ACF  | 0 for h > q                 | Goes to 0 for h -> infinity |
+| PACF | Goes to 0 for h -> infinity | 0 for h > p                 |
+
+
+* Choosing p,q for an ARMA process - can not directly determine from ACF/PACF lag cutoffs since we are mixing the processes
+* Estimation of PACF: via regression, details in lecture notes.
+
+
+
