@@ -283,7 +283,7 @@ title: Modern Applied Statistics: Data Mining
 * Gradient Boosting
   * Compute the generalized residuals at each point
   * Find the base learner that best predicts that GR
-  * Find the optimal coef to add the base learner to determine step size $\Delta \nu$
+  * Find the optimal coef to add the base learner to determine step size $\Delta \nu$; we are looking over all possible line segments along our path using our tree and determining the optimal line segment size that minimizes the loss.
   * Add base learner to the expansion and give it coefficient $\hat{a}_k = \Delta \nu$
   * Repeat until we decide to stop.
 

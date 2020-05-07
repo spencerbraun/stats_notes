@@ -62,7 +62,18 @@
 * Family-wise error rate - in policy analysis may want to be extra conservative and worry about the probability of any false discovery. FWER is the prob of rejecting at least one true null hypothesis. This lowers Type I at the expense of increasing Type II
   * Can use a Bonferonni correction for M hypothesis tests, threshold at $p_m < \alpha/M$. This assumes test independence, though in regression we usually have correlation among covariates. This is a conservative assumption, so often still used. 
 * Accounting for correlated test statistics (invented by J. Romano) - this allows us to make smaller corrections, since it isn't really like we are testing X different hypotheses, more like we are test some percentage of the total tests. 
-* Shared control group - pool control group for multiple treatment arms to optimize power.
+* Shared control group - pool control group for multiple treatment arms to optimize power. Want to make the control group bigger, since it will contribute to the variance of the hypothesis test across treatments. Larger control group ensures we keep variance low while using fewer participants than separate control groups.
+
+### Adaptive Experiments
+
+* Randomized experiment but at each time period, look at data to determine which arm looks best, then assign more subjects to the better arms - via Thompson sampling / bandits
+* Have a rule for ending the experiment, saving time / observations compared to a classifcal experiment with Bonferonni corrections.
+* The goal isn't to measure some effect with statistical precision - we want to know what is best among possible outcomes, just find the best one so we can use it. 
+* Bandits + regret: minimize the loss from not giving people the best arm for the people in the experiment. Don't consider a future, maximize the outcomes for the group tested. Makes sense for a site running a bandit on an ongoing basis on their users.
+* A lot of times we care about learning for the future / generalization. In a medical experiment, the experimental group is not the focus. We can design bandits to optimize other things, and can help design testing better hypotheses. Likely find this in the medical literature much more than in CS.
+* The group whose hypothesis we care about the most, we want to load more people into this treatment arm over time to improve the power when we want one winner. Also have to consider dropping harmful arms in the medical field. But if you drop too many bad arms, this can bias your results. 
+* Thompson sampling is not "exactly right" for circumstances but heuristic that works will empirically. 
+* UCB - upper confidence bounds, look at a calculated interval around the mean response for each treatment, prefer the one with the higher upper confidence bound.
 
 ### Recommendation Systems
 

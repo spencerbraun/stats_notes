@@ -336,6 +336,28 @@ $$
 
 * Choosing p,q for an ARMA process - can not directly determine from ACF/PACF lag cutoffs since we are mixing the processes
 * Estimation of PACF: via regression, details in lecture notes.
+* Example: ACF lags cut off after 2, so MA(2) seems reasonable. But looking at PACF, we have a significant spike at lag 1, so perhaps could use AR(1).
+* `tsdiag` gives some statistics relevant for fitting model - standardized resids, ACF, Ljung-Box stat p values
 
+## Parameter Estimation 
+### Method of Moments / Yule Walker Method for AR(p)
+* Mean estimated as $\hat{\mu}=\bar{x}=\frac{1}{n} \sum_{i=1}^{n} x_{i}$ and use Yule-Walker to find AR(p) whose ACVF equals sample ACVF at lags 0,1,...,p.
+* Example: AR(2), (1)$\hat{\gamma}(0) - \phi_1 \hat{\gamma}(1) -  \phi_2 \hat{\gamma}(2) = \sigma_Z^2$ and (2)$\hat{\gamma}(1) - \phi_1\hat{\gamma}(0) - \phi_2\hat{\gamma}(-1) = 0$ and (3)$\hat{\gamma}(2) - \phi_1\hat{\gamma}(1) - \phi_2 \hat{\gamma}(0) =0$ from the Yules Walker equations. We can use $\gamma(-1) = \gamma(1)$. 
+	* Typically solve (2), (3) first, two equations with two unknowns. Then solve (1) to compute $\sigma^2$. Can derive explicit estimators, details in the lecture notes. 
+* With set of linear equations, we could have multiple solutions, zero solutions. Which case do we have multiple solutions? When the $\gamma$'s are equal (all covariances are 1, since gamma(0) must be 1), the system is not full rank; this occurs when we have no noise - $X_t = X_{t-1} = X_{t-2} = \frac{1}{2}X_{t-1} +\frac{1}{2}X_{t-2}$ etc. In practice if we have extremely low noise, we approach multiple solutions and have an unstable estimates. Notice this is quite different from standard stats where low noise makes our estimates better.
+* Y-W tries to match the first p lags exactly, then the model will diverge from the acf after. For AR(3), Y-W matches lags 1,2,3 on the ACF.
+* Great for AR(p) but not for ARMA - no linear, solutions do not always exist, not efficient estimators, etc.
 
+### Conditional Least Squares
+* Holds for general ARMA, AR, MA processes since we have this general decay.
+* * MA(1): Model $X_t = \mu + Z_t + \theta Z_{t-1}$ for Z Gaussian white noise. Want to estimate $\theta$.
+	* Rewrite $Z_t = X_t - \mu - \theta Z_{t-1}$ then try to find a parameter that minimizes the sum of squares for the residuals
+	* But notice when we do this subtraction, we need to know $Z_{t-1}$, where do we start at beginning? In practice people set $Z_0 = 0$ then start recursion $\tilde{Z}_1 = X_1 -\tilde{\mu} - \tilde{\theta}\tilde{Z}_0$, $\tilde{Z}_2 = X_2 -\tilde{\mu} - \tilde{\theta}\tilde{Z}_1$, etc. (Tilde indicating observed instead of theoretical values)
+	* Then computing the SSE: $\sum_{i=1}^t \tilde{Z}_i^2$, find the values $\tilde{\mu}, \tilde{\theta}$ that minimize this sum. Asymptotically, making up the initial values will not matter much.
+* Called conditional least squares since as we take MLE + conditioning on $Z_0 = 0$. Computational simplification that performs the same asymptotically as plain MLE. Since the past decreases in influence exponentially, setting arbitrary initial conditions does not matter.
+* Example: ARMA(1,1): $X_t = \mu + \phi(X_{t-1}  - \mu) + Z_t + \theta Z_{t-1}$. Have to start with Z2 since have an $X_{t-1}$ in our equation. Set $\tilde{Z}_1 = 0$ then emprically set $Z_2 = X_2 - \mu - \phi(X_1 - \mu) - \theta Z_1$. Recurse up to $\tilde{Z_t}$. Compute $\sum_{i=2}^t \tilde{Z}_i^2$ and minimize to obtain parameter estimates for $\mu,\theta,\phi$. This is a non-linear regression, harder computationally than an AR problem. s
 
+### Maximum Likelihood
+* From an autocovariance matrix and our noise is Gaussian, we can maximize likelihood through our parameters $\phi, \theta$. This is generally hard to do as the relationship between parameters and autocovariances can be non-linear and a difficult optimization problem. 
+* The idea is very similar to conditional least squares, but without the simplifcation. It deals directly with what might be occurring at the begining of the process, but this is not generally informative to the overall parameters estimates. 
+* You can run conditional least squares to get good initial parameter estimates, then plug those into MLE that iteratively improves these estimates.
