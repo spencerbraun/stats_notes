@@ -145,7 +145,7 @@ author: Spencer Braun
 * Can have a half gaussian, half chi-square white noise time series - will looks non stationary but by using distributions with the same moments, we still have a weakly stationary process. 
 * For the family of Gaussian processes (joint distribution for any period is multivariate normal), strong and weak stationarity are the same. While generally strong implies weak, in this special case weak also implies strong.
 
-## ARIMA Models
+## AR / MA Models
 
 ### Moving Average Models
 
@@ -232,7 +232,7 @@ $$
   * $X_t = -X_{t-2} + Z_t;\; \phi(Z) = 1 + Z^2$. We then have complex roots $\phi(Z) = 0 \implies Z = \pm i$, which means this process is not causal.
 * Notice for MA(q) process, invertible $(\theta(z) \neq 0 \text { for all }|z| \leq 1) \Leftrightarrow A R(\infty)$, want parameters uniquely identified. For AR(p) process, causal $(\phi(z) \neq 0 \text { for all }|z| \leq 1) \Leftrightarrow M A(\infty)$ - want unique stationary solution that only depends on the past.
 
-### ARMA Models
+## ARMA Models
 
 * ARMA(p,q) is linear combination of MA(q) and AR(p) of form $\phi(B) X_{t}=\theta(B) Z_{t}$. We always assume that $\phi(z), \theta(z)$ have no common factors - this removes redundancies. Our models we have seen so far can be seen as special cases ARMA(0,0), ARMA(p,0), ARMA(0,q)
 * Common factors in $\phi,\theta$: For example, $X_t= X_{t-1} + Z_t - Z_{t-1}$ implies polynomials $\theta(z) = 1 - z,\; \phi(z) = 1-z$ and common factor $1-z$. This looks like an ARMA(1,1) process. But one solution is $X_t = Z_t$, ie X is just white noise: $X_t = Z_{t-1} + Z_t - Z_{t-1} = Z_t$, so in fact this is ARMA(0,0). We can fit this model but end up with a complicated description of a very simple process. (Note we use z instead of B in the polynomial bc B is an operator whereas z is a complex number that solves the polynomial equation.)
@@ -339,6 +339,8 @@ $$
 * Example: ACF lags cut off after 2, so MA(2) seems reasonable. But looking at PACF, we have a significant spike at lag 1, so perhaps could use AR(1).
 * `tsdiag` gives some statistics relevant for fitting model - standardized resids, ACF, Ljung-Box stat p values
 
+
+
 ## Parameter Estimation 
 ### Method of Moments / Yule Walker Method for AR(p)
 * Mean estimated as $\hat{\mu}=\bar{x}=\frac{1}{n} \sum_{i=1}^{n} x_{i}$ and use Yule-Walker to find AR(p) whose ACVF equals sample ACVF at lags 0,1,...,p.
@@ -361,3 +363,73 @@ $$
 * From an autocovariance matrix and our noise is Gaussian, we can maximize likelihood through our parameters $\phi, \theta$. This is generally hard to do as the relationship between parameters and autocovariances can be non-linear and a difficult optimization problem. 
 * The idea is very similar to conditional least squares, but without the simplifcation. It deals directly with what might be occurring at the begining of the process, but this is not generally informative to the overall parameters estimates. 
 * You can run conditional least squares to get good initial parameter estimates, then plug those into MLE that iteratively improves these estimates.
+
+### Fitting a Model
+* Typically start with AR or MA, not a full ARMA model. 
+* A PACF with a significant lag far out - better to start with a simpler model and see if that goes away
+* Can try fitting a model with any other estimator methods above. By default `ar` chooses order automatically through aic, so need to set this to false if you want to specify the order. 
+* The estimated parameters are typically very close from the three methods. 
+* We can get the asymptotic standard errors for the coefficient estimates as a property of the `ar` function, eg `asy.se.coef`. With Yule-Walker estimation, you can only get the asymptotic variance, no SE so be careful with the properties being accessed. This returns a covariance matrix so can get more information for calculating contrasts, etc.
+* Choosing a larger model is paid for with larger variance - want to choose the smallest model that explains the variance that you are seeing.
+* With arima function, we can use css-ml method to first use conditional likelihood then use those estimates as a warm start for maximum likelihood - tends to be efficient and more effective. 
+
+## Extensions
+### ARIMA
+* Model $\phi(B)\left(X_{t}-\mu\right)=\theta(B) Z_{t}$. includes a differencing factor
+* Easy way to build in stationarity into the model. Good for removing polynomial trends or random walks.
+* Can be fit with `arima` where the middle component specifies the differencing order
+
+### Seasonal ARMA
+* ARMA with a period s satisfying difference equation $\Phi\left(B^{s}\right) X_{t}=\Theta\left(B^{s}\right) Z_{t}$ - we only take into account things that happen at the seasonal lags
+* Data often exhibit spikes at seasonal lags. 
+* Example: S-ARMA(2,2) with period s. $X_t = \Phi_1X_{t-s} + \Phi_2X_{t-2s} + Z_t + \Theta_1Z_{t-s} + \Theta_2 Z_{t-2s}$
+	* Why not encode this as a standard ARMA(2s,2s)? This would include all of the lower order lags up to 2s. Say s = 12, then we have 24 AR parameters and 24 MA parameters which could be highly unstable. Instead with S-ARMA, we fit 4 parameters and do not need to include all the non-signficant lags that trail up to the seasonal ones.
+
+### Multiplicative Seasonal ARMA models
+* Takes into account short range dependence and seasonal dependence: $\Phi\left(B^{s}\right) \phi(B) X_{t}=\Theta\left(B^{s}\right) \theta(B) Z_{t}$.
+* Reduces parameters to avoid instabilities while allowing to capture both kinds of lags. 
+* Example: $X_t = \Phi_1X_{t-s} + Z_t + \Theta Z_{t-1}$ Here we have a seasonal AR component and an MA local dependence. 
+* When should this be used? If the ACF / PACF shows spikes around seasonal lags - ie. at a seasonal lag and the lags around it
+
+### SARIMA
+* Multiplicative seasonal ARMA models with differencing: $\Phi\left(B^{s}\right) \phi(B) \nabla_{s}^{D} \nabla^{d} Y_{t}=\delta+\Theta\left(B^{s}\right) \theta(B) Z_{t}$
+* We difference d times, seasonal difference D times, fitting seasonal components P.Q and local components p, q
+* We can either use `arima` with a "seasonal" arg but also `sarima` from package `astsa` is quite useful and provides more diagnostics. 
+* We still fit things step by step: plotting time series, removing trend, acf/pacf examination, start removing using low order AR / MA, etc. Keep track of what you have tried, and in the end can place the best candidates into a SARIMA function and get some output.
+
+## Model Diagnostics and Selection
+* Claim: some data was generated from an MA(2) model with certain parameters. How would you validate this?
+* Could compare the sample acf with a theoretical acf.  They won't perfectly match but they should be quite close - can use **Bartlett's fomula** to construct CIs for the estimated autocorrelation coefficients at the lags.
+* Can also **look at the residuals** - subtracting off the best linear predictor should leave white noise residuals. Look again at the acf for the residuals and should see no significant spikes.
+* But we want a proper test for this - how can we say with confidence whether we have white noise? 
+
+### Testing for White Noise
+* For white noise sample acf $r_{1}, \ldots, r_{k} \stackrel{i . i . d}{\sim} \mathcal{N}(0,1 / n)$, we can construct test statistic $Q=n \sum_{i=1}^{k} r_{i}^{2} \sim \chi_{k}^{2}$ following the chi-square distribution
+* We calculate the test statistic and compare it to the theoretical distribution for the null hypothesis that we really have white noise. 
+* Number of lags k is fixed in test. If k is too small, the test may not reject even when we do not have white noise (eg. significant seasonal lag at 12 but only testing out to 6). If k is too large, the approximation to chi-square does not hold.
+* Take the chi square quantile with k df and reject for extreme values beyond 0.95 quantile, etc. One sided test. 
+* Usually, we do not have prior belief about the parameters $\theta, \phi$, so we have to treat the parameters as random, not fixed.
+* **Ljung-Box-Pierce Test**: for a causal, invertible ARMA model and estimated parameters then $\hat{Q}=Q(\hat{\phi}, \hat{\theta}) \rightarrow \chi_{k-p-q}^{2} \quad \text { for } n \rightarrow \infty$. 
+	* In practice, people often calculate Q as $\tilde{Q}=n(n+2) \sum_{i=1}^{k} \frac{\hat{r}_{i}^{2}}{n-i}$ but asymtotically behaves the same. This is the Ljung-Box-Pierce test statistic. 
+	* k - p - q: have to account for the fact that the parameters are estimated from the data.
+	* Test procedure: Fix a max lag k (typically 20). Reject hypothesis that data was generated from a causal invertible ARMA model if $\tilde{Q}\left(x_{1}, \ldots, x_{n}\right)>q_{1-\alpha}$ for $q_{1-\alpha}$ the $(1-\alpha)$ quantile of the $\chi^2$ distribution. 
+* Still worth going through the less formal examination, as there can be times where it could be clear the model is not quite right but LBP test still does not reject. 
+* In R, `tsdiag, sarima` both give diagnositcs
+
+### Model Selection
+* Given a collection of reasonable models, which is best? 
+* Criteria: AIC / BIC and CV are the tools to use
+
+##### AIC
+* AIC = $-2log(\text{max likelihood}) + 2k$ for k = # of parameters in the model
+* For time series k = p + q + 2 for ARIMA(p,q) model. (+2 from (1) the mean we estimate and (2) for the sd sigma we estimate)
+* Packages may not be consistent in how they calculate, so wouldn't want to compare across packages but within package comparisons should be fine. 
+* Estimates out of sample prediction error, penalizes larger models. Often does not return the true model but a somewhat larger one. 
+* Tends to be recommended if you are interested in prediction, as it asymptotically behaves like cross validation.
+
+##### BIC
+* More likely to provide the true model. 
+* BIC = $-2log(\text{max likelihood}) + k log (n)$. Punishes larger models with klog(n), more than the AIC
+* This leads to model selection consistency - letting n go to infinity converges on selection of the true model. 
+* One big drawback - with a certain low probability, it may select a model that is too small and may have significant impact on its prediction performance. 
+* Therefore BIC not chosen for prediction but for estimating the true process / model.
