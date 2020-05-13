@@ -271,7 +271,9 @@ Cov(\theta(B)Z_t, X_{t-k}) = Cov(Z_t + \theta_1Z_{t-1} + ... + \theta_qZ_{t-q},\
 $$
 
 * Yules - Walker Equations
-	* Let $X_t$ be an AR(p) process so q = 0. Then $c_k = \begin{cases} \sigma^2 & k = 0 \\ 0 & k > 0\end{cases}$. Writing the recursion for k = 0, $\gamma(0) - \phi_1\gamma(-1) ... - \phi_p\gamma(-p) = \sigma^2 = c_0$. For $k > 1,\; \gamma(k) - \phi_1\gamma(k-1)-....-\phi_p\gamma(k-p) = 0 $. Note that gamma is symmetric ($Cov(X_t, X_{t+h}) = Cov(X_t, X_{t-h})$), so $\gamma(-1) = \gamma(1)$ .
+	* We could figure out the coefficients for an AR process through OLS. But analytically deriving these coefficients becomes difficult / cumbersome at higher order models.
+	* 
+	* Let $X_t$ be an AR(p) process so q = 0. Then $c_k = \begin{cases} \sigma^2 & k = 0 \\ 0 & k > 0\end{cases}$. Writing the recursion for k = 0, $\gamma(0) - \phi_1\gamma(-1) ... - \phi_p\gamma(-p) = \sigma^2 = c_0$. For $k > 1,\; \gamma(k) - \phi_1\gamma(k-1)-....-\phi_p\gamma(k-p) = 0 $. Note that gamma is symmetric (even function) ($Cov(X_t, X_{t+h}) = Cov(X_t, X_{t-h})$), so $\gamma(-1) = \gamma(1)$ .
 	* Later we will estimate $\phi_1,...,\phi_p$ based on $\hat{\gamma}(1) .... \hat{\gamma}(p)$ using the Yules-Walker equations.
 	* Summarizing
 
@@ -292,8 +294,8 @@ $$
 \end{array}\right)
 $$
 
+  * Succintly we can write this as $\Gamma \Phi = \gamma$. Our system is correctly identified, with same number of equations as unknowns (elements $\phi$). $\Gamma$ is full rank, symmetric - guaranteed to be invertible, meaning our system cal always be solved.
   * But given the symmetry of gamma the gamma matrix is symmetric. In practice, first solve the matrix equation for $\phi$ then solve $\gamma(0)-\phi_{1} \gamma(-1) \cdots-\phi_{p} \gamma(-p)=\sigma^{2}$
-
 * Direct Solutions: even though we formulated the difference equation as a recursion, we can solve things directly. Given a difference equation, look at the corresponding polynmial and can infer behavior. Solutions to difference equations have a simple form and we can skip the recursion. 
   * We sometimes see oscillations in ACF plots and this result will help us understand why. In case (3) where roots are only complex, $u_k  = c_1 Z_1^{-k} + \bar{c}_1\bar{Z}_1 - k$ (complex conjugates). We can write $a+bi$ in terms of its radius r and angle $\phi$, $a+bi = r e^{i\phi}$
 
@@ -325,7 +327,7 @@ $$
 
 ### Partial Autocorrelations
 * pacf(h): Coefficient of $X_{t-h}$ in the best linear predictor of $X_t$ in terms of $X_{t-1}, \ldots, X_{t-h}$
-
+* Is $X_{t+2}$ dependent on $X_t$ after accounting for the effect of $X_{t+1}$? The PACF gives the [partial correlation](https://en.wikipedia.org/wiki/Partial_correlation) of a stationary time series with its own lagged values, regressed the values of the time series at all shorter lags. It contrasts with the [autocorrelation function](https://en.wikipedia.org/wiki/Autocorrelation_function), which does not control for other lags.
 * ACF $\rho(h)$ for an MA(q) process drops off after lag q. The PACF $pacf(h)$ for an AR(p) process drops off after lag p. We can judge which order AR process we should fit using this tool.
 
 |      | MA(q)                       | AR(p)                       |
@@ -338,8 +340,6 @@ $$
 * Estimation of PACF: via regression, details in lecture notes.
 * Example: ACF lags cut off after 2, so MA(2) seems reasonable. But looking at PACF, we have a significant spike at lag 1, so perhaps could use AR(1).
 * `tsdiag` gives some statistics relevant for fitting model - standardized resids, ACF, Ljung-Box stat p values
-
-
 
 ## Parameter Estimation 
 ### Method of Moments / Yule Walker Method for AR(p)
@@ -390,6 +390,7 @@ $$
 * Reduces parameters to avoid instabilities while allowing to capture both kinds of lags. 
 * Example: $X_t = \Phi_1X_{t-s} + Z_t + \Theta Z_{t-1}$ Here we have a seasonal AR component and an MA local dependence. 
 * When should this be used? If the ACF / PACF shows spikes around seasonal lags - ie. at a seasonal lag and the lags around it
+* The width of the spikes around the seasonal lags should indicate the order of the short term effects to include. See R code for examples. 
 
 ### SARIMA
 * Multiplicative seasonal ARMA models with differencing: $\Phi\left(B^{s}\right) \phi(B) \nabla_{s}^{D} \nabla^{d} Y_{t}=\delta+\Theta\left(B^{s}\right) \theta(B) Z_{t}$
@@ -415,6 +416,7 @@ $$
 	* Test procedure: Fix a max lag k (typically 20). Reject hypothesis that data was generated from a causal invertible ARMA model if $\tilde{Q}\left(x_{1}, \ldots, x_{n}\right)>q_{1-\alpha}$ for $q_{1-\alpha}$ the $(1-\alpha)$ quantile of the $\chi^2$ distribution. 
 * Still worth going through the less formal examination, as there can be times where it could be clear the model is not quite right but LBP test still does not reject. 
 * In R, `tsdiag, sarima` both give diagnositcs
+* For the standardized residuals - want to look at whether mean stays reasonably around 0 and variance is relatively constant. ACF of the residuals should show no remaining dependence. L-B statistic, want to see large p-values for the lags, indicating none remain significant. 
 
 ### Model Selection
 * Given a collection of reasonable models, which is best? 
@@ -428,8 +430,35 @@ $$
 * Tends to be recommended if you are interested in prediction, as it asymptotically behaves like cross validation.
 
 ##### BIC
+
 * More likely to provide the true model. 
 * BIC = $-2log(\text{max likelihood}) + k log (n)$. Punishes larger models with klog(n), more than the AIC
 * This leads to model selection consistency - letting n go to infinity converges on selection of the true model. 
 * One big drawback - with a certain low probability, it may select a model that is too small and may have significant impact on its prediction performance. 
 * Therefore BIC not chosen for prediction but for estimating the true process / model.
+
+##### Cross Validation
+1. Fit model to data $X_1,...,X_t$ up to fixed time point t. Let $\hat{X}_{t+1}$ denote forecast of next observation. Then compute error $e^*_{t+1} = X_{t+1} - \hat{X}_{t+1}$.
+2. Repeat for different choices of t, for $t=m,...,n-1$ where m is minimum number observations needed to fit the model. 
+3. Compute the MSE from the estimated $e^*_{m+1},...,e^*_{n}$. Select the model with lowest MSE
+* Notice we are only training on the past and validating on the future. Classical CV would not ensure that and we would often train on the future to predict the past. 
+* For seasonal data, say annual, you would need to leave out a year. 
+* If you want to predict k steps ahead, you should predict $\hat{X}_{t+k}$ in step 1. 
+
+## Frequency Domain
+* Stationary process is a composition of random periodic components with different frequencies
+* Best for oscillating time series, we can learn extra information from this approach
+* Sinusoids - can be rewritten in a number of ways. For a cosine with a phase component, we can rewrite using the identity $cos(x+y) =  cos(x) cos(y) - sin(x)sin(y),\; x=2\pi ft,\;y=\phi$. We then have a sum of cos and sin functions without a phase term. 
+* This is helpful since optimizing a cosine with a phase is a non convex optimization, but after the transform, a regression is linear in amplitude coefficients for cos and sin. Additionally can rewrite in terms of complex numbers using Euler's formula $e^{ix} = cos(x) + isin(x)$
+* Amplitude affects the max and min of each wave - the loudness of a signal. Frequency changes speed of oscillations - tone of an audio signal. Phase shifts the signal in time in a constant manner - delay playback. 
+* Goal is to decompose signal into linear combination of sinusoids
+
+### Fourier Transforms
+* **Discrete Fourier Transform**: For x data, the DFT is by $b_{j}=\sum_{t=0}^{n-1} x_{t} \exp \left(-\frac{2 \pi i j t}{n}\right)$
+	* Interpret as the contribution of sinusoid with frequency $\frac{j}{n}$ to overall signal. 
+* **Inverse Fourier Transform**: For x data and its DFT $x_{t}=\frac{1}{n} \sum_{j=0}^{n-1} b_{j} \exp \left(\frac{2 \pi i j t}{n}\right)$
+	* We can go back and forth between DFT representation and original data set without losing information. 
+	* In the ARMA case, we had different representations of a process (AR infinity, MA process, etc). This is quite similar - we can look at the time or frequency domain with no assumptions. Any discrete time signal can be rewritten in this decomposition. 
+	* When we do this decomposition, we see that the b coefficients are very sparse - there are just a few frequencies that best describe the process. 
+	* Transformations in the fourier space can perform useful function in the original time space 
+* 
