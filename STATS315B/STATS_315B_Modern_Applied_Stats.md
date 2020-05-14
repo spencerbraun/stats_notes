@@ -359,6 +359,9 @@ title: Modern Applied Statistics: Data Mining
 * Effectively the best additive approximation of F. Properties similar to coefficient estimation in linear regression.
 * Note partial dependence is a function of the variables of interest accounting for the others. Not the same as ignoring all the others. Example: 2 hospitals A and B. A has higher success rate when success rate is the only variable considered. But A only has a higher success rate because B gets all the difficult cases since they are actually much better. So the conclusion of a model of success rate and difficulty comes to a very different conclusion. 
 
+### Notes
+* Compared to backfitting: backfitting cycles through each function/parameter and updates holding the others constant in an iterative fashion. It does not have a search path and does not seek to update a single coeffient direction.
+
 ## Neural Networks
 * Structural Model: $F(x)=\sum_{m=1}^{M} b_{m} S\left(a_{0 m}+\sum_{j=1}^{m} a_{j m} x_{j}\right)+b_{0}$
 	* Parametrized function with x, starting with a single hidden layer feed forward network. Linear combination of functions of linear combinations of the data. 
