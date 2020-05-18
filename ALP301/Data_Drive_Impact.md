@@ -176,3 +176,8 @@
 * Conjecture that the utility matrix is actually the product of two long, thin matrices. Makes sense if there are a relatively small set of features of items and users that determine the reaction of most users to most items.
 * UV-decomposition:  from M (n x m) construct U (n x d) and V (d x m) st UV approximates M in those entries where M is nonblank. Closeness often measured by RMSE - summing nonblank M entries, taking square of entry-wise difference between M and UV
   * Computed incrementally - start with random initialized UV and move stochastically towards a minimum via grad descent. 
+
+## Class Takeaways
+
+* Management requires technical knowledge to drive a path forward. Serves a different role from analyst - analyst needs to think within the given goal structure, but management needs to think what that goal structure is. Eg. focusing on recommendation improvement vs do recommendations make sense for this business context
+* Tradeoffs between metric immediacy / closeness to intervention and ability to measure business objectives

@@ -461,4 +461,35 @@ $$
 	* In the ARMA case, we had different representations of a process (AR infinity, MA process, etc). This is quite similar - we can look at the time or frequency domain with no assumptions. Any discrete time signal can be rewritten in this decomposition. 
 	* When we do this decomposition, we see that the b coefficients are very sparse - there are just a few frequencies that best describe the process. 
 	* Transformations in the fourier space can perform useful function in the original time space 
-* 
+	* Proof: Want to show that the inverse gives us back the original signal: 
+
+$$
+\frac{1}{n} \sum_{j=0}^{n-1} b_{j} \exp \left(\frac{2 \pi i j t}{n}\right) =\frac{1}{n} \sum_{j=0}^{n-1}\sum_{s=0}^{n-1} x_{s}  \exp \left(-\frac{2 \pi i j s}{n}\right) \exp \left(\frac{2 \pi i j t}{n}\right) \\
+=\frac{1}{n} \sum_{s=0}^{n-1} x_{s} \sum_{j=0}^{n-1} \exp \left(\frac{2 \pi i (t- s)}{n}\right)^j \\
+=\frac{1}{n} \sum_{s=0}^{n-1} x_{s} \sum_{j=0}^{n-1} \exp \left(\frac{2 \pi i (t- s)}{n}\right)^j \quad \text{(t=s, sum = n)}\\
+\text{using geom series, }t \neq s \quad \implies \sum_{j=0}^{n-1} \exp \left(-\frac{2 \pi i (t- s)}{n}\right)^j = \frac{1- \exp \left(\frac{2 \pi i (t- s)}{n} n\right)}{1- \exp \left(\frac{2 \pi i (t- s)}{n}\right)}=0 \quad \text{By Euler's}\\
+\frac{1}{n} \sum_{s=0}^{n-1} x_{s} \sum_{j=0}^{n-1} \exp \left(\frac{2 \pi i (t- s)}{n}\right)^j = \frac{1}{n} \sum_{s=0}^{n-1} x_{s} \mathbb(I)_{t=s}n = \frac{1}{n} n X_t = X_t
+$$
+
+* For Fourier frequencies, we get exact replications of values in our dataset. For non-Fourier frequencies, we will not get exact repetitions - this is an artifact of discrete sampling. The higher the sampling rate, the more frequencies we can construct as Fourier frequencies. 
+* For complicated superpositions of sin/cos we could run a regression to see whether our guesses of frequencies have non-zero contribution. The terms of the regression turn out to be orthogonal, so the regressions can be performed separately as univariate
+* DFT can be written as $x=\frac{1}{n} \sum_{j=0}^{n-1} b_{j} u^{j}$ as a sinusoid with frequency j/n. The frequencies j/n are called Fourier frequencies. Here b is a complex number and u is a complex vector - u is the complex basis and b is representation of x in this basis.
+* Orthogonality: this basis u is an orthgonal basis. For $l \neq k,\; \langle u^l, u^k \rangle = \sum_{j=1}^n u_j^l \bar{u}_j^k$ for complex conjugate $\bar{u}$. Then $=  \sum_{j=1}^n exp(2\pi i j \frac{l}{n})exp(-2\pi i j \frac{k}{n}) =  \sum_{j=1}^n exp(2\pi i  \frac{l-k}{n})^j = \frac{1 -exp(2\pi i  (l-k))  }{1 -exp(2\pi i  \frac{l-k}{n})}$ by geom series. And as before this is equal to 0 since l,k both integers and we get zero plugging into Euler's formula.
+
+### Periodogram
+* For real values data X with DFT b the periodogram is defined by $I(j / n)=\frac{\left|b_{j}\right|^{2}}{n} \quad \text { for } j=1, \ldots,\lfloor n / 2\rfloor$
+* It is the strength of contibution of sinusoid with frequency j/n. 
+* We only look up to n/2, since we have symmetry $b_{n-j} = \bar{b}_j$
+* We divide by n in $\left|b_{j}\right|^{2}}{n}$ since the white noise will scale in $\sqrt{n}$ - when we square, we keep white noise scaled to its neighborhood whereas signal will be heightened. As our n grows, we will get huge values for actual signals in order to keep noise at a constant value.
+* Complex signals in one representation may be simpler in another. Very useful for signal compression.
+* The periodogram for white noise - it can appear we have some signficant spikes. But drawing a new sample produces completely different spikes. White noise can be seen as a superposition of trig functions in which there is equal weight on each frequency - "uniform" distribution of frequencies with a high variance periodogram. (Uniform not referring to a probability density)
+* Two step procedure to estimate model - look at the periodogram to determine the frequencies of interest. To find the amplitudes, perform a regression using those frequencies. 
+* Leakage - we start with a signal at a non-Fourier frequency, then try to estimate using Fourier frequencies. We get a large peak and some signficant signal before and after as well since we cannot hit the frequency of the signal exactly.
+* Increasing and increasing noise, eventually signals can be drowned out. This is likely to happen to some signals in real noisy data.
+
+### Switching Between Time and Frequency
+* For some data X and sample ACF $\hat{\gamma}(h)$ and for $I(j / n) \text { for } j=1, \ldots,\lfloor n / 2\rfloor$ then $I(j / n)=\sum_{h=-(n-1)}^{n-1} \hat{\gamma}(h) \exp \left(-\frac{2 \pi i j h}{n}\right)$
+
+### Spectral Density
+* For stationary process with ACVF $\gamma(h)$ we define the spectral density as $f(\lambda):=\sum_{h=-\infty}^{\infty} \gamma_{X}(h) \exp (-2 \pi i \lambda h)$ for $-1 / 2 \leq \lambda \leq 1 / 2$
+* The spectral density for white noise $\gamma(h) = 0 \implies sigma^2$ - constant. We can see why this is not a probability density as well 
