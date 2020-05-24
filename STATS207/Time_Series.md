@@ -480,7 +480,7 @@ $$
 * For real values data X with DFT b the periodogram is defined by $I(j / n)=\frac{\left|b_{j}\right|^{2}}{n} \quad \text { for } j=1, \ldots,\lfloor n / 2\rfloor$
 * It is the strength of contibution of sinusoid with frequency j/n. 
 * We only look up to n/2, since we have symmetry $b_{n-j} = \bar{b}_j$
-* We divide by n in $\left|b_{j}\right|^{2}}{n}$ since the white noise will scale in $\sqrt{n}$ - when we square, we keep white noise scaled to its neighborhood whereas signal will be heightened. As our n grows, we will get huge values for actual signals in order to keep noise at a constant value.
+* We divide by n in $\frac{\left|b_{j}\right|^{2}}{n}$ since the white noise will scale in $\sqrt{n}$ - when we square, we keep white noise scaled to its neighborhood whereas signal will be heightened. As our n grows, we will get huge values for actual signals in order to keep noise at a constant value.
 * Complex signals in one representation may be simpler in another. Very useful for signal compression.
 * The periodogram for white noise - it can appear we have some signficant spikes. But drawing a new sample produces completely different spikes. White noise can be seen as a superposition of trig functions in which there is equal weight on each frequency - "uniform" distribution of frequencies with a high variance periodogram. (Uniform not referring to a probability density)
 * Two step procedure to estimate model - look at the periodogram to determine the frequencies of interest. To find the amplitudes, perform a regression using those frequencies. 
@@ -488,8 +488,28 @@ $$
 * Increasing and increasing noise, eventually signals can be drowned out. This is likely to happen to some signals in real noisy data.
 
 ### Switching Between Time and Frequency
-* For some data X and sample ACF $\hat{\gamma}(h)$ and for $I(j / n) \text { for } j=1, \ldots,\lfloor n / 2\rfloor$ then $I(j / n)=\sum_{h=-(n-1)}^{n-1} \hat{\gamma}(h) \exp \left(-\frac{2 \pi i j h}{n}\right)$
+* Connected ACF and Periodogram: For some data X and sample ACF $\hat{\gamma}(h)$ and for $I(j / n) \text { for } j=1, \ldots,\lfloor n / 2\rfloor$ then $I(j / n)=\sum_{h=-(n-1)}^{n-1} \hat{\gamma}(h) \exp \left(-\frac{2 \pi i j h}{n}\right)$
+* Note this looks almost like a DFT of $\hat{\gamma}$ - the difference is we are summing over a slightly different h. 
+* Proof: Taking DFT of constant signal $\sum_{t=0}^{n-1} exp(-2\pi i j \frac{t}{n}) = 0$, equality proved through geometric series we have seen in prior proves. Taking a constant signal decomposed into Fourier frequencies, the frequency contributions will be zero. Thus for all $j \neq 0,\; b_j = \sum_{t=0}^{n-1} (x_t - \bar{x}) exp(-2 \pi i j t/n)$ - we can subtract off the average without changing $b_j$ given the zero equality. With periodogram, $\frac{|b_j|^2}{n} = \frac{1}{n} b_j \bar{b_j}$ then plugging into b's: $= \frac{1}{n} (\sum_{t=0}^{n-1}  (x_t - \bar{x}) exp(-2 \pi i j t/n))((\sum_{t=0}^{n-1}  (x_t - \bar{x}) exp(2 \pi i j t/n))$. Multiplying out to get covariances: $\frac{1}{n} \sum_{t=0}^{n-1}\sum_{s=0}^{n-1} (x_t - \bar{x})  (x_s - \bar{x}) exp(2 \pi i j (s-t)/n)$ Then reordering and sorting by h = t-s: $= \frac{1}{n} \sum_{h=-(n-1)}^{n-1} \sum_{t,s}  (x_t - \bar{x})  (x_s - \bar{x}) exp(-2 \pi i j h/n)$ - what happened here is that we sorted terms for each lag. If $x_t,x_s$ are at opposite sides of time seris, then different is n-1, etc so summing over the lags and summing over all t,s. Then $exp(-2 \pi i j h/n)$ is a constant in t,s so $= \frac{1}{n} \sum_{h=-(n-1)}^{n-1} exp(-2 \pi i j h/n)\sum_{t,s, t-s=h}  (x_t - \bar{x})  (x_s - \bar{x}) = \frac{1}{n} \sum_{h=-(n-1)}^{n-1} exp(-2 \pi i j h/n) n \hat{\gamma}(h)$, since $\hat{\gamma}(h) = \frac{1}{n} \sum_{t=1}^{n-h}(x_t - \bar{x})  (x_s - \bar{x})$. So finally, $=sum_{h=-(n-1)}^{n-1}  \hat{\gamma}(h) exp(-2 \pi i j h/n)$
 
 ### Spectral Density
+* What if we had infinite data? What is the underlying mathematical object that the periodogram is trying to estimate? The spectral density.
 * For stationary process with ACVF $\gamma(h)$ we define the spectral density as $f(\lambda):=\sum_{h=-\infty}^{\infty} \gamma_{X}(h) \exp (-2 \pi i \lambda h)$ for $-1 / 2 \leq \lambda \leq 1 / 2$
-* The spectral density for white noise $\gamma(h) = 0 \implies sigma^2$ - constant. We can see why this is not a probability density as well 
+* We can see this equation is the periodogram summed from negative to positive infinity and replacing the estimated ACF with the true ACVF, replacing frequencies $j/n$ by $\lambda$ - discrete frequencies to all in its range.
+* The SD corresponds to the strength of random periodic components with frequency $\lambda$ present in the time series. This is not a probability density, but a measure of relative strength.
+* The spectral density and the true ACVF provide the same information: $\gamma_{X}(h)=\int_{-1 / 2}^{1 / 2} e^{2 \pi i \lambda h} f(\lambda) d \lambda=\int_{-1 / 2}^{1 / 2} \cos (2 \pi \lambda h) f(\lambda) d \lambda$, similar to the result connecting the sample ACVF and the periodogram. Given the ACVF, there is a unique spectral density, so we can switch back and forth between these views without losing information.
+* The spectral density for white noise $\gamma(h) = 0 \implies \sigma^2$ - constant. We can see why this is not a probability density as well 
+* We saw white noise can be seen as superposition of sinusoids - every time we sample we get different Fourier coefficients. 
+
+### Process Representation
+* X can be represented as $x_{t}=\sum_{j=1}^{m}\left(A_{j} \cos \left(2 \pi \lambda_{j} t\right)+B_{j} \sin \left(2 \pi \lambda_{j} t\right)\right)$, sinusoids with random, uncorrelated coeffients A,B with zero mean and $\operatorname{var}\left(A_{j}\right)=\operatorname{var}\left(B_{j}\right)=\sigma_{j}^{2}$.
+* We can approximate any stationary model in this way for large enough m, the degree of approximation, ie. how many sinusoids do we use in the approximation. With m at infinity we get exact representation instead of approximation.
+* Can also say that this representation of $X_t$ is stationary with $\neg x(h)=\sum_{i=1}^{m} \sigma_{i}^{2} \cos \left(2 \pi \lambda_{j} h\right)$
+* For some time series $Y_t$ with spectral density $f(\lambda)$, how do we choose parameters for approximating $X_t$ to get close to Y. Choose $A_j, B_j$ and $\sigma_{j}^{2}=\frac{f\left(\lambda_{j}\right)}{m},\; \lambda_{j}=\frac{j}{2 m}$
+* Why does this work? Looking at $\gamma(h) = \sum_{j=1}^m \sigma^2_j cos(2 \pi \lambda_j h) =  \sum_{j=1}^m f(\frac{j}{2m})/m (cos(2\pi h \frac{j}{2m}))$. Simplifying $=\frac{2}{2m}\sum_{j=1}^m  f(\frac{j}{2m})cos(2\pi h \frac{j}{2m})$, then note as m goes to infinity for j going from 1 to m, the max of $f(\frac{j}{2m})$ is 1/2 and we can turn into integral. $\approx 2\int_0^{1/2} f(\lambda) cos(2 \pi h \lambda) d\lambda$. By definition, the spectral density is symmetric as is cosine, so $=\int_{-1/2}^{1/2} f(\lambda)cos( 2\pi h \lambda) d\lambda$. This means the process $X_t = \sum_{j=1}^m...$ approximately has spectral density $f(\lambda)$
+
+### Aliasing
+* A high frequency signal with discrete sampling may look like a lower frequency signal
+* A camera taking a picture 24 frames per second and a helicopter that rotates at a multiple of 24, it will look like the helicopter is not rotating on the camera.
+* You have to sample at a high enough frequency to make sure you don't get distortions from higher frequencies that affect lower frequencies. Very important for audio
+* 

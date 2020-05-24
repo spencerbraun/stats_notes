@@ -427,7 +427,7 @@ title: Modern Applied Statistics: Data Mining
 ### Basis Expansions
 * $F(x ; \underline{a}, b)=b_{0}+\sum_{m=1}^{M} b_{m} B\left(\underline{x} ; \underline{a}_{m}\right)$
 * Linear combinations of basis function expansions - equivalent to the NN structure
-* One popular one has been the radial basis function: $B(\underline{x} ; \underline{a})=e^{-\frac{1}{2 a_{0}^2} } \sum_{j=1}^{m}\left(x_{j}-a_{j}\right)^{2}$. Produces concentric circles around a point. Opposite of NN signmoid which varies in only one direction - along some combination of predictors. The RBF varies in all directions at the same rate - arranges the centers and widths of the circles to approximate the function.
+* One popular one has been the radial basis function: $B(\underline{x} ; \underline{a})=exp[-\frac{1}{2 a_{0}^2}  \sum_{j=1}^{m}\left(x_{j}-a_{j}\right)^{2}]$. Produces concentric circles around a point. Opposite of NN signmoid which varies in only one direction - along some combination of predictors. The RBF varies in all directions at the same rate - arranges the centers and widths of the circles to approximate the function.
 * RBF is perfect for certain target function structures, capturing something that would take a huge net to capture with a NN. RBF perfect for isolated peaks, seen more in the hard sciences. Converse is also true - all dependent on the problem structure
 
 ### Classification
@@ -436,7 +436,7 @@ title: Modern Applied Statistics: Data Mining
 * In 2 class case, just use a sigmoid as our output activation and we get the same probabilities we got out of prior models.
 * Multi-class: have k target function $\left\{F_{k }\left(\underline{x} ; \underline{w}_{k }\right)=P_{r}\left(y=c_{k} | \underline{x}\right)\right\}_{i}^{K}$ (ie K output nodes)  or we use a softmax activation, just like we used in multi-class logistic regression.
 
-## Nearest Neighbor / Kernel Methods
+## Nearest Neighbor Methods
 * Do not follow the paradigm of structural model, score, search
 * Data structure is the same, how it is done is different
 * There is no training in nearest neighbors - the data is the model.
@@ -452,7 +452,7 @@ title: Modern Applied Statistics: Data Mining
 * Neighborhood size M: subbing in the model $y_i = f^*(x_i) + \epsilon$ then $\hat{f}(x) = \frac{1}{M} \sum_{r_i(x) \leq M}f^*(x_i) +  \frac{1}{M}\sum_{r_i(x) \leq M}\epsilon_i$. Assuming independent errors then $E(f^*(x) - \hat{f}(x))^2 = E(f^*(x) -\frac{1}{M} \sum_{r_i(x) \leq M}f^*(x_i))^2 + \frac{1}{M^2}\sum_{r_i(x) \leq M}E(\epsilon_i^2)$ where $E(\epsilon_i^2) = \sigma^2$. $\sigma^2$ is a fixed population quantity that we do not observe. 
 * Then $E(f^*(x) - \hat{f}(x))^2 = E(f^*(x) -\frac{1}{M} \sum_{r_i(x) \leq M}f^*(x_i))^2 + \frac{1}{M}\sigma^2$ where  $E(f^*(x) -\frac{1}{M} \sum_{r_i(x) \leq M}f^*(x_i))^2$ is squared bias and $\frac{1}{M}\sigma^2$ is the variance. This is the cleanest representation of the bias-variance tradeoff. Increasing neighborhood size decreases variance, but bias tends to go up as we allow the approximation of f to stray from the truth. If $f^*(x)$ is just linear and we increase the neighborhood symmetrically, then the average over the neighborhood wouldn't change and the bias would be unchanged. But for non-linear targets or non-symmetric neighborhood expansions, bias is affected. In high dimensions, the density of the data is very asymmetric, leading to highly asymmetric neighborhoods when we take top Z points by rank.
 * We choose M to optimally trade off bias and variance. We turn to CV just like any other method. Very easy to use LOOCV with nearest neighbors. Since we are directly using the k-closest points to predict the value at a given point, can easily get the prediction for 1 neighbor, 2 neighbors, 3 neighbors, etc and pick the one with the smallest error. Leaving one vs 10 out is the same in NN methods computationally, so we can easily use LOOCV. 
-* Aside: Suppose you have a dataset to divide into training and test. How big should each be? The bigger the test set, the more accurrate the estimate of future error will be. But it will be more biased - we are fitting a model to a smaller subset of the data, but our end model will be fit on the whole dataset. We are not estimating the right error, since our model is approximating our final model. If the test size is reduce, the variance of our estimate of error increases. This is the decision in CV - if we use k-fold, our choice of k is bias-variance tradeoff. LOOCV is lowest bias, since each model has just 1 fewer observation than the end model. 
+* Aside: Suppose you have a dataset to divide into training and test. How big should each be? The bigger the test set, the more accurrate the estimate of future error will be. But it will be more biased - we are fitting a model to a smaller subset of the data, but our end model will be fit on the whole dataset. We are not estimating the right error, since our model is approximating our final model. If the test size is reduced, the variance of our estimate of error increases. This is the decision in CV - if we use k-fold, our choice of k is bias-variance tradeoff. LOOCV is lowest bias, since each model has just 1 fewer observation than the end model. 
 * Learning curve of the procedure: accuracy vs N for training. Generally this curve goes up, quite steep at the beginning but has diminishing returns. Towards the end, the sample size used for training does not significantly affect accuracy. Lesson: with a lot of data, we can afford a larger test set but with smaller data we face a real tradeoff. 
 
 ### Using Attribute-Value Data
@@ -461,3 +461,99 @@ title: Modern Applied Statistics: Data Mining
 2. $D(X, X') = average\;\{d_j(x_j,x_j')\}_1^M$, though not quite this simple in practice
 * Average usually uses weight $L_p$ norms: $D_p(X,X') = [\sum_{j=1}^m w_j d_j^p (x_j, x_j') / \sum_{j=1}^m w_j]^{1/p}$. Typically p = 1,2,$\infty$ defining manhattan norm, euclidean norm, or max norm.
 * P=1 is a diamond norm. P=2 is a circle norm. P=$\infty$ is a square. Generally does not make a lot of difference. The weights make all the difference - this is the crucial choice to make the technique work.
+* Often you have proximity data and attribute value data - need to convert attribute value to proximity in order to use both
+* The weights control the relative influence of each $x_J$ in determining the distance. Maybe naive approach is to give equal weight - but this does not give equal influence!
+* Influence is proportional to the weight times the average pairwise dissimilarity for that variable. For p = 2, the influence is the weight times twice the variance of $x_j$ over all observations. 
+* For interval scale variables, we can scale the variables - method depends on the units used to measure $x_j$. With euclidean distance say, the variance increases by the square of the scaling to $x_j$ - therefore influence is changed since influence $I_j \sim w_j Var(\{X_{ij}\}_{i=1}^N)$. This a scaling problem but also a big statistical problem
+* Suppose target function depends on x1, x2. If x1 has huge variance compared to x2, then f(x1, x2) using KNN is only going to capture a selection of x1 - the nearest neighbors may take on any value in x2 since the variation is so small. So in effect the model has no dependence on x2, but the reality may be entirely different that this approximation. 
+* A solution: give all variables equal influence. $w_j \sim 1/Var(\{X_{ij}\})$ for p =2 say. Equivalent to standardizing each of the variables to have the same variance! 
+* But equal influence may not be the best thing to do - the target function may not rely on all predictors equally. In data mining often have large number of predictors but small number have any relevance. We need to introduce some sparsity into our model - assume a few of the variables are driving our prediction. Including noise variables will actively harm our predictions. If the target function depends only on X1 then an equal influence model will have high bias (but the same variance for a fixed M).
+* In high dimensions this gets much worse due to the curse of dimensionality. This is especially problematic in kernel methods; there is no automatic discovery of relevant variables. Suppose you have one dimensions X with a uniform distribution. If you want a region on the line with 10% of the data, you can take a small neighborhood. Along 2 dimensions, taking 10% of the data defines a much bigger interval. With 10 dimensions, a region with 10% of the data takes a 90% range on each of the predictors.
+* This also depends on the number of observations. In princple, large n could afford you a smaller neighborhood in high dimensions. But curse of dimensionality increases exponentially so it doesn't solve the problem completely. Nearest neighbor methods are universal. 
+
+### Missing Values
+* Take the average where neither the future observation nor the database point has missing values. Look just at the predictors for which we have values
+* Use $\tilde{w}_j = w_j \mathbb{I}(X_j \neq missing)\mathbb{I}(X_{ij} \neq missing)$
+* With correlated variables, we will get very good approximation. If there are not highly correlated variables, the approximation will not be as good
+
+### NN Problems
+* There are high density regions and low density regions. Taking the NN of a high density point will have a much smaller neighborhood than a sparse region. Additionally the regions for sparse regions will be pulled towards the density. The variance of the neighborhoods will be the same because it just depends on the number of points, but the bias will be way bigger for the bigger neighborhood.
+* Could instead try to control the bias and let the variance fluctuate - fix the radius of the neighborhood but now contain different numbers of points. If you define a radius with no neighbors within it at prediction time, how do you make a prediction. 
+* Turns out fixing a radius is not a NN method, it is a kernel method
+
+### Kernel Methods
+* For regression $\hat{f}(\underline{x})=\sum_{i=1}^{N} y_{i}  K\left(\underline{x}, \underline{x}_{i}\right) / \sum_{i=1}^{N} K\left(\underline{x}, \underline{x}_{i}\right)$. Taking a weighted average over a space. 
+* Here $K\left(\underline{x}, \underline{x}^{\prime}\right)=I\left[D\left(\underline{x}, \underline{x}^{\prime}\right) \leq D_{M}(\underline{x})\right]$. For NN, our kernel is an indicator if the point is in our neighborhood but now they can be different. Fix a radius and consider only points within a given radius. 
+* We can give equal weight to all points in a neighborhood with a step function (1 or 0), but instead we could have declining influence with distance.
+* Gaussian kernel, Cauchy kernel, exponential kernel, etc. Does not tend to matter than much. Just a smoother version of weighted average, weighted by the distance to the future data point.
+
+### Support Vector Machines
+* $\hat{f}(\underline{x})=\sum_{i=1}^{N} \alpha_{i} K\left(\underline{x}, \underline{x}_{i}\right)$ - linear combination of kernels near a future point. The $\alpha$ are coefficients fit to the data, such that we put a little neighborhood around every training point. 
+* Kernel around these points has to have support everywhere, like Gaussian. When we make a prediction, take the values of the kernels for all training points and take a weighted sum for the point where we want to make a prediction.
+* The farther kernels will have very little influence, and in practice many of the alphas come out 0. The ones that are not 0 are the support vectors. 
+* This is simply another interesting way to view support vector machines. 
+
+### NN / Kernel Advantages / Disadvantages
+* Advantages:
+	* Very simple to implement
+	* Explainable, but not interpretable
+	* Very fast since no training
+* Limitations
+	* Curse of dimensionality - adding irrelevant variables hurts in a big way
+	* No model summary - model = training data. Prediction is slow, since it is a pass over all of the data. With a database size N, can find nearest point in $c log(N)$ but constant grows exponentially in dimension
+	* No interpretation, except partial dependence plots. But no derived variable importance - you in fact have to provide the variable importance.
+
+## MARS
+* Mutlivariate adaptive regression splines. Another attempt to make trees more accurrate 
+* Recall CART was a linear combination of basis functions, where those basis functions were indicators of whether a datapoint was in a given region.
+* It has problems with accuracy 
+	* Approximation was piecewise constant causing boundary errors due to discontinuity
+	* Data fragmentation - each split reduces amount of data remaining, local patterns not fitted.
+	* High order interaction model since each level is an interaction
+	* Instability with high variance
+* MARS is another attempt to correct these problems along the lines of bagging and boosting. 
+* CART is discontinuous because $B_{m}(\underline{x})=I\left(\underline{x} \in R_{m}\right)$ basis functions are discontinuous. If we use a smooth functions instead, we achieve continuity.
+* Let $H(\eta)=\left\{\begin{array}{ll}1 & if\;\eta \geqslant 0 \\0 &  \text { Otherwise }\end{array}\right.$. CART can be viewed as basis function multiplication instead of regions and splitting
+	* Start out with one basis function in the model with the value 1 everywhere (akin to region is entire space)
+	* Given a certain # of basis functions at an iteration m, there are m-1 basis functions, indicators of being in a region. 
+	* Pass over the regions, consider all predictor variables. For each predictor, consider split points in the region
+	* For a given basis, predictor, split, consider an improved model removing current basis function and replacing with 2 new basis functions - ie. an additional split. This is multiplying our basis function by our step function H.
+	* If new model is better than what we have seen so far, we remember these parameters. After looping over all regions / splits, we can choose the best to update the model.
+* What is left is a tree where each terminal node is a basis function. Our final model is a linear combination of these basis functions, which are made up of products of our step function H for different $\eta$ values and predictors. 
+* Continuity 
+	* So the only thing that makes the final model discontinuous are the H's. We then notice that H is a spline function - a zero degree spline.
+	* If we choose a q degree spline instead of  $H\left[\pm\left(x_{j}-s\right)\right]=\left[\pm\left(x_{j}-s\right)\right]_{+}^{0}$ we get $b\left[\pm\left(x_{j}-s\right)\right]=\left[\pm\left(x_{j}-s\right)\right]_{+}^{q}$. A 1 degree spline is a relu, but as we add to degrees we get 0 outside of the indicator and higher order polynomials within.
+	* This is the trick - replacing with piecewise linear instead of constant. Going to higher orders for continuous derivatives is a smaller improvement and just serves to complicate the algorithm for most applications.
+	* Our new basis functions take the form $B_m^{(q)}(x) = \prod_{k=1}^{K_m} [t_{km} (X_{j(k,m)} - s_{km})]^q_+$
+* Data Fragmentation and Interaction Order
+	* Instead of replacing the parent basis function, leave it in and just add the child basis functions.
+	* All of the basis functions, including previously split parents, are eligible for further splitting at each iteration
+	* No longer force interaction to split on a given variable. Some nodes will have many splits coming off of them, others can have fewer
+	* Tree is no longer binary as the regions can overlap. An additive, main effects, model would only split the root node. 
+	* We consider existing nodes for additional splits, but we don't have the same predictor appear at multiple points in the tree as allowed in CART. If a parent node is split on a variable, we won't consider that predictor for a new split on a downsteam child node (to keep bases as tensor product splines).
+	* Thus these trees have a limiting depth, the total number of variables. But this does not limit the number of splits
+* Full MARS algorithm
+	* Uses relu's instead of 0 order splines.
+	* Passes over all nodes in the tree at every pass, not just terminal nodes
+	* Start with a single basis function that is 1 everywhere
+	* Loop over M times for max M basis functions. At each step pass over those already in the model. 
+	* Pass over variables not in the tree and split points
+	* For a given basis, variable, split, consider a new model with a linear combination of a negative relu and a positive relu. When we find a better split than we have found so far, this is remembered as the best split so far.
+	* When we loop over everything for a given m, we add two basis functions that performed best at improving the model.
+
+### Interpretation
+* Recall the ANOVA decomposition, where we can decompose into the level of interaction.
+* Most functions do not involve many high order interactions. Many are well approximated just by main effects. Procedures that are very good at representing low order interactions, can get a very good model.
+* Splits off of the root are main effects in MARS. The splits of the root children are second order, etc.
+* We could tell the algorithm to limit the order of interaction - ie, don't grow the depth of tree further. 
+* How many basis functions should you have?
+	* Need to regularize, with a parallel to early stopping
+	* At every step we add 2 basis functions. We end up with many then prune. If we remove one at a time, see how much worse the model becomes. Find the basis function st when we remove it, the model degrades the least. Iteratively continue to remove until we have none.
+	* This gives us a sequence of models, starting with the largest model ending with the smallest. Pick the best model via cross validation. 
+* Price of using MARS over CART: computation. 
+	* Before when we split a region and had two daughters and performed linear least squares fit for coefs, the coefs for the other regions did not change due to disjointness of the regions.
+	* Now regions are overlapping and we need a full linear least squares fit to evaluate the average least-squares residual.
+	* This takes a lot of time and we do it repeatedly. 
+	* Computation of least square fit $O(nm^2 + m^3)$ for m basis functions being considered and n data points. But we do this repeatedly in a loop for a total of $O(m(N^2M^4 + NM^5))$ - this is very slow!
+	* Speed it up: at each point we consider adding a basis function that is 0 up to that point and 1 after and its complementary negative basis function. By just considering the data points instead of continuous splits, we reduce to $O(NM^2)$.
+* Note that MARS is still unstable - non-convex in the split points. Not scale invariant as continuity implies a scale. 
