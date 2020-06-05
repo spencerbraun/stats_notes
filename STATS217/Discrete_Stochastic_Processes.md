@@ -34,18 +34,18 @@ date: 01/06/2019
 * Sample Space: $\Omega$ - set of outcomes 
 * $\sigma$-algebra of events: $F, \; A \subset \Omega$
   * Algebra - some set along with some operations that can be applied
-  * $\empty = \{\} \in F$
+  * $\emptyset = \{\} \in F$
   * If $A  \in F,\implies A^C = \{\omega \in \Omega: \omega \notin A\} \in F$ - if event A in F so is its complement
   * $A_1, A_2,... \in F \implies \cup^\infty_{n=1} A_n \in F$ - if sequence of events in F then so is their union
   * Note: $(A^C \cup B^C)^C = A \cap B$ - then intersections are also in the sigma-algebra
 * Probability Measure: $P: F \rightarrow [0,1]$. Input an event and it outputs a probability
-  * $P(\empty) = 0$
-  * Additivity: $A_1, A_2, A_3$ are pairwise disjoint ($A_i \cap A_j = \empty \; \forall i \neq j$), then $P(\cup_{n=1}^\infty A_n) = \sum_{n=1}^\infty P(A_n)$. In general without disjoint assumption: $P(\cup_{n=1}^\infty A_n) \leq \sum_{n=1}^\infty P(A_n)$ (union bound). This is intuitively since we are counting the intersection multiple times.
+  * $P(\emptyset) = 0$
+  * Additivity: $A_1, A_2, A_3$ are pairwise disjoint ($A_i \cap A_j = \emptyset \; \forall i \neq j$), then $P(\cup_{n=1}^\infty A_n) = \sum_{n=1}^\infty P(A_n)$. In general without disjoint assumption: $P(\cup_{n=1}^\infty A_n) \leq \sum_{n=1}^\infty P(A_n)$ (union bound). This is intuitively since we are counting the intersection multiple times.
   * Consequences: $P(A^C) = 1 - P(A)$, $P(\Omega) =1, \; P(A) \leq 1 \; \forall A$
 
 ### Random Variables
 
-* Function from $\Omega \rightarrow \R$
+* Function from $\Omega \rightarrow \mathbb{R}$
 * CDF $F_X(u) = P(X \leq u)$. $X \leq u$ is the set $\{\omega \in \Omega: X(\omega)\leq u\} \in F$
 
 * Example: $\Omega = \{(a_i)_{i=1}^\infty: a_i \in \{-1, +1 \} \}$ - space for random walk. Then $X_i = X_i(\omega) = a_i$. Define sum$S_n = \sum_{j=1}^nX_j(\omega)$. Hitting time $T_{10} = inf\{n \geq 1: S_n = 5\}$
@@ -57,7 +57,7 @@ date: 01/06/2019
 
 ##### Continuous RVs
 
-* By defn, X continuous has a PDF: $f_X(x)$ st $\forall a < b \in \R,\; P(a \leq X \leq b) = \int_a^b f_X(x)dx$
+* By defn, X continuous has a PDF: $f_X(x)$ st $\forall a < b \in  \mathbb{R},\; P(a \leq X \leq b) = \int_a^b f_X(x)dx$
 * CDF $F_X(x) = P(X \leq x) = \begin{cases} \sum_{y \leq x} p_X(y) & \text{discrete} \\ \int_{-\infty}^\infty f_X(y) dy & \text{continuous}\end{cases}$
 
 ##### Joint Distributions
@@ -308,7 +308,7 @@ date: 01/06/2019
    * Let G = (V, E) be a graph. ||V|| = 6, E=[[1,2], [3,4], [3,5], [4,5], [5,6]]. 
    * SRW on G: state space S = V, transition probabilities $P(x,y) = \begin{cases}1/degree(x) & for\; \{x,y\}\in E\\0 & otherwise\end{cases}$ - that is at each time step move along an edge at random chosen uniformly at random from set of edges leading out of current state.
    * For V finite, is the distribution of $X_t \approx uniform$ on V after a long time? For our example, certainly not since 1-2 and 3-4-5-6 are separate CCs, whichever component contains $X_0$ contains $X_t\; \forall t \geq 0$. Additionally, vertices have different degrees, leading to different probabilities of visiting those nodes. Can come up with less intuitive examples as well, such as a connected 2D square - only can visit some vertices on odd states, others on even states.
-   * Recalls the drunkard on the street, that is a SRW on G with V = Z and nearest neighbor edges $E = \{\{k,k+1\}:k\in \Z\}$
+   * Recalls the drunkard on the street, that is a SRW on G with V = Z and nearest neighbor edges $E = \{\{k,k+1\}:k\in  \mathbb{Z}\}$
 6. iid Sequence
    * Let $\{X_n\}_{n=0}^\infty$ be iid RVs taking values in a countable set S with distribution $p(x) = P(X_n=x)$ then $P(X_{n+1}=x|X_n=x,...,X_0=x_0)=P(X_{n+1}=x|X_n=x) = P(X_{n+1}=x) =p(x)$
    * Transition matrix $P_{X,Y} = P(X_1=y)= p(y)$ - P has identical rows all equal to the row vector p
@@ -321,11 +321,11 @@ date: 01/06/2019
    * Q: For $X_0 = x \in \{1,2,3\}$ what is the probability we win? What is the probability $P_x(V_4 < V_0)=h(x)$ - hitting time for 4 precedes the hitting time for 0. Notation: for an event E and $x \in S$ write $P_x(E) = P(E|X_0=x),\; E_X(Y) = E(Y|X_0=x)))$
    * h(0) = 0 - the probability that we win given the first state is 0
    * h(4) = 1 - the probability that we win given we start at 4
-   * $h(1) =P(V_4 < V_0| V_0 = 1) = P(V_4<V_0 | X_1=0, X_0=1)P(X_1=0|X_0=1)+P(V_4<V_0 | X_1=2, X_0=1)P(X_1=2|X_0=1)\\=h(0))P(X_1=0|X_0=1) + h(2)P(X_1=2|X_0=1)=0(0.6)+h(2)(0.4)$
+   * $h(1) =P(V_4 < V_0| V_0 = 1) = \\P(V_4<V_0 | X_1=0, X_0=1)P(X_1=0|X_0=1)+\\P(V_4<V_0 | X_1=2, X_0=1)P(X_1=2|X_0=1)\\=h(0))P(X_1=0|X_0=1) + h(2)P(X_1=2|X_0=1)=0(0.6)+h(2)(0.4)$
    * Similarly, $h(2) = h(1)(0.6) + h(3)(0.4)$, $h(3) = h(2)(0.6) + h(4)(0.4)=h(2)(0.6) + 0.4$. Now have a system of linear equations and can solve for the hitting times. Let $h(1) = a, \;h(2) = b,\; h(3) = c$,  then $a = 2b/5,\;b=3a/5 + 2c/5,\; c=3b/5 + 2/5$. Solving the system, $c = 38/65,\; b=20/65,\;a=8/65$
    * Q: How long does the game take - expected playing time conditional on different starting points?
    * Need to compute $g(x) = E_xV_A$ with A = [1,4] - the set of absorbing states. $g(0) = 0,\;g(4) = 0$ since we are already at the absorbing states (if we used T, they would equal 1).
-   * $g(1)  = E[V_A|X_0 = 1]=E[V_A|X_1=0,X_0=1]0.6 +  E[V_A|X_1=2,X_0=1]0.4=(1+g(0))(0.6) + (1+g(2))(0.4)=1+0.4g(2)$
+   * $g(1)  = E[V_A|X_0 = 1]=E[V_A|X_1=0,X_0=1]0.6 +  E[V_A|X_1=2,X_0=1]0.4\\=(1+g(0))(0.6) + (1+g(2))(0.4)=1+0.4g(2)$
    * $g(2) = 1+0.6g(1) + 0.4g(3)$, $g(3) = 1+0.6g(2)+0.4g(4) - 1+0.6g(2)$. Solving the system we get g(1) = 33/13, g(2) = 50/13, g(3) = 43/13
 9. Repeated coin toss
    * We toss a fair coin repeatedly and independently recording results as $X_n \in \{H,T\}, n \geq 1$. What is the expected # of times before we see the pattern HTH?

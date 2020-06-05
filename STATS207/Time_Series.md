@@ -512,4 +512,78 @@ $$
 * A high frequency signal with discrete sampling may look like a lower frequency signal
 * A camera taking a picture 24 frames per second and a helicopter that rotates at a multiple of 24, it will look like the helicopter is not rotating on the camera.
 * You have to sample at a high enough frequency to make sure you don't get distortions from higher frequencies that affect lower frequencies. Very important for audio
-* 
+
+### Linear Time Invariant Filters
+* Useful for transforming to emphasize certain frequencies
+* Characterized by coefficients $a_j$, transforms a time series X into a output time series Y via $Y_{t}=\sum_{j=-\infty} ^\infty a_{j} X_{t-j}$
+* Example: We saw with differencing $Y_t = X_t - X_{t-1}$, $a_0 = 1,a_1=-1,a_j =0$ for other values of j.
+* Example: Smoothing. $Y_t = \frac{1}{2q+1}\sum_{j=-q}^q X_{t-j}$ we got factors $a_j = \frac{1}{2q+1}$ for all $|j| \leq q$, otherwise 0.
+* Phase Shift: $Y_t = X_{t-5}$ then $a_5 = 1,a_j =0$ for other j.
+* What happens to the ACF and what happens to the spectral density given some filter?
+* The transformed ACF for Y in terms of X: $\gamma_{Y}(h) :=\operatorname{cov}\left(\sum_{j} a_{j} X_{t-j}, \sum_{k} a_{k} X_{t+h-k}\right) =\sum_{j, k} a_{j} a_{k} \operatorname{cov}\left(X_{t-j}, X_{t+h-k}\right)=\sum_{j, k} a_{j} a_{k} \gamma_{X}(h-k+j)$
+* Power Transfer Function: Let $A(\lambda):=\sum_{j} a_{j} e^{-2 \pi i j \lambda}$ and the PTF as $\lambda \mapsto|A(\lambda)|^{2}$
+	* A is some sort of Fourier transform of the filter coefficients
+	* The transfer function A tells you exactly what happens to a given frequency,, how much larger or smaller it is after transformation and whether it is shifted
+	* The PTF throws away the phase shift and just tells you if a particular frequency is getting stronger or weaker under the filtered time series
+* Then the new spectral density: $f_{Y}(\lambda)=f_{X}(\lambda)|A(\lambda)|^{2}$ - the old density times the PTF
+	* Proof: $\gamma_Y = \sum_{j,k}a_ja_k \gamma(h- k + j)$ then expanding in terms of spectral density, $=\sum_{j,k} a_j a_k \int_{-1/2}^{1/2}exp(2 \pi i j \lambda(h- k + j))f_x(\lambda) d\lambda =  \int_{-1/2}^{1/2}exp(2 \pi i  \lambda h)f_x(\lambda) \sum_{j,k} a_j a_k exp(2 \pi i \lambda (j-k)) d\lambda $. Then $f_x(\lambda) \sum_{j,k} a_j a_k exp(2 \pi i j \lambda (j-k))$ must be the new spectral density to get the form we want. Rewriting $  \int_{-1/2}^{1/2}exp(2 \pi i  \lambda )f_x(\lambda)( \sum_{j}a_jexp(2 \pi i \lambda j ))( \sum_{k}a_kexp(2 \pi i  \lambda k ))d\lambda $. By earlier results, $( \sum_{j}a_jexp(2 \pi i \lambda j ))( \sum_{k}a_kexp(2 \pi i  \lambda k )) = \bar{A(\lambda)}A(\lambda) = f_Y(\lambda)$
+* Example: Lag s differencing $Y_{t}=X_{t}-X_{t-s}$. We have transfer function $A(\lambda)=\sum_{j} a_{j} e^{-2 \pi i j \lambda}=2 i \sin (\pi s \lambda) e^{-\pi i s \lambda}$ and PTF $|A(\lambda)|^{2}=4 \sin ^{2}(\pi s \lambda) \quad \text { for }-1 / 2 \leq \lambda \leq 1 / 2$. For lag 1 differencing, PTF is small for low lambda and large for higher lambda - constant signals (lambda = 0) removed completely, large period signals are shrunk, and high frequency components are pushed up. For lag 6, the PTF oscillates - removes freq 0 and lambdas at 1/6, 2/6, 3/6 since these frequencies correspond to a period of 6. 
+	* Note $e^{i \phi} - 1= sin(\phi/2)e^{i\phi/2}$
+* Going the other direction, we can construct filters for specific purposes / effects. Given a transfer function A, look for coefficients that give that specific transfer. 
+	* Given $A(\lambda)$. Goal: Find $a_j$ st $A(\lambda) = \sum_j a_j exp-2\pi j \lambda)$. 
+	* Integrate wrt $\int_{-1/2}^{1/2} exp(2 \pi  i k \lambda) ... d\lambda$ on both sides; this works since many of the terms will become 0. $\int_{-1/2}^{1/2} exp(2 \pi  i k \lambda)  A(\lambda) d\lambda = \sum_j a_j \int_{-1/2}^{1/2} exp(-2 \pi  i  \lambda(j-k)) d\lambda$. Then $\int_{-1/2}^{1/2} exp(-2 \pi  i  \lambda(j-k)) d\lambda = 1$ if j = k and 0 otherwise. And $$\int_{-1/2}^{1/2} exp(2 \pi  i k \lambda)  A(\lambda) d\lambda  = a_k$, fitting the fomula given.
+
+### Spectral Density of ARMA Processes
+* For a stationary causal ARMA $\phi(B) X_{t}=\theta(B) Z_{t}$ with no common roots, then the spectral density is $f_{X}(\lambda)=\sigma_{Z}^{2} \frac{\left|\theta\left(e^{-2 \pi i \lambda}\right)\right|^{2}}{\left|\phi\left(e^{-2 \pi i \lambda}\right)\right|^{2}}$ 
+* $e^{-2 \pi i \lambda}$ is essentially rotating around the unit circle on the real/imaginary axes. 
+* The polynomials have some roots $Z_0$ st $\theta(Z_0) = 0$ - we know these roots are outside of the unit circle since assuming causality / invertibility.
+* As we rotate around $e^{-2 \pi i \lambda *}$ close to theta $\theta(e^{-2 \pi i \lambda *}) \approx 0$
+* We have seen AR tend to show large peaks in spectral density, while MA tends to show some values very close to 0.
+
+## State Space Models
+### Hidden Markov Models
+* Unobserved process X and noisy measurements of the process Y
+* Want to learn about past present and future values of X
+* Example: GPS. Given some true trajectory, the GPS measurements will be scattered around the true points. Want to take the noisy measurements and smooth out the noise
+* Assume X is a Markov Chain, the future $\left\{X_{s}, s>t\right\}$ is independent of the past $\left\{X_{s}, s<t\right\}$ given the present $X_t$ - knowing more than $X_t$ does not help make predictions
+* Conditioning on the process X, all $Y_t$ are independent. Essentially the measurement errors are independent, not systemic.
+* Can be represented as a DAG, with each X depending only on the prior X and each $Y_t$ depending only on $X_t$.
+* We can always factorize the joint density of X and Y into conditional density products $f_t(X_t | past), f_t(Y_t | past, \;X_t)$. 
+* Given the markov property, this simplifies to $f_{0}\left(X_{0}\right) \prod_{t=1}^{T} f_{t}\left(X_{t} | X_{t-1}\right) g_{t}\left(Y_{t} | X_{t}\right)$
+* Example: Density of $(X_0, X_1, Y_1) = f_0(X_0)f_1(X_1 | X_0)g_1(y_1 | X_1, X_0) =  f_0(X_0)f_1(X_1 | X_0)g_1(y_1 | X_1)$.
+* Draw graph as follows:  $ f_{t}\left(X_{t} | X_{t-1}\right) g_{t}\left(Y_{t} | X_{t}\right)$ - draw arrows from RHS of each density to the LHS - from the conditioned variable to the function variable.
+* We may either (a) know that true transition densities of X and Y (say in physics) or (b) we may have unknown densities that also need to be estimated (say in economics). We will start with (a) as it is a simpler problem
+
+### Linear State Space Models
+* Linear state space model: $X_{t}=\mathbf{G}_{t} X_{t-1}+V_{t},\; Y_{t}=\mathbf{H}_{t} X_{t}+W_{t}$. Often used for position and velocity of a moving object and Y is a noisy measurment of object location. 
+* Causal / invertible ARMA models can be written as state space models
+* X is a vector of past p observations: $X_{t}:=\left(Y_{t}, Y_{t-1}, Y_{t-2}, \ldots, Y_{t-p+1}\right)^{t}$
+* Then $X_{t}=\Phi_{t} X_{t-1}+\eta_{t},\; Y_{t}=\mathbf{H}_{t} X_{t}+\varepsilon_{t}$
+* Example: AR(2) process. $Y_t = \phi_1Y_{t-1} + \phi_2Y_{t-2} + W_t$. Then $X_t = (Y_t,Y_{t-1})$.
+	* Rewriting in matrix form: $\begin{bmatrix}Y_t \\ Y_{t-1} \end{bmatrix} = \begin{bmatrix} \phi_1 & \phi_2 \\ 1 & 0 \end{bmatrix}\begin{bmatrix} Y_{t-1} \\ Y_{t-2} \end{bmatrix} + \begin{bmatrix}W_t \\ 0 \end{bmatrix}$
+	* Then $\begin{bmatrix}Y_t \\ Y_{t-1} \end{bmatrix} = X_t$, $ \begin{bmatrix} \phi_1 & \phi_2 \\ 1 & 0 \end{bmatrix} = G$, $\begin{bmatrix} Y_{t-1} \\ Y_{t-2}\end{bmatrix} = X_{t-1}, \; \eta =  \begin{bmatrix}W_t \\ 0 \end{bmatrix}$.
+	* Then $Y_t = (1 \; 0)  \begin{bmatrix} Y_t \\ Y_{t-1} \end{bmatrix} + 0$ where $H =  (1 \; 0)$, $X_t = \begin{bmatrix} Y_t \\ Y_{t-1} \end{bmatrix}$ and $\epsilon = 0$, no noise.
+* State space models make dealing with missing data more easily - can say we only observe a value $Y_t$ with a probability, not with certainty. Achieve by setting $H = (1,0)$ WP p and $H = (0,0)$ WP (1-p)
+* We can then find conditional distribution $P\left(X_{t+k} | y_{s}^{t}\right)$
+	* prediction when k >0 
+	* filtering when k = 0
+	* smoothing when k < 0
+* We assume time homogeneous transition probabilities. A is our X transition probability matrix and B is our Y transition prob matrix given $X_t$. Let $\pi_0$ be the initial / prior distribution of $X_0,\; P(X_0 = j)$
+* Conditional distribution of pi $\pi_{j}^{t+k | t}:=P\left(X_{t+k}=j | y_{1}^{t}\right)$
+	* Predict X: Then $\pi^{t+k | t}=\mathbf{A}^{k} \pi^{t | t}$ - the RHS is the filtering problem and the LHS is prediction. To predict x, take A to the kth power multiplied by the filtering problem
+	* Predict Y: $p^{t+k | t}=\mathbf{B} \cdot \mathbf{A}^{k} \cdot \pi^{t | t}$ where $p_{o}^{t+k | t}:=P\left(Y_{t+k}=o | y_{1}^{t}\right)$. 
+* We can reduce our predicting problem to a filtering problem. We then need to solve the filtering problem to obtain results.
+* Filtering: we want to express $P(X_t | y_1^t)$ in terms of model parameters A, B, $\pi^0$ assumed to be known and observations $y_1^t$
+* Issue - the parameters of the model are expressed as $P(Y_t | X_t);\;P(X_t | X_{t-1})$. We need to reverse the condition. Recall Bayes rule $P(A|B) = \frac{P(B|A)P(A)}{P(B)}\implies P(A|B,C) = \frac{P(B|A,C)P(A|C)}{P(B|C)}$
+	* Use this with $A= \{X_{t+1} = j\},\; B=\{Y_{t+1} = y_{t+1}\},\; C = \{Y_{1}^t = y_1^t\}$. Then $\pi^{t+ y | t + 1}_j = P(X_{t+1} = j | y_1^{t+1}) = P(Y_{t+1} = y_{t+1} | X_{t+1} =j; Y_1^t = y_1^t)\frac{P(X_{t+1} = j  | Y_1^t = y_1^t) }{P(Y_{t+1} = y_{t+1} | Y_1^t = y_1^t)}$
+	* Then by our assumptions, drop the observed past condition $= P(Y_{t+1} = y_{t+1} | X_{t+1} =j)\frac{P(X_{t+1} = j  | Y_1^t = y_1^t) }{P(Y_{t+1} = y_{t+1} | Y_1^t = y_1^t)}$. Then observing $P(Y_{t+1} = y_{t+1} | X_{t+1} =j)$ is a transition matrix B and the fraction is two prediction problems. We can rewrite as $=\frac{B_{y+1, j}\pi_j^{t+1  | t}}{\sum_i P(Y_{t+1} = y_{t+1}, X_{t+1} = i|Y_1^t = y_1^t)}$ and reconditioning $\frac{B_{y+1, j}\pi_j^{t+1  | t}}{\sum_i P(Y_{t+1} = y_{t+1}|X_{t+1} = i,Y_1^t = y_1^t)P(X_{t+1} = i | Y_1^t = y_1^t)}$. Again by Markov assumption, $=\frac{B_{y+1, j}\pi_j^{t+1  | t}}{\sum_i B_{y+1, i} \pi_i^{t+1|t}}$
+	* To summarize, have $\pi^{t+1|t} = A \pi^{t|t}$. $\pi_j^{t+1 | t+1} = \frac{B_{y+1,j} \pi_j^{t+1 | t}}{\sum_i B_{y+1,i}\pi_i^{t+1 | t}}$. These are our two formula that we solve back and forth recursively. We can compute probabilities $P(X_t = j | Y_1^t)$ in the following order: starting with uniform $\pi^0$, $\pi^0 \rightarrow \pi^{1|0}$ where $ \pi^{1|0}$ is a the prediction $X_{t+1} | Y_1^t$. Then $ \pi^{1|0} \rightarrow \pi^{1|1}$, which is the "update" $X_{t+1} | Y_1^{t+1}$. Continue,  $ \pi^{1|1} \rightarrow \pi^{2|1}$, which is $X_{t+1} | Y_1^{t+1}$. Essentially switch between filtering and prediction steps.
+* Example: MC for $X_t$. Take 3 nodes, $P= \begin{bmatrix} 1/2 & 1/2 & 0 \\ 1/3 & 1/3 & 1/3 \\  0& 1/2&1/2 \end{bmatrix}$. Let 1 be green, 2 and 3 blue. We do not observe states, just the colors of the states. Let matrix $A_{ij} = P(X_{t+1} = i | X_t = j) = P^T$, so columns sum to 1. Let $Y_t = $ color of node $X_t$ = color 1 (green) if $X_t = 1$ and color 2 (blue) if $X_t = 2,3$. Then matrix $B_{ij} = P(Y_t =i| X_t = j) = \begin{bmatrix} 1&0& 0\\ 0&1&1  \end{bmatrix}$ - 3 states for X and 2 states for Y. X states are on the columns, and Y states on the rows. Can now use formulas above for prediction and filtering. We often set $\pi^0 = unif(\text{states of X})$, here $=(1/3,1/3,1/3)$. Connectivity matrix is 1/0, indicating which nodes have connections. Transition matrix has probabilities of transitions.
+
+##### Posterior Mode / Trajectory
+* Find most likely trajectory $x_{0}^{T}=\left(x_{0}, \ldots, x_{T}\right)$ under the made observations
+* Viterbi Algorithm: We can decompose the log probabilities $\log P\left(X_{0}^{T}=x_{0}^{T} | Y_{1}^{T}=y_{1}^{T}\right)=\log \pi^{0}\left(x_{0}\right)+\sum_{t=1}^{T}\left[\log \mathbf{A}_{x_{t}, x_{t-1}}+\log \mathbf{B}_{y_{t}, x_{t}}\right] + C$, for some C constant in $X_0^T$.
+* Why? $\log P(X_{0}^{T}=x_{0}^{T} | Y_{1}^{T}=y_{1}^{T}) = \log P(X_{0}^{T}=x_{0}^{T}, Y_{1}^{T}=y_{1}^{T})  -  \log P(Y_{1}^{T}=y_{1}^{T})$ simply by definition. But $\log P(Y_{1}^{T}=y_{1}^{T})$ will be constant in $X_0^T$, so we can drop this term. We saw previously we can factorize the joint distribution $= log(P(X_0 = x_0)) + log(P(X_1 = x_1 | X_0 = x_0)) + log(P(Y_1 = y_1 | X_1= x_1)) + ... + log(P(X_T = x_t | X_{T-1} = x_{T-1})) + log(P(Y_T = y_t | X_T = x_T))$ Now can rewrite in terms of our parameters: $=log(\pi^0(X_0)) + \sum_{t=1}^T log(A_{X_t, X_{t-1}}) + log(B_{Y_t, X_t})$
+* Can view each term as cost paid for traversing time from 0 to T and passing through each X state. Let's say we have 3 states $X_t \in (1,2,3)$ and 3 time periods, (0,1,2). If we start at 3, pay $-log(\pi^0(3))$. If we move to state 2 at t=1, we pay $-log(A_{2, 3})$. We then pay a price for staying there, $-log(B_{Y_{1,2}})$. Then we move to state 3 in the last time period, paying $-log(A_{3,2})$ for the move and price $-log(B_{Y_{2,3}})$ for staying there. How can we find the cheapest path in our time period?
+* **Viterbi Algorithm** find the cheapest path efficiently through a forwards and backwards recursion. Forward: record the cheapest path for ending up at each possible X state and time step.  Once we have that, we can work backwards. From the latest time period, we have the cheapest way to get to each ending state, can just take the overall cheapest path. 
+* Example: Say we have two states, 1 and 2 and 3 time points. Fill in every cost along each path of a fully connected graph. Want to find the cheapest path. Viterbi algorithm 

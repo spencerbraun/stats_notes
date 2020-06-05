@@ -6,7 +6,6 @@ date: 20191016
 
 [TOC]
 
-<style type="text/css">@page { size: letter; margin: 0.25in; font-size: 20px; }</style>
 ### Chapter 9 - Testing Hypotheses and Goodness of Fit
 
 ##### Neyman-Pearson Paradigm

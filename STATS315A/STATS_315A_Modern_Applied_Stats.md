@@ -447,7 +447,7 @@
 * So the variance of logit of y $ = p(1-p)\frac{1}{[p(1-p)]^2}$ - so we are in effect weighting by the inverse of the variance.
 * Newton Method: $l(p) = \sum_{i=1}^n y_i log\frac{p_i}{1-p_i}  + log(1-p_i) = y^TX\beta - log(1 + e^{X^T\beta})$ since $(1-p(x_i)) = \frac{1}{1+e^{X^T\beta}}$. How we get to the gradient of l(p) wrt beta. Hessian is a diagonal matrix with elements $w_{i}=p_{i}\left(1-p_{i}\right)$.
 * Score equations - since x has a 1's columns in there, the sum of y's = sum of p's there. 
-* Asymptotic $Cov(\hat{\beta}) = (X^TWX)^{-1}. From asymptotic theory of MLE, relies on fact that the model is correct though - need a linear model for this to be true.
+* Asymptotic $Cov(\hat{\beta}) = (X^TWX)^{-1}$. From asymptotic theory of MLE, relies on fact that the model is correct though - need a linear model for this to be true.
 * When the Newton algorithm converges, it is an approximation of the asymptotic log likelihood and we can just read off the statistics from there.
 * If the 2 classes are linearly separable, solution is undefined - MLE tries to achieve probabilties of 0,1 and for this some beta must go to pos/min infinity. The point where you start bending $log(\frac{p}{1-p})\beta_o + \beta_1x$. Slope becomes infinite for the bend. If nearly separable, the variance explodes for the coefficients.
 * Called a forward or genertive model vs LDA which is backwards or discriminative.

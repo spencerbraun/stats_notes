@@ -180,4 +180,10 @@
 ## Class Takeaways
 
 * Management requires technical knowledge to drive a path forward. Serves a different role from analyst - analyst needs to think within the given goal structure, but management needs to think what that goal structure is. Eg. focusing on recommendation improvement vs do recommendations make sense for this business context
-* Tradeoffs between metric immediacy / closeness to intervention and ability to measure business objectives
+* Tradeoffs between metric immediacy / closeness to intervention and ability to measure business objectives. For the experiment, we wanted to see some metric measuring the effect of recommendations on engagement. Stories completed is far from the recommendation - there are many factors beyond the recommendation that determine if someone completes the story, so even if it is the business objective it may not be the right metric to measure. We went with stories started per day since closer, but the closer you get to the interaction the further you might stray from the business objective. 
+* Factorization machine takes user characteristics and item characteristics and factor this matrix. A good way of combining data sources but did not seem to work well on this project
+* Clustering - tried a user clustering via K-means then make item recommendations for the clusters by summing the user-item interactions within each user cluster. 
+* Also tried an SVD clustering approach - Take k-rank approximation you want, take cosine similarity of PCs in US matrix and make recommendations to the PCs and recombine matrix with SV^T. 
+* Project management
+  * Establish where people are strong and weak early, use this to give some believability weighting to their work.
+  * 
